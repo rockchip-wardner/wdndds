@@ -25,10 +25,6 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
-dependencies = [
-    "fastdds>=2.10",
-]
-
 [project.optional-dependencies]
 dev = [
     "pytest>=7",

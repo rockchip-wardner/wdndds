@@ -86,3 +86,54 @@ def test_reader_iter_protocol():
     samples = [("a", object()), ("b", object())]
     r = Reader(FakeRaw(samples), owner=None, owned=False)
     assert list(iter(r)) == samples
+
+
+def test_check_runtime_reports_unavailable():
+    from pyiot import dds
+    from pyiot.dds import _fastdds
+
+    _fastdds._fastdds = None
+
+    real_import = __import__("builtins").__import__
+
+    def fake_import(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "fastdds":
+            raise ImportError("simulated missing fastdds")
+        return real_import(name, globals, locals, fromlist, level)
+
+    import builtins
+
+    saved = builtins.__import__
+    builtins.__import__ = fake_import
+    try:
+        info = dds.check_runtime()
+    finally:
+        builtins.__import__ = saved
+
+    assert info["available"] is False
+    assert "pyiot.dds requires" in info["error"]
+    assert "apt install" in info["error"]
+
+
+def test_check_runtime_reports_available():
+    from pyiot import dds
+    from pyiot.dds import _fastdds
+
+    _fastdds._fastdds = None
+    fake = type(
+        "fastdds",
+        (),
+        {"__file__": "/fake/fastdds.py", "__version__": "9.9.9"},
+    )
+    _fastdds._fastdds = fake
+    try:
+        info = dds.check_runtime()
+    finally:
+        _fastdds._fastdds = None
+
+    assert info == {
+        "available": True,
+        "module": "fastdds",
+        "path": "/fake/fastdds.py",
+        "version": "9.9.9",
+    }

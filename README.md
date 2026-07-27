@@ -10,17 +10,50 @@ participant, publisher, and subscriber in a few lines.
 
 ## Prerequisites
 
-`pyiot` declares `fastdds` as a hard runtime dependency, so installing the
-wheel also installs the eProsima Fast DDS Python bindings (the native
-`fastdds` module). Make sure your package index carries it; otherwise point
-`pip` at the source that does (e.g. an internal index, or build Fast DDS
-yourself with `-DBUILD_PYTHON_BINDINGS=ON`).
+`pyiot` has **no PyPI dependencies** — it is a pure-Python facade. The native
+eProsima Fast DDS Python bindings (`fastdds` / `fastdds_python`) are NOT on
+PyPI, so you must install them via your OS or build from source. Choose one:
 
-## Install
+**Debian / Ubuntu (recommended)**
+
+```bash
+sudo apt install -y libasio-dev libtinyxml2-dev libfastdds-dev fastdds-python3
+```
+
+**Build from source** (see [docs](https://fast-dds.docs.eprosima.com/en/latest/fastdds/python_bindings/python_bindings.html))
+
+```bash
+pip install -U colcon-common-extensions vcstool
+mkdir -p fastdds_ws/src && cd fastdds_ws
+wget https://raw.githubusercontent.com/eProsima/Fast-DDS-Python/main/fastdds_python.repos
+vcs import src < fastdds_python.repos
+colcon build
+```
+
+Verify the bindings are importable:
+
+```bash
+python -c 'import fastdds; print(fastdds.__file__)'
+```
+
+If that prints a path, you're good.
+
+## Install `pyiot`
 
 ```bash
 pip install pyiot
 ```
+
+## Diagnose at runtime
+
+```python
+from pyiot import dds
+print(dds.check_runtime())
+# -> {'available': True, 'module': 'fastdds', 'path': '...', 'version': '2.10.x'}
+```
+
+If `available` is `False`, the returned dict carries an `error` field with
+install instructions.
 
 ## Quick start
 

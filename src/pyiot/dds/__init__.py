@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ._fastdds import check_runtime
 from .domain import Participant
 from .exceptions import DDSError, ReturnCodeError
 from .publisher import Publisher, Writer
@@ -31,6 +32,7 @@ __all__ = [
     "Writer",
     "best_effort_reader_qos",
     "best_effort_writer_qos",
+    "check_runtime",
     "datareader_qos",
     "datawriter_qos",
     "participant_qos",
