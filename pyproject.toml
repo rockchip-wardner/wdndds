@@ -3,14 +3,14 @@ requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pyiot"
+name = "wdiot"
 version = "0.1.0"
 description = "Pythonic wrapper around eProsima FastDDS Python bindings."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.9"
-authors = [{ name = "pyiot contributors" }]
-keywords = ["fastdds", "dds", "iot", "ros2", "pyiot"]
+authors = [{ name = "wdiot contributors" }]
+keywords = ["fastdds", "dds", "iot", "ros2", "wdiot"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -32,14 +32,14 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["pyiot", "pyiot.dds"]
+packages = ["wdiot", "wdiot.dds"]
 include-package-data = true
 
 [tool.setuptools.package-dir]
 "" = "src"
 
 [tool.setuptools.package-data]
-pyiot = ["py.typed"]
+wdiot = ["py.typed"]
 
 [tool.ruff]
 line-length = 100

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Discover all currently registered nodes.
 
-Subscribes to the ``pyiot/registry`` topic with ``transient_local`` QoS so
+Subscribes to the ``wdiot/registry`` topic with ``transient_local`` QoS so
 every live writer's last published value is delivered on join. New writes
 arrive as nodes re-announce. A local dict keyed by ``node_id`` keeps the
 freshest record per node.
@@ -18,7 +18,7 @@ import signal
 import sys
 import time
 
-from pyiot import dds
+from wdiot import dds
 
 from .common import TOPIC_NAME, decode
 

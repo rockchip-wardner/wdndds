@@ -4,14 +4,14 @@ import pytest
 
 
 def test_version_is_string():
-    import pyiot
+    import wdiot
 
-    assert isinstance(pyiot.__version__, str)
-    assert pyiot.__version__
+    assert isinstance(wdiot.__version__, str)
+    assert wdiot.__version__
 
 
 def test_dds_module_surface():
-    import pyiot.dds as dds
+    import wdiot.dds as dds
 
     expected = {
         "Participant",
@@ -39,7 +39,7 @@ def test_dds_module_surface():
 
 
 def test_lazy_friendly_error_when_fastdds_missing(monkeypatch):
-    from pyiot.dds import _fastdds
+    from wdiot.dds import _fastdds
 
     _fastdds._fastdds = None
 
@@ -51,12 +51,12 @@ def test_lazy_friendly_error_when_fastdds_missing(monkeypatch):
         return real_import(name, globals, locals, fromlist, level)
 
     monkeypatch.setattr("builtins.__import__", fake_import)
-    with pytest.raises(ImportError, match=r"pyiot\.dds requires"):
+    with pytest.raises(ImportError, match=r"wdiot\.dds requires"):
         _fastdds.get()
 
 
 def test_exceptions():
-    from pyiot.dds.exceptions import ReturnCodeError
+    from wdiot.dds.exceptions import ReturnCodeError
 
     err = ReturnCodeError(7, "boom")
     assert err.code == 7
@@ -65,7 +65,7 @@ def test_exceptions():
 
 
 def test_writer_attribute_isolation():
-    from pyiot.dds.publisher import Writer
+    from wdiot.dds.publisher import Writer
 
     class FakeRaw:
         def write(self, data):
@@ -76,7 +76,7 @@ def test_writer_attribute_isolation():
 
 
 def test_reader_iter_protocol():
-    from pyiot.dds.subscriber import Reader
+    from wdiot.dds.subscriber import Reader
 
     class FakeRaw:
         def __init__(self, payload):
@@ -91,8 +91,8 @@ def test_reader_iter_protocol():
 
 
 def test_check_runtime_reports_unavailable():
-    from pyiot import dds
-    from pyiot.dds import _fastdds
+    from wdiot import dds
+    from wdiot.dds import _fastdds
 
     _fastdds._fastdds = None
 
@@ -113,13 +113,13 @@ def test_check_runtime_reports_unavailable():
         builtins.__import__ = saved
 
     assert info["available"] is False
-    assert "pyiot.dds requires" in info["error"]
+    assert "wdiot.dds requires" in info["error"]
     assert "apt install" in info["error"]
 
 
 def test_check_runtime_reports_available():
-    from pyiot import dds
-    from pyiot.dds import _fastdds
+    from wdiot import dds
+    from wdiot.dds import _fastdds
 
     _fastdds._fastdds = None
     fake = type(
@@ -142,7 +142,7 @@ def test_check_runtime_reports_available():
 
 
 def test_register_string_type_helper():
-    from pyiot.dds import _fastdds, types
+    from wdiot.dds import _fastdds, types
 
     class FakeType:
         def __init__(self):
@@ -166,13 +166,13 @@ def test_register_string_type_helper():
     finally:
         _fastdds._fastdds = saved
 
-    assert tname == "pyiot::string::demo"
+    assert tname == "wdiot::string::demo"
     assert len(fp.registered) == 1
-    assert fp.registered[0].name == "pyiot::string::demo"
+    assert fp.registered[0].name == "wdiot::string::demo"
 
 
 def test_register_string_type_unique_per_alias():
-    from pyiot.dds import _fastdds, types
+    from wdiot.dds import _fastdds, types
 
     class FakeType:
         def __init__(self):
@@ -198,8 +198,8 @@ def test_register_string_type_unique_per_alias():
         _fastdds._fastdds = saved
 
     assert a != b
-    assert a == "pyiot::string::alpha"
-    assert b == "pyiot::string::beta"
+    assert a == "wdiot::string::alpha"
+    assert b == "wdiot::string::beta"
     assert len(fp.registered) == 2
 
 

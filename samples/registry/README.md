@@ -1,10 +1,10 @@
 # samples/registry
 
 A two-process sample that demonstrates a **registration & discovery** pattern
-on top of `pyiot.dds`.
+on top of `wdiot.dds`.
 
 - `register.py` — publishes this node's id, name, location, and capabilities
-  to the `pyiot/registry` topic at a fixed interval.
+  to the `wdiot/registry` topic at a fixed interval.
 - `discover.py` — subscribes to the same topic with `transient_local` QoS so
   every currently alive registrar's *last* published value is delivered
   automatically. New writes (from re-announces) overwrite the local record.
@@ -25,7 +25,7 @@ on top of `pyiot.dds`.
 
 The topic uses eProsima's built-in `StringTopicDataType` (a `std::string`
 on the wire), registered through the new
-[`pyiot.dds.Participant.register_string_type`](../README.md) helper so the
+[`wdiot.dds.Participant.register_string_type`](../README.md) helper so the
 sample never touches raw `fastdds`.
 
 ## Run
@@ -75,5 +75,5 @@ on `Ctrl+C`.
 
 ## Prerequisites
 
-Same as `pyiot` itself — the eProsima Fast DDS Python bindings must be
+Same as `wdiot` itself — the eProsima Fast DDS Python bindings must be
 importable. See the [top-level README](../README.md#prerequisites).

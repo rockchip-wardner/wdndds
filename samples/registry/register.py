@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Register this node's presence, location, and capabilities.
 
-Publishes a JSON registration to the ``pyiot/registry`` topic on a fixed
+Publishes a JSON registration to the ``wdiot/registry`` topic on a fixed
 interval. The payload carries:
 
 - ``node_id``     — stable unique id for this node
@@ -28,7 +28,7 @@ import sys
 import time
 import uuid
 
-from pyiot import dds
+from wdiot import dds
 
 from .common import TOPIC_NAME, encode, make_registration
 

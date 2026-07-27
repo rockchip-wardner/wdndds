@@ -1,16 +1,16 @@
-# pyiot
+# wdiot
 
 Pythonic wrapper around [eProsima Fast DDS](https://www.eprosima.com/en/products/all-products/fast-dds)
 Python bindings. The package re-exports the bindings through a small, ergonomic
 facade — context managers, QoS presets, lazy import — so you can spin up a DDS
 participant, publisher, and subscriber in a few lines.
 
-`pyiot` is the distribution / import name; the FastDDS surface lives under
-`pyiot.dds`.
+`wdiot` is the distribution / import name; the FastDDS surface lives under
+`wdiot.dds`.
 
 ## Prerequisites
 
-`pyiot` has **no PyPI dependencies** — it is a pure-Python facade. The native
+`wdiot` has **no PyPI dependencies** — it is a pure-Python facade. The native
 eProsima Fast DDS Python bindings (`fastdds` / `fastdds_python`) are NOT on
 PyPI, so you must install them via your OS or build from source. Choose one:
 
@@ -38,16 +38,16 @@ python -c 'import fastdds; print(fastdds.__file__)'
 
 If that prints a path, you're good.
 
-## Install `pyiot`
+## Install `wdiot`
 
 ```bash
-pip install pyiot
+pip install wdiot
 ```
 
 ## Diagnose at runtime
 
 ```python
-from pyiot import dds
+from wdiot import dds
 print(dds.check_runtime())
 # -> {'available': True, 'module': 'fastdds', 'path': '...', 'version': '2.10.x'}
 ```
@@ -58,7 +58,7 @@ install instructions.
 ## Quick start
 
 ```python
-from pyiot import dds
+from wdiot import dds
 
 with dds.Participant(domain_id=0) as participant:
     topic = participant.create_topic("Hello", "HelloWorld")
@@ -79,7 +79,7 @@ with participant.create_subscriber() as sub:
 ## QoS presets
 
 ```python
-from pyiot import dds
+from wdiot import dds
 
 writer_qos = dds.reliable_writer_qos()
 reader_qos = dds.best_effort_reader_qos()
@@ -93,12 +93,12 @@ python -m venv .venv
 .venv/bin/python -m build
 ```
 
-This produces `dist/pyiot-<version>-py3-none-any.whl` and the matching sdist.
+This produces `dist/wdiot-<version>-py3-none-any.whl` and the matching sdist.
 
 ## Project layout
 
 ```
-src/pyiot/
+src/wdiot/
 ├── __init__.py
 ├── _version.py
 ├── py.typed

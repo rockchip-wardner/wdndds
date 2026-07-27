@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 
-TOPIC_NAME = "pyiot/registry"
+TOPIC_NAME = "wdiot/registry"
 TYPE_ALIAS = "registry"
 
 
