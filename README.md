@@ -107,10 +107,17 @@ src/pyiot/
     ├── _fastdds.py     # lazy loader for the native `fastdds` module
     ├── exceptions.py
     ├── qos.py          # QoS factories and presets
+    ├── types.py        # register_string_type + topic introspection
     ├── domain.py       # Participant
     ├── topic.py        # Topic
     ├── publisher.py    # Publisher, Writer
     └── subscriber.py   # Subscriber, Reader
+
+samples/
+└── registry/           # registration + discovery sample (see samples/registry/README.md)
+    ├── common.py
+    ├── register.py
+    └── discover.py
 ```
 
 ## License

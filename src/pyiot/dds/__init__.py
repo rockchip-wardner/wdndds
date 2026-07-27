@@ -20,6 +20,7 @@ from .qos import (
 )
 from .subscriber import Reader, Subscriber
 from .topic import Topic
+from .types import register_string_type
 
 __all__ = [
     "DDSError",
@@ -37,6 +38,7 @@ __all__ = [
     "datawriter_qos",
     "participant_qos",
     "publisher_qos",
+    "register_string_type",
     "reliable_reader_qos",
     "reliable_writer_qos",
     "subscriber_qos",

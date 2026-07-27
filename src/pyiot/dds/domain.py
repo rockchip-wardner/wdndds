@@ -68,6 +68,11 @@ class Participant:
 
         return Subscriber._create(self._raw, qos)
 
+    def register_string_type(self, alias: str) -> str:
+        from .types import register_string_type as _reg
+
+        return _reg(self._raw, alias)
+
     def close(self) -> None:
         if not self._owned:
             return

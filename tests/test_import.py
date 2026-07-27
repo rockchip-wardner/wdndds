@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 
 
@@ -137,3 +139,72 @@ def test_check_runtime_reports_available():
         "path": "/fake/fastdds.py",
         "version": "9.9.9",
     }
+
+
+def test_register_string_type_helper():
+    from pyiot.dds import _fastdds, types
+
+    class FakeType:
+        def __init__(self):
+            self.name = None
+
+        def set_name(self, n):
+            self.name = n
+
+    class FakeParticipant:
+        def __init__(self):
+            self.registered = []
+
+        def register_type(self, ts):
+            self.registered.append(ts)
+
+    saved = _fastdds._fastdds
+    _fastdds._fastdds = SimpleNamespace(StringTopicDataType=FakeType)
+    try:
+        fp = FakeParticipant()
+        tname = types.register_string_type(fp, "demo")
+    finally:
+        _fastdds._fastdds = saved
+
+    assert tname == "pyiot::string::demo"
+    assert len(fp.registered) == 1
+    assert fp.registered[0].name == "pyiot::string::demo"
+
+
+def test_register_string_type_unique_per_alias():
+    from pyiot.dds import _fastdds, types
+
+    class FakeType:
+        def __init__(self):
+            self.name = None
+
+        def set_name(self, n):
+            self.name = n
+
+    class FakeParticipant:
+        def __init__(self):
+            self.registered = []
+
+        def register_type(self, ts):
+            self.registered.append(ts)
+
+    saved = _fastdds._fastdds
+    _fastdds._fastdds = SimpleNamespace(StringTopicDataType=FakeType)
+    try:
+        fp = FakeParticipant()
+        a = types.register_string_type(fp, "alpha")
+        b = types.register_string_type(fp, "beta")
+    finally:
+        _fastdds._fastdds = saved
+
+    assert a != b
+    assert a == "pyiot::string::alpha"
+    assert b == "pyiot::string::beta"
+    assert len(fp.registered) == 2
+
+
+def test_samples_compile():
+    import py_compile
+
+    for name in ("common", "register", "discover", "__main__"):
+        py_compile.compile(f"samples/registry/{name}.py", doraise=True)
