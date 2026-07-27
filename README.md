@@ -1,4 +1,4 @@
-# wdiot
+# wdiot - wardner.iot
 
 Pythonic wrapper around [eProsima Fast DDS](https://www.eprosima.com/en/products/all-products/fast-dds)
 Python bindings. The package re-exports the bindings through a small, ergonomic
