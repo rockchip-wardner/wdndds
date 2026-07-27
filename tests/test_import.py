@@ -206,5 +206,161 @@ def test_register_string_type_unique_per_alias():
 def test_samples_compile():
     import py_compile
 
-    for name in ("common", "register", "discover", "__main__"):
-        py_compile.compile(f"samples/registry/{name}.py", doraise=True)
+    py_compile.compile("samples/register_and_find.py", doraise=True)
+
+
+def test_event_dataclass():
+    from wdiot import Event
+
+    e = Event(kind="added")
+    assert e.kind == "added"
+    assert e.capability is None
+    e2 = Event(kind="removed", capability=None)
+    assert e2.kind == "removed"
+    assert e2.capability is None
+
+
+def test_capability_default_handle():
+    from wdiot import CameraQuery, SpeakerOutput
+
+    captured: list = []
+    cam = CameraQuery("cam1")
+    cam._default_handle({"q": "hi"}, captured.append)
+    assert captured == [{"answer": "unconfigured"}]
+
+    spk = SpeakerOutput("spk1")
+    captured.clear()
+    spk._default_handle({"x": 1}, captured.append)
+    assert captured == [{"played": False, "reason": "no speaker handler"}]
+
+
+def test_capability_local_call_returns_reply():
+    from wdiot import CameraInput
+
+    def cb(payload, reply):
+        reply({"ok": True, "echoed": payload})
+
+    cap = CameraInput("cam1", callback=cb)
+    assert cap({"hello": "world"}) == {"ok": True, "echoed": {"hello": "world"}}
+
+
+def test_capability_local_call_uses_default_when_no_callback():
+    from wdiot import AudioAnalyse
+
+    cap = AudioAnalyse("a1")
+    out = cap({"any": "payload"})
+    assert out == {"result": None}
+
+
+def test_register_top_level_signature():
+    import inspect
+
+    import wdiot
+
+    sig = inspect.signature(wdiot.register)
+    assert list(sig.parameters.keys()) == ["name", "capabilities"]
+
+
+def test_no_find_search_apis():
+    import wdiot
+
+    for name in ("find", "search"):
+        assert not hasattr(wdiot, name), f"wdiot.{name} should not exist"
+    for name in ("start_scan", "stop_scan", "register", "connect", "Event", "Device"):
+        assert hasattr(wdiot, name), f"wdiot.{name} should exist"
+
+
+def test_capability_classes_share_base():
+    from wdiot import (
+        AudioAnalyse,
+        AudioQuery,
+        CameraDescribe,
+        CameraInput,
+        CameraQuery,
+        Capability,
+        HDMIDisplay,
+        MicInput,
+        SpeakerOutput,
+    )
+
+    for cls in (
+        CameraInput, CameraQuery, CameraDescribe,
+        MicInput, SpeakerOutput, AudioQuery, AudioAnalyse, HDMIDisplay,
+    ):
+        assert issubclass(cls, Capability)
+        assert cls.capability_type, f"{cls.__name__} missing capability_type"
+        # every capability_type is unique
+    types = {c.capability_type for c in (
+        CameraInput, CameraQuery, CameraDescribe,
+        MicInput, SpeakerOutput, AudioQuery, AudioAnalyse, HDMIDisplay,
+    )}
+    assert len(types) == 8
+
+
+def test_device_update_caps():
+    from wdiot import CameraInput, SpeakerOutput
+    from wdiot.registry import Device
+
+    class FakeHub:
+        pass
+
+    dev = Device(name="test", hub=FakeHub())
+    dev._update_caps([
+        {"type": "video_input", "name": "cam1"},
+        {"type": "audio_output", "name": "spk1"},
+    ])
+    assert CameraInput in dev.caps
+    assert SpeakerOutput in dev.caps
+    assert dev.caps[CameraInput]["cam1"].name == "cam1"
+    assert dev.caps[SpeakerOutput]["spk1"].name == "spk1"
+
+
+def test_device_namespace_lookup_attribute_and_subscript():
+    from wdiot import CameraInput
+    from wdiot.registry import Device, _CapabilityNamespace
+
+    class FakeHub:
+        pass
+
+    dev = Device(name="test", hub=FakeHub())
+    ns_attr = dev.CameraInput
+    ns_getitem = dev[CameraInput]
+    assert isinstance(ns_attr, _CapabilityNamespace)
+    assert isinstance(ns_getitem, _CapabilityNamespace)
+    assert ns_attr.cls is CameraInput
+
+    cam = ns_attr["大门正门"]
+    assert isinstance(cam, CameraInput)
+    assert cam.name == "大门正门"
+    assert cam._target is dev
+
+
+def test_device_getattr_raises_for_unknown():
+    from wdiot.registry import Device
+
+    class FakeHub:
+        pass
+
+    dev = Device(name="test", hub=FakeHub())
+    with pytest.raises(AttributeError):
+        _ = dev.NotARealCapabilityClass
+
+
+def test_device_getitem_rejects_non_type():
+    from wdiot.registry import Device
+
+    class FakeHub:
+        pass
+
+    dev = Device(name="test", hub=FakeHub())
+    with pytest.raises(TypeError):
+        dev["not a class"]
+
+
+def test_register_requires_connect(monkeypatch):
+    from wdiot import CameraInput
+    from wdiot import registry as _reg
+
+    monkeypatch.setattr(_reg, "_hub", None)
+    with pytest.raises(RuntimeError, match=r"not connected"):
+        _reg.register("X", [CameraInput("y")])
