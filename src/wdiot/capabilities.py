@@ -21,14 +21,22 @@ class Capability:
     Use ``name`` for the per-instance label (e.g. ``"大门正门"``) and
     ``callback`` for the request handler:
 
-        cam = CameraInput("大门正门", callback=on_frame)
+        cam = HWVideoInput("大门正门", callback=on_frame)
 
     The callback receives ``(payload, reply)``. It must call ``reply(value)``
     exactly once — that's how the caller's ``Future`` completes.
 
     When the same class is used to address a remote instance
-    (``CameraInput("大门正门", target=remote_device)``) ``__call__`` becomes
+    (``HWVideoInput("大门正门", target=remote_device)``) ``__call__`` becomes
     a remote invocation that returns a ``concurrent.futures.Future``.
+
+    Categories
+    ----------
+    Concrete capabilities should subclass one of the two intermediate bases
+    — :class:`HWCapability` (physical I/O) or :class:`SWCapability`
+    (algorithmic / query / analysis) — instead of :class:`Capability`
+    directly. ``capability_type`` strings must start with ``hwcap_`` or
+    ``swcap_`` accordingly.
     """
 
     capability_type: ClassVar[str] = ""
@@ -75,73 +83,140 @@ class Capability:
         return f"<{type(self).__name__} {self.name!r} ({side})>"
 
 
-class CameraInput(Capability):
-    """A camera producing a video stream (frames pushed by callers)."""
+class HWCapability(Capability):
+    """硬件能力基类 — 物理 I/O 设备（摄像头、麦克风、扬声器、HDMI 等）。
 
-    capability_type = "video_input"
+    ``capability_type`` 必须以 ``hwcap_`` 开头，用于在 DDS topic
+    ``wdiot/capability/<type>`` 上区分硬件通路。
+
+    该基类不直接对外导出，外部代码请使用具体的叶子类
+    （``HWVideoInput`` / ``HWAudioInput`` / ``HWAudioOutput`` /
+    ``HWHDMIDisplay``）。
+    """
+
+    category: ClassVar[str] = "hw"
+
+
+class SWCapability(Capability):
+    """算法/软件能力基类 — 在硬件流之上做的查询、描述、分析等。
+
+    ``capability_type`` 必须以 ``swcap_`` 开头。SW 能力通常由
+    一个具体的模型/LLM session 实现，与硬件解耦。
+
+    该基类不直接对外导出，外部代码请使用具体的叶子类
+    （``SWVideoQuery`` / ``SWVideoDescribe`` / ``SWAudioQuery`` /
+    ``SWAudioAnalyse``）。
+    """
+
+    category: ClassVar[str] = "sw"
+
+
+class HWVideoInput(HWCapability):
+    """硬件能力：摄像头产生的视频流（caller 主动 push）。"""
+
+    capability_type = "hwcap_video_input"
 
     def _default_handle(self, payload, reply):
         reply({"ok": False, "reason": "no camera handler", "dropped": True})
 
 
-class CameraQuery(Capability):
-    """Query a camera for live information (e.g. "what do you see?")."""
+class SWVideoQuery(SWCapability):
+    """算法能力：向视频源发起查询（如"你看到了什么？"），通常由 VLM 推理。"""
 
-    capability_type = "video_query"
+    capability_type = "swcap_video_query"
 
     def _default_handle(self, payload, reply):
         reply({"answer": "unconfigured"})
 
 
-class CameraDescribe(Capability):
-    """Ask a camera to describe its current scene."""
+class SWVideoDescribe(SWCapability):
+    """算法能力：让视频源描述当前画面（自由文本 / 结构化）。"""
 
-    capability_type = "video_describe"
+    capability_type = "swcap_video_describe"
 
     def _default_handle(self, payload, reply):
         reply({"description": "unconfigured"})
 
 
-class MicInput(Capability):
-    """A microphone producing an audio stream."""
+class HWAudioInput(HWCapability):
+    """硬件能力：麦克风产生的音频流。"""
 
-    capability_type = "audio_input"
+    capability_type = "hwcap_audio_input"
 
     def _default_handle(self, payload, reply):
         reply({"ok": False, "reason": "no mic handler", "dropped": True})
 
 
-class SpeakerOutput(Capability):
-    """A speaker that plays audio."""
+class HWAudioOutput(HWCapability):
+    """硬件能力：扬声器播放音频。"""
 
-    capability_type = "audio_output"
+    capability_type = "hwcap_audio_output"
 
     def _default_handle(self, payload, reply):
         reply({"played": False, "reason": "no speaker handler"})
 
 
-class AudioQuery(Capability):
-    """Query an audio source for information."""
+class SWAudioQuery(SWCapability):
+    """算法能力：音频源查询（自由文本问答）。"""
 
-    capability_type = "audio_query"
+    capability_type = "swcap_audio_query"
 
     def _default_handle(self, payload, reply):
         reply({"answer": "unconfigured"})
 
 
-class AudioAnalyse(Capability):
-    """Run audio analysis on a stream (e.g. level, VAD, classification)."""
+class SWAudioAnalyse(SWCapability):
+    """算法能力：在音频流上做分析（level / VAD / 分类等）。"""
 
-    capability_type = "audio_analyse"
+    capability_type = "swcap_audio_analyse"
 
     def _default_handle(self, payload, reply):
         reply({"result": None})
 
 
-class HDMIDisplay(Capability):
-    """An HDMI display sink."""
+class SWVideoAnalyse(SWCapability):
+    """算法能力：视频结构化分析（检测 / 分类 / 统计等）。
 
-    capability_type = "hdmi_display"
+    区别于 :class:`SWVideoQuery`（自由问答）和 :class:`SWVideoDescribe`
+    （自由文本描述），本能力面向有结构的输出（bbox / 标签 / 计数等）。
+    """
+
+    capability_type = "swcap_video_analyse"
+
+    def _default_handle(self, payload, reply):
+        reply({"result": None, "reason": "no video analyser"})
+
+
+class SWAudioTTS(SWCapability):
+    """算法能力：把文本合成音频波形（不含扬声器回放，回放由 :class:`HWAudioOutput` 负责）。
+
+    一般与 :class:`HWAudioOutput` 配对使用 —— SW 侧负责把文本生成
+    音频数据，HW 侧负责把音频数据送进扬声器。
+    """
+
+    capability_type = "swcap_audio_tts"
+
+    def _default_handle(self, payload, reply):
+        reply({"synthesized": False, "audio": None, "reason": "no tts handler"})
+
+
+class SWTextChat(SWCapability):
+    """算法能力：纯文本对话会话（LLM chat），modality = text。
+
+    不绑定音/视频流 —— 输入和输出都是纯文本，由 LLM session 完成。
+    用于"通用 chat / 闲聊 / 问答 / 工具调用"等不依赖多媒体的场景。
+    """
+
+    capability_type = "swcap_text_chat"
+
+    def _default_handle(self, payload, reply):
+        reply({"reply": "unconfigured", "messages": []})
+
+
+class HWHDMIDisplay(HWCapability):
+    """硬件能力：HDMI 显示输出 sink。"""
+
+    capability_type = "hwcap_hdmi_display"
 
     def _default_handle(self, payload, reply):
         reply({"displayed": False, "reason": "no display handler"})

@@ -66,13 +66,13 @@ their capabilities. Every network invocation returns a
 
 ```python
 import wdiot
-from wdiot import CameraInput, CameraQuery, SpeakerOutput
+from wdiot import HWVideoInput, SWVideoQuery, HWAudioOutput
 
 with wdiot.connect():
     wdiot.register("Gate1Office", [
-        CameraInput("大门正门",   callback=on_frame),
-        CameraQuery("大门正门",   callback=on_query),
-        SpeakerOutput("大门喇叭", callback=on_play),
+        HWVideoInput("大门正门",   callback=on_frame),
+        SWVideoQuery("大门正门",   callback=on_query),
+        HWAudioOutput("大门喇叭", callback=on_play),
     ])
 ```
 
@@ -95,7 +95,7 @@ with wdiot.connect():
     wdiot.start_scan(on_event)
     # ... when a Gate1Office appears in `devices`:
     gate1 = devices["Gate1Office"]
-    fut = gate1.CameraQuery["大门正门"]({"q": "what do you see?"})
+    fut = gate1.SWVideoQuery["大门正门"]({"q": "what do you see?"})
     print(fut.result(timeout=2.0))
 ```
 
@@ -105,19 +105,31 @@ events fire and you manage your dictionary yourself.
 
 ### Predefined capabilities
 
-| Class | DDS type | Default (no callback) |
-|---|---|---|
-| `CameraInput` | `video_input` | drops frames |
-| `CameraQuery` | `video_query` | `{"answer": "unconfigured"}` |
-| `CameraDescribe` | `video_describe` | `{"description": "unconfigured"}` |
-| `MicInput` | `audio_input` | drops samples |
-| `SpeakerOutput` | `audio_output` | `{"played": False, ...}` |
-| `AudioQuery` | `audio_query` | `{"answer": "unconfigured"}` |
-| `AudioAnalyse` | `audio_analyse` | `{"result": None}` |
-| `HDMIDisplay` | `hdmi_display` | `{"displayed": False, ...}` |
+Capabilities are split into two categories:
 
-Subclass `Capability` to add your own — set `capability_type` and override
-`_default_handle`.
+* **HW** (`hwcap_*` prefix) — physical I/O: cameras, microphones, speakers,
+  HDMI sinks. Subclass `HWCapability` (not exported at the top level).
+* **SW** (`swcap_*` prefix) — algorithmic: video query / describe /
+  analyse, audio query / analyse / TTS, text chat. Subclass
+  `SWCapability` (not exported at the top level).
+
+| Class | DDS type | Category | Default (no callback) |
+|---|---|---|---|
+| `HWVideoInput`    | `hwcap_video_input`     | HW | drops frames |
+| `SWVideoQuery`    | `swcap_video_query`     | SW | `{"answer": "unconfigured"}` |
+| `SWVideoDescribe` | `swcap_video_describe`  | SW | `{"description": "unconfigured"}` |
+| `SWVideoAnalyse`  | `swcap_video_analyse`   | SW | `{"result": None, "reason": ...}` |
+| `HWAudioInput`    | `hwcap_audio_input`     | HW | drops samples |
+| `HWAudioOutput`   | `hwcap_audio_output`    | HW | `{"played": False, ...}` |
+| `SWAudioQuery`    | `swcap_audio_query`     | SW | `{"answer": "unconfigured"}` |
+| `SWAudioAnalyse`  | `swcap_audio_analyse`   | SW | `{"result": None}` |
+| `SWAudioTTS`      | `swcap_audio_tts`       | SW | `{"synthesized": False, "audio": None, ...}` |
+| `SWTextChat`      | `swcap_text_chat`       | SW | `{"reply": "unconfigured", "messages": []}` |
+| `HWHDMIDisplay`   | `hwcap_hdmi_display`    | HW | `{"displayed": False, ...}` |
+
+Subclass `Capability` to add your own — set `capability_type` (must start
+with `hwcap_` or `swcap_` depending on whether you go via `HWCapability`
+or `SWCapability`) and override `_default_handle`.
 
 ### Callback contract
 
@@ -138,7 +150,7 @@ when a message arrives on the capability topic; for local invocations
 Each script instance IS one device: it registers its own capabilities and
 also scans for other devices. Run two instances with different `--name`
 values on the same host (or any host on the same DDS domain) and they will
-discover each other and trade `CameraQuery` calls:
+discover each other and trade `SWVideoQuery` calls:
 
 ```bash
 # Terminal A
@@ -199,7 +211,7 @@ src/wdiot/
 │                      #             start_scan, stop_scan, Device, Event
 ├── _version.py
 ├── py.typed
-├── capabilities.py    # Capability base + 8 predefined subclasses
+├── capabilities.py    # Capability base + HWCapability/SWCapability + 8 predefined subclasses
 ├── event.py           # Event dataclass
 ├── registry.py        # Hub, Device, CapabilityNamespace, scan/invoke
 └── dds/

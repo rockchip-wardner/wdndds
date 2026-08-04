@@ -4,7 +4,7 @@ Each script instance IS one device. It:
 
 1. Registers its own capabilities (with callbacks) under ``--name``.
 2. Subscribes to discovery. When a peer appears, invokes one capability on
-   it (``CameraQuery`` on the ``大门正门`` instance) and prints the reply.
+   it (``SWVideoQuery`` on the ``大门正门`` instance) and prints the reply.
 3. Loops until Ctrl-C.
 
 Run multiple instances on the same host (or same DDS domain) with different
@@ -13,7 +13,7 @@ Run multiple instances on the same host (or same DDS domain) with different
     Terminal A:  python samples/register_and_find.py --name Gate1Office
     Terminal B:  python samples/register_and_find.py --name Gate2Office
 
-Both A and B will register, see each other appear, and trade CameraQuery
+Both A and B will register, see each other appear, and trade SWVideoQuery
 calls.
 """
 
@@ -21,28 +21,28 @@ import argparse
 import time
 
 import wdiot
-from wdiot import AudioQuery, CameraInput, CameraQuery, MicInput, SpeakerOutput
+from wdiot import HWAudioInput, HWAudioOutput, HWVideoInput, SWAudioQuery, SWVideoQuery
 
 
 def make_callbacks(label: str) -> dict:
     def on_frame(payload, reply):
-        print(f"[{label}] CameraInput <- {payload!r}", flush=True)
+        print(f"[{label}] HWVideoInput <- {payload!r}", flush=True)
         reply({"ok": True})
 
     def on_query(payload, reply):
-        print(f"[{label}] CameraQuery <- {payload!r}", flush=True)
+        print(f"[{label}] SWVideoQuery <- {payload!r}", flush=True)
         reply({"answer": f"served by {label}", "q": payload.get("q")})
 
     def on_play(payload, reply):
-        print(f"[{label}] SpeakerOutput <- {payload!r}", flush=True)
+        print(f"[{label}] HWAudioOutput <- {payload!r}", flush=True)
         reply({"played": True, "by": label})
 
     def on_mic(payload, reply):
-        print(f"[{label}] MicInput <- {payload!r}", flush=True)
+        print(f"[{label}] HWAudioInput <- {payload!r}", flush=True)
         reply({"ok": True})
 
     def on_audio_query(payload, reply):
-        print(f"[{label}] AudioQuery <- {payload!r}", flush=True)
+        print(f"[{label}] SWAudioQuery <- {payload!r}", flush=True)
         reply({"decibel": -30, "by": label})
 
     return {
@@ -56,15 +56,15 @@ def make_callbacks(label: str) -> dict:
 
 def build_capabilities(cb: dict) -> list:
     return [
-        CameraInput("大门正门",       callback=cb["frame"]),
-        CameraInput("电动车路口",     callback=cb["frame"]),
-        CameraInput("人行入口",       callback=cb["frame"]),
-        CameraQuery("大门正门",       callback=cb["query"]),
-        CameraQuery("电动车路口",     callback=cb["query"]),
-        SpeakerOutput("大门喇叭",     callback=cb["play"]),
-        SpeakerOutput("门禁提示喇叭", callback=cb["play"]),
-        MicInput("大门拾音器",       callback=cb["mic"]),
-        AudioQuery("大门拾音器",     callback=cb["audio_q"]),
+        HWVideoInput("大门正门",       callback=cb["frame"]),
+        HWVideoInput("电动车路口",     callback=cb["frame"]),
+        HWVideoInput("人行入口",       callback=cb["frame"]),
+        SWVideoQuery("大门正门",       callback=cb["query"]),
+        SWVideoQuery("电动车路口",     callback=cb["query"]),
+        HWAudioOutput("大门喇叭",     callback=cb["play"]),
+        HWAudioOutput("门禁提示喇叭", callback=cb["play"]),
+        HWAudioInput("大门拾音器",       callback=cb["mic"]),
+        SWAudioQuery("大门拾音器",     callback=cb["audio_q"]),
     ]
 
 
@@ -75,15 +75,15 @@ def main(my_name) -> None:
 
     def call_camquery(peer: wdiot.Device) -> None:
         try:
-            fut = peer.CameraQuery["大门正门"]({"q": "what do you see?"})
+            fut = peer.SWVideoQuery["大门正门"]({"q": "what do you see?"})
             print(
-                f"[{my_name}] -> {peer.name}.CameraQuery reply: "
+                f"[{my_name}] -> {peer.name}.SWVideoQuery reply: "
                 f"{fut.result(timeout=2.0)}",
                 flush=True,
             )
         except Exception as exc:
             print(
-                f"[{my_name}] -> {peer.name}.CameraQuery error: {exc!r}",
+                f"[{my_name}] -> {peer.name}.SWVideoQuery error: {exc!r}",
                 flush=True,
             )
 

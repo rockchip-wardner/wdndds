@@ -440,11 +440,11 @@ class Device:
     Capabilities are exposed via attribute-style namespaces::
 
         gate1 = my_devices["Gate1Office"]
-        cam = gate1.CameraInput["大门正门"]
+        cam = gate1.HWVideoInput["大门正门"]
         fut = cam({"q": "..."})
 
-    Attribute access (``gate1.CameraInput``) and subscript access
-    (``gate1[CameraInput]``) are equivalent.
+    Attribute access (``gate1.HWVideoInput``) and subscript access
+    (``gate1[HWVideoInput]``) are equivalent.
     """
 
     def __init__(self, *, name: str, hub: Hub) -> None:
@@ -492,24 +492,30 @@ class Device:
 
 def _init_class_tables() -> None:
     from .capabilities import (
-        AudioAnalyse,
-        AudioQuery,
-        CameraDescribe,
-        CameraInput,
-        CameraQuery,
-        HDMIDisplay,
-        MicInput,
-        SpeakerOutput,
+        HWAudioInput,
+        HWAudioOutput,
+        HWHDMIDisplay,
+        HWVideoInput,
+        SWAudioAnalyse,
+        SWAudioQuery,
+        SWAudioTTS,
+        SWTextChat,
+        SWVideoAnalyse,
+        SWVideoDescribe,
+        SWVideoQuery,
     )
     for cls in (
-        CameraInput,
-        CameraQuery,
-        CameraDescribe,
-        MicInput,
-        SpeakerOutput,
-        AudioQuery,
-        AudioAnalyse,
-        HDMIDisplay,
+        HWVideoInput,
+        SWVideoQuery,
+        SWVideoDescribe,
+        SWVideoAnalyse,
+        HWAudioInput,
+        HWAudioOutput,
+        SWAudioQuery,
+        SWAudioAnalyse,
+        SWAudioTTS,
+        SWTextChat,
+        HWHDMIDisplay,
     ):
         _register_capability_class(cls)
 
@@ -543,7 +549,7 @@ def _get_hub() -> Hub:
 def register(name: str, capabilities: list[Capability]) -> None:
     """Publish this process's capabilities under ``name``.
 
-    Each ``Capability`` is a class instance (e.g. ``CameraInput("大门正门")``)
+    Each ``Capability`` is a class instance (e.g. ``HWVideoInput("大门正门")``)
     with an optional ``callback``.
     """
     _get_hub().register(name, capabilities)
