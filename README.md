@@ -229,6 +229,63 @@ samples/
 └── register_and_find.py   # provider / caller two-role end-to-end sample
 ```
 
+## WeChat 机器人 (`wdiot.Wechat`)
+
+A small synchronous wrapper around the [`wechatbot-sdk`](https://pypi.org/project/wechatbot-sdk/)
+async client. It exposes QR-code login, long-poll message reception, and
+text/media send behind a thread-safe API — drop it into any service
+process (FastAPI handler, cron script, debugging CLI) without managing an
+asyncio loop yourself.
+
+```bash
+pip install wdiot[wechat]    # also installs wechatbot-sdk
+```
+
+```python
+import wdiot
+
+wc = wdiot.Wechat()          # spins up a private asyncio loop on a daemon thread
+print(wc.check_runtime())    # {'available': True, 'module': 'wechatbot', ...}
+
+wc.start_login(force=True)   # schedules bot.login() on the loop; returns immediately
+# poll wc.login_status() / wc.wait_qr_url() until wc.started == True
+print(wc.login_status())     # {'state': 'awaiting_scan', 'qr_url': 'weixin://...', ...}
+
+@wc.register_message_handler
+def on_message(msg):
+    print(f"[{msg.type}] {msg.user_id}: {msg.text}")
+    wc.send_text(msg.user_id, f"Echo: {msg.text}")
+
+# Backed by ~/.wechatbot/credentials.json by default — set
+# WDIOT_WECHAT_CRED_PATH to override.
+wc.logout()                  # clears on-disk creds + stops the long-poll
+wc.close()                   # tears down the daemon loop
+```
+
+Credentials
+-----------
+
+Stored on disk under `~/.wechatbot/credentials.json` (the SDK default).
+Override globally with the `WDIOT_WECHAT_CRED_PATH` environment variable
+or per-instance with `Wechat(cred_path=...)`. Pass `force=True` to
+`start_login()` to discard the stored credentials and re-issue a QR.
+
+State machine
+-------------
+
+`idle → awaiting_scan → scanned → confirmed → running` (long-poll alive),
+with `expired` and `error` as terminal failure branches. `cancel_login()`
+just hides the QR — the underlying SDK coroutine runs to natural completion
+since `wechatbot.WeChatBot` doesn't expose a public login cancel.
+
+Error classes
+-------------
+
+`Wechat.NoContextError` / `Wechat.AuthError` / `Wechat.MediaError` /
+`Wechat.WeChatBotError` are re-exported as nested attributes so callers
+can `except wdiot.Wechat.NoContextError` without taking a direct dep on
+`wechatbot`. The originals stay importable too.
+
 ## License
 
 MIT. See `LICENSE`.

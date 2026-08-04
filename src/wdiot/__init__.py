@@ -16,6 +16,7 @@ from .capabilities import (
 )
 from .event import Event
 from .registry import Device, connect, register, start_scan, stop_scan
+from .wechat import Wechat
 
 __all__ = [
     "Device",
@@ -31,6 +32,7 @@ __all__ = [
     "SWVideoAnalyse",
     "SWVideoDescribe",
     "SWVideoQuery",
+    "Wechat",
     "__version__",
     "connect",
     "register",
