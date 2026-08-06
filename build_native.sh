@@ -53,8 +53,8 @@ python3 -c "import colcon_core" 2>/dev/null \
 python3 -c "import vcstool" 2>/dev/null \
     || die "missing python module: vcstool (pip install vcstool)"
 
-dpkg -l libasio-dev libtinyxml2-dev libfastrtps-dev >/dev/null 2>&1 \
-    || die "missing apt deps; run: sudo apt install libasio-dev libtinyxml2-dev libfastrtps-dev"
+dpkg -l libasio-dev libtinyxml2-dev libfastrtps-dev patchelf >/dev/null 2>&1 \
+    || die "missing apt deps; run: sudo apt install libasio-dev libtinyxml2-dev libfastrtps-dev patchelf"
 
 # --------------------------------------------------------------------------- #
 # Step 1: clone Fast-DDS-Python repos via vcs (or use the FASTDDDS_WS that
@@ -164,6 +164,44 @@ cp -P "${WS_DIR}/install/lib/libfastcdr.so"* "${NATIVE_DIR}/lib/" 2>/dev/null ||
 # Copy the WdnddsStringTopicDataType helper.
 cp "${WDNDDS_CXX_DIR}/generated/_wdndds_string.so" "${NATIVE_DIR}/"
 cp "${WDNDDS_CXX_DIR}/generated/wdndds_string.py" "${NATIVE_DIR}/"
+
+# --------------------------------------------------------------------------- #
+# Stamp bundled .so RPATHs so the dynamic linker can find libfastcdr/libfastrtps
+# WITHOUT relying on ctypes.CDLL(RTLD_GLOBAL) preload.
+#
+# Why: _fastdds_python.so has DT_NEEDED libfastrtps.so.2.6 — the loader needs
+# to resolve it at dlopen() time. RTLD_GLOBAL preload from Python *should*
+# make it visible, but doesn't always propagate on every libc version /
+# dlopen call order — customers then hit "libfastrtps.so.2.6: cannot open
+# shared object file" with no useful diagnostic.
+#
+# The fix: embed a DT_RUNPATH of ``$ORIGIN/lib`` (or ``$ORIGIN/../lib`` for
+# the 2.x package layout where the .so lives at _native/fastdds/) so the
+# loader searches the bundled lib dir FIRST, before any system path. This
+# makes preload redundant and survives across libc versions.
+#
+# Requires the ``patchelf`` apt package (added to the dep check at the top
+# of the script).
+# --------------------------------------------------------------------------- #
+if command -v patchelf >/dev/null 2>&1; then
+    case "${LAYOUT}" in
+        1.x-flat)
+            # _fastdds_python.so and _wdndds_string.so live at _native/
+            # libfast*.so live at _native/lib/ → $ORIGIN/lib
+            patchelf --set-rpath '$ORIGIN/lib' "${NATIVE_DIR}/_fastdds_python.so"
+            patchelf --set-rpath '$ORIGIN/lib' "${NATIVE_DIR}/_wdndds_string.so"
+            log "stamped RUNPATH=\$ORIGIN/lib on _fastdds_python.so + _wdndds_string.so"
+            ;;
+        2.x+package)
+            # .so live at _native/fastdds/, lib at _native/lib/ → $ORIGIN/../lib
+            patchelf --set-rpath '$ORIGIN/../lib' "${NATIVE_DIR}/fastdds/_fastdds_python.so"
+            log "stamped RUNPATH=\$ORIGIN/../lib on fastdds/_fastdds_python.so"
+            ;;
+    esac
+else
+    log "WARNING: patchelf not installed — bundled .so will rely on ctypes"
+    log "         RTLD_GLOBAL preload only. Install with: sudo apt install patchelf"
+fi
 
 # Strip __pycache__ if it slipped in.
 find "${NATIVE_DIR}" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
