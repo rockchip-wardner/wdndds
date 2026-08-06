@@ -1,10 +1,10 @@
-"""High-level capability registry built on top of :mod:`wdiot.dds`.
+"""High-level capability registry built on top of :mod:`wdndds.dds`.
 
 A :class:`Hub` owns one ``DomainParticipant`` and brokers:
 
-* registry broadcasts on ``wdiot/registry`` (RELIABLE + TRANSIENT_LOCAL)
-* per-capability-type request topics ``wdiot/capability/<type>`` (RELIABLE)
-* per-call reply topics ``wdiot/reply/<uuid>`` (RELIABLE)
+* registry broadcasts on ``wdndds/registry`` (RELIABLE + TRANSIENT_LOCAL)
+* per-capability-type request topics ``wdndds/capability/<type>`` (RELIABLE)
+* per-call reply topics ``wdndds/reply/<uuid>`` (RELIABLE)
 
 Instance names (which may be non-ASCII) only ever appear inside JSON
 payloads — DDS topic names are ASCII-safe.
@@ -31,15 +31,15 @@ if TYPE_CHECKING:
     from .capabilities import Capability
 
 
-_REGISTRY_TOPIC = "wdiot/registry"
-_CAPABILITY_TOPIC_PREFIX = "wdiot/capability/"
-_REPLY_TOPIC_PREFIX = "wdiot/reply/"
+_REGISTRY_TOPIC = "wdndds/registry"
+_CAPABILITY_TOPIC_PREFIX = "wdndds/capability/"
+_REPLY_TOPIC_PREFIX = "wdndds/reply/"
 
 ScanCallback = Callable[["Device", Event], None]
 
 
 class Hub:
-    """Singleton coordinator for one wdiot process. Built by :func:`connect`."""
+    """Singleton coordinator for one wdndds process. Built by :func:`connect`."""
 
     _PUMP_INTERVAL = 0.05
 
@@ -102,7 +102,7 @@ class Hub:
             target=self._pump_loop,
             args=(reader, dispatch),
             daemon=True,
-            name="wdiot-pump",
+            name="wdndds-pump",
         )
         t.start()
         self._pump_threads.append(t)
@@ -117,7 +117,7 @@ class Hub:
                 try:
                     dispatch(sample)
                 except Exception as exc:
-                    warnings.warn(f"wdiot pump dispatch error: {exc!r}", stacklevel=2)
+                    warnings.warn(f"wdndds pump dispatch error: {exc!r}", stacklevel=2)
             self._stopped.wait(timeout=self._PUMP_INTERVAL)
 
     # ------------------------------------------------------------------ public
@@ -153,7 +153,7 @@ class Hub:
             try:
                 callback(dev, Event(kind="added", capability=None))
             except Exception as exc:
-                warnings.warn(f"wdiot scan replay error: {exc!r}", stacklevel=2)
+                warnings.warn(f"wdndds scan replay error: {exc!r}", stacklevel=2)
 
     def stop_scan(self, callback: ScanCallback) -> None:
         with self._scan_lock, suppress(ValueError):
@@ -306,7 +306,7 @@ class Hub:
                     )
             self._reply_writers[reply_topic].write(json.dumps(payload, ensure_ascii=False))
         except Exception as exc:
-            warnings.warn(f"wdiot: failed to send reply on {reply_topic}: {exc!r}", stacklevel=2)
+            warnings.warn(f"wdndds: failed to send reply on {reply_topic}: {exc!r}", stacklevel=2)
 
     def _install_reply_reader(
         self, reply_topic: str, request_id: str, fut: Future
@@ -357,7 +357,7 @@ class Hub:
             try:
                 cb(device, event)
             except Exception as exc:
-                warnings.warn(f"wdiot scan callback error: {exc!r}", stacklevel=2)
+                warnings.warn(f"wdndds scan callback error: {exc!r}", stacklevel=2)
 
     def _fire_removed_for(self, name: str) -> None:
         with self._remote_lock:
@@ -435,7 +435,7 @@ def _class_by_name(name: str) -> type | None:
 
 
 class Device:
-    """Proxy for a discovered wdiot device.
+    """Proxy for a discovered wdndds device.
 
     Capabilities are exposed via attribute-style namespaces::
 
@@ -531,18 +531,18 @@ _hub_lock = threading.Lock()
 
 
 def connect(domain_id: int = 0) -> Hub:
-    """Open a wdiot session. Use as ``with wdiot.connect():``."""
+    """Open a wdndds session. Use as ``with wdndds.connect():``."""
     global _hub
     with _hub_lock:
         if _hub is not None:
-            raise RuntimeError("wdiot.connect() called twice")
+            raise RuntimeError("wdndds.connect() called twice")
         _hub = Hub(domain_id=domain_id)
     return _hub
 
 
 def _get_hub() -> Hub:
     if _hub is None:
-        raise RuntimeError("wdiot not connected; call wdiot.connect() first")
+        raise RuntimeError("wdndds not connected; call wdndds.connect() first")
     return _hub
 
 
@@ -559,7 +559,7 @@ def start_scan(callback: ScanCallback) -> None:
     """Subscribe to discovery events. ``callback(device, event)`` fires for each
     ``Event(kind="added"|"removed")``.
 
-    The callback runs on a wdiot background thread — keep it short or hand off
+    The callback runs on a wdndds background thread — keep it short or hand off
     to your own queue/worker.
     """
     _get_hub().start_scan(callback)

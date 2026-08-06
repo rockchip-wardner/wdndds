@@ -13,7 +13,7 @@ def get() -> Any:
         import fastdds as _mod
     except ImportError as exc:
         raise ImportError(
-            "wdiot.dds requires the eProsima Fast DDS Python bindings "
+            "wdndds.dds requires the eProsima Fast DDS Python bindings "
             "(importable as 'fastdds' / 'fastdds_python').\n"
             "It is NOT on PyPI; install via one of:\n"
             "  - apt (Debian/Ubuntu): apt install libfastdds-dev fastdds-python3\n"

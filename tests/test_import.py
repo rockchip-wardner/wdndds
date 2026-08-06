@@ -4,14 +4,14 @@ import pytest
 
 
 def test_version_is_string():
-    import wdiot
+    import wdndds
 
-    assert isinstance(wdiot.__version__, str)
-    assert wdiot.__version__
+    assert isinstance(wdndds.__version__, str)
+    assert wdndds.__version__
 
 
 def test_dds_module_surface():
-    import wdiot.dds as dds
+    import wdndds.dds as dds
 
     expected = {
         "Participant",
@@ -39,7 +39,7 @@ def test_dds_module_surface():
 
 
 def test_lazy_friendly_error_when_fastdds_missing(monkeypatch):
-    from wdiot.dds import _fastdds
+    from wdndds.dds import _fastdds
 
     _fastdds._fastdds = None
 
@@ -51,12 +51,12 @@ def test_lazy_friendly_error_when_fastdds_missing(monkeypatch):
         return real_import(name, globals, locals, fromlist, level)
 
     monkeypatch.setattr("builtins.__import__", fake_import)
-    with pytest.raises(ImportError, match=r"wdiot\.dds requires"):
+    with pytest.raises(ImportError, match=r"wdndds\.dds requires"):
         _fastdds.get()
 
 
 def test_exceptions():
-    from wdiot.dds.exceptions import ReturnCodeError
+    from wdndds.dds.exceptions import ReturnCodeError
 
     err = ReturnCodeError(7, "boom")
     assert err.code == 7
@@ -65,7 +65,7 @@ def test_exceptions():
 
 
 def test_writer_attribute_isolation():
-    from wdiot.dds.publisher import Writer
+    from wdndds.dds.publisher import Writer
 
     class FakeRaw:
         def write(self, data):
@@ -76,7 +76,7 @@ def test_writer_attribute_isolation():
 
 
 def test_reader_iter_protocol():
-    from wdiot.dds.subscriber import Reader
+    from wdndds.dds.subscriber import Reader
 
     class FakeRaw:
         def __init__(self, payload):
@@ -91,8 +91,8 @@ def test_reader_iter_protocol():
 
 
 def test_check_runtime_reports_unavailable():
-    from wdiot import dds
-    from wdiot.dds import _fastdds
+    from wdndds import dds
+    from wdndds.dds import _fastdds
 
     _fastdds._fastdds = None
 
@@ -113,13 +113,13 @@ def test_check_runtime_reports_unavailable():
         builtins.__import__ = saved
 
     assert info["available"] is False
-    assert "wdiot.dds requires" in info["error"]
+    assert "wdndds.dds requires" in info["error"]
     assert "apt install" in info["error"]
 
 
 def test_check_runtime_reports_available():
-    from wdiot import dds
-    from wdiot.dds import _fastdds
+    from wdndds import dds
+    from wdndds.dds import _fastdds
 
     _fastdds._fastdds = None
     fake = type(
@@ -142,7 +142,7 @@ def test_check_runtime_reports_available():
 
 
 def test_register_string_type_helper():
-    from wdiot.dds import _fastdds, types
+    from wdndds.dds import _fastdds, types
 
     class FakeType:
         def __init__(self):
@@ -166,13 +166,13 @@ def test_register_string_type_helper():
     finally:
         _fastdds._fastdds = saved
 
-    assert tname == "wdiot::string::demo"
+    assert tname == "wdndds::string::demo"
     assert len(fp.registered) == 1
-    assert fp.registered[0].name == "wdiot::string::demo"
+    assert fp.registered[0].name == "wdndds::string::demo"
 
 
 def test_register_string_type_unique_per_alias():
-    from wdiot.dds import _fastdds, types
+    from wdndds.dds import _fastdds, types
 
     class FakeType:
         def __init__(self):
@@ -198,8 +198,8 @@ def test_register_string_type_unique_per_alias():
         _fastdds._fastdds = saved
 
     assert a != b
-    assert a == "wdiot::string::alpha"
-    assert b == "wdiot::string::beta"
+    assert a == "wdndds::string::alpha"
+    assert b == "wdndds::string::beta"
     assert len(fp.registered) == 2
 
 
@@ -210,7 +210,7 @@ def test_samples_compile():
 
 
 def test_event_dataclass():
-    from wdiot import Event
+    from wdndds import Event
 
     e = Event(kind="added")
     assert e.kind == "added"
@@ -221,7 +221,7 @@ def test_event_dataclass():
 
 
 def test_capability_default_handle():
-    from wdiot import HWAudioOutput, SWVideoQuery
+    from wdndds import HWAudioOutput, SWVideoQuery
 
     captured: list = []
     cam = SWVideoQuery("cam1")
@@ -235,7 +235,7 @@ def test_capability_default_handle():
 
 
 def test_capability_local_call_returns_reply():
-    from wdiot import HWVideoInput
+    from wdndds import HWVideoInput
 
     def cb(payload, reply):
         reply({"ok": True, "echoed": payload})
@@ -245,7 +245,7 @@ def test_capability_local_call_returns_reply():
 
 
 def test_capability_local_call_uses_default_when_no_callback():
-    from wdiot import SWAudioAnalyse
+    from wdndds import SWAudioAnalyse
 
     cap = SWAudioAnalyse("a1")
     out = cap({"any": "payload"})
@@ -255,23 +255,23 @@ def test_capability_local_call_uses_default_when_no_callback():
 def test_register_top_level_signature():
     import inspect
 
-    import wdiot
+    import wdndds
 
-    sig = inspect.signature(wdiot.register)
+    sig = inspect.signature(wdndds.register)
     assert list(sig.parameters.keys()) == ["name", "capabilities"]
 
 
 def test_no_find_search_apis():
-    import wdiot
+    import wdndds
 
     for name in ("find", "search"):
-        assert not hasattr(wdiot, name), f"wdiot.{name} should not exist"
+        assert not hasattr(wdndds, name), f"wdndds.{name} should not exist"
     for name in ("start_scan", "stop_scan", "register", "connect", "Event", "Device"):
-        assert hasattr(wdiot, name), f"wdiot.{name} should exist"
+        assert hasattr(wdndds, name), f"wdndds.{name} should exist"
 
 
 def test_capability_classes_share_base():
-    from wdiot import (
+    from wdndds import (
         HWAudioInput,
         HWAudioOutput,
         HWHDMIDisplay,
@@ -284,7 +284,7 @@ def test_capability_classes_share_base():
         SWVideoDescribe,
         SWVideoQuery,
     )
-    from wdiot.capabilities import Capability, HWCapability, SWCapability
+    from wdndds.capabilities import Capability, HWCapability, SWCapability
 
     all_leaf = (
         HWVideoInput, SWVideoQuery, SWVideoDescribe, SWVideoAnalyse,
@@ -312,7 +312,7 @@ def test_capability_classes_share_base():
 
 
 def test_swaudiotts_default_handle():
-    from wdiot import SWAudioTTS
+    from wdndds import SWAudioTTS
 
     captured: list = []
     cap = SWAudioTTS("tts1")
@@ -321,7 +321,7 @@ def test_swaudiotts_default_handle():
 
 
 def test_swvideoanalyse_default_handle():
-    from wdiot import SWVideoAnalyse
+    from wdndds import SWVideoAnalyse
 
     captured: list = []
     cap = SWVideoAnalyse("va1")
@@ -330,7 +330,7 @@ def test_swvideoanalyse_default_handle():
 
 
 def test_swtextchat_default_handle():
-    from wdiot import SWTextChat
+    from wdndds import SWTextChat
 
     captured: list = []
     cap = SWTextChat("chat1")
@@ -339,8 +339,8 @@ def test_swtextchat_default_handle():
 
 
 def test_device_update_caps():
-    from wdiot import HWAudioOutput, HWVideoInput
-    from wdiot.registry import Device
+    from wdndds import HWAudioOutput, HWVideoInput
+    from wdndds.registry import Device
 
     class FakeHub:
         pass
@@ -357,8 +357,8 @@ def test_device_update_caps():
 
 
 def test_device_namespace_lookup_attribute_and_subscript():
-    from wdiot import HWVideoInput
-    from wdiot.registry import Device, _CapabilityNamespace
+    from wdndds import HWVideoInput
+    from wdndds.registry import Device, _CapabilityNamespace
 
     class FakeHub:
         pass
@@ -377,7 +377,7 @@ def test_device_namespace_lookup_attribute_and_subscript():
 
 
 def test_device_getattr_raises_for_unknown():
-    from wdiot.registry import Device
+    from wdndds.registry import Device
 
     class FakeHub:
         pass
@@ -388,7 +388,7 @@ def test_device_getattr_raises_for_unknown():
 
 
 def test_device_getitem_rejects_non_type():
-    from wdiot.registry import Device
+    from wdndds.registry import Device
 
     class FakeHub:
         pass
@@ -399,8 +399,8 @@ def test_device_getitem_rejects_non_type():
 
 
 def test_register_requires_connect(monkeypatch):
-    from wdiot import HWVideoInput
-    from wdiot import registry as _reg
+    from wdndds import HWVideoInput
+    from wdndds import registry as _reg
 
     monkeypatch.setattr(_reg, "_hub", None)
     with pytest.raises(RuntimeError, match=r"not connected"):

@@ -27,11 +27,11 @@ Credentials
 -----------
 Stored on disk under :data:`DEFAULT_CRED_PATH` (``~/.wechatbot/credentials.json``)
 by default; override per-instance with ``cred_path=`` or globally with the
-``WDIOT_WECHAT_CRED_PATH`` environment variable. Pass ``force=True`` to
+``WDNDDS_WECHAT_CRED_PATH`` environment variable. Pass ``force=True`` to
 ``start_login()`` to discard the stored credentials and re-issue a QR.
 
 This module deliberately **does not** route incoming messages into the
-``wdiot`` capability registry — that's a different concern (per-user history,
+``wdndds`` capability registry — that's a different concern (per-user history,
 LLM session fan-out, etc.) and is left to higher layers.
 """
 from __future__ import annotations
@@ -65,16 +65,16 @@ __all__ = [
     "WechatError",
 ]
 
-# Re-export SDK error classes under the wdiot namespace so consumers can
-# ``except wdiot.Wechat.NoContextError`` without taking a hard dependency on
+# Re-export SDK error classes under the wdndds namespace so consumers can
+# ``except wdndds.Wechat.NoContextError`` without taking a hard dependency on
 # ``wechatbot``. We subclass so ``isinstance`` checks still match.
 WechatError = WeChatBotError
 
 DEFAULT_CRED_PATH = Path.home() / ".wechatbot" / "credentials.json"
-WECHAT_CRED_PATH_ENV = "WDIOT_WECHAT_CRED_PATH"
+WECHAT_CRED_PATH_ENV = "WDNDDS_WECHAT_CRED_PATH"
 
 
-_LOG = logging.getLogger("wdiot.wechat")
+_LOG = logging.getLogger("wdndds.wechat")
 
 
 async def _drain_loop() -> None:
@@ -200,7 +200,7 @@ class Wechat:
             if self._thread is not None:
                 return
             self._thread = threading.Thread(
-                target=self._run_loop, name="wdiot-wechat-loop", daemon=True,
+                target=self._run_loop, name="wdndds-wechat-loop", daemon=True,
             )
             self._thread.start()
         if not self._loop_ready.wait(timeout=10.0):
@@ -364,7 +364,7 @@ class Wechat:
         # Auto-launch the long-poll on the same loop.
         if not self._started and not self._cancelled:
             self._start_task = asyncio.create_task(
-                self._start_async(), name="wdiot-wechat-poll",
+                self._start_async(), name="wdndds-wechat-poll",
             )
 
     def _on_login_done(self, fut: "asyncio.Future[None]") -> None:
@@ -685,7 +685,7 @@ class Wechat:
     # ---------------------------------------------------------- diagnostics
     @staticmethod
     def check_runtime() -> dict:
-        """Diagnostic dict mirroring :func:`wdiot.dds.check_runtime`."""
+        """Diagnostic dict mirroring :func:`wdndds.dds.check_runtime`."""
         try:
             import wechatbot as _wb  # noqa: F401
 
@@ -710,7 +710,7 @@ class Wechat:
 
 # Make ``Wechat.NoContextError`` / ``MediaError`` / ``AuthError`` /
 # ``WeChatBotError`` accessible as nested attributes so consumers can write
-# ``except wdiot.Wechat.NoContextError`` without taking a direct dep on
+# ``except wdndds.Wechat.NoContextError`` without taking a direct dep on
 # ``wechatbot``. We keep the SDK exception types as-is so ``isinstance``
 # checks against ``wechatbot.NoContextError`` still match.
 Wechat.NoContextError = NoContextError  # type: ignore[attr-defined]

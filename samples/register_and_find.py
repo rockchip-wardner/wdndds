@@ -20,8 +20,8 @@ calls.
 import argparse
 import time
 
-import wdiot
-from wdiot import HWAudioInput, HWAudioOutput, HWVideoInput, SWAudioQuery, SWVideoQuery
+import wdndds
+from wdndds import HWAudioInput, HWAudioOutput, HWVideoInput, SWAudioQuery, SWVideoQuery
 
 
 def make_callbacks(label: str) -> dict:
@@ -71,9 +71,9 @@ def build_capabilities(cb: dict) -> list:
 def main(my_name) -> None:
     cb = make_callbacks(my_name)
 
-    devices: dict[str, wdiot.Device] = {}
+    devices: dict[str, wdndds.Device] = {}
 
-    def call_camquery(peer: wdiot.Device) -> None:
+    def call_camquery(peer: wdndds.Device) -> None:
         try:
             fut = peer.SWVideoQuery["大门正门"]({"q": "what do you see?"})
             print(
@@ -87,7 +87,7 @@ def main(my_name) -> None:
                 flush=True,
             )
 
-    def on_event(device: wdiot.Device, event: wdiot.Event) -> None:
+    def on_event(device: wdndds.Device, event: wdndds.Event) -> None:
         if device.name == my_name:
             return
         if event.kind == "added":
@@ -99,9 +99,9 @@ def main(my_name) -> None:
             devices.pop(device.name, None)
             print(f"[{my_name}] - {device.name}", flush=True)
 
-    with wdiot.connect():
-        wdiot.register(my_name, build_capabilities(cb))
-        wdiot.start_scan(on_event)
+    with wdndds.connect():
+        wdndds.register(my_name, build_capabilities(cb))
+        wdndds.start_scan(on_event)
         print(
             f"[{my_name}] registered; scanning for peers. ctrl-c to exit.",
             flush=True,
@@ -112,7 +112,7 @@ def main(my_name) -> None:
         except KeyboardInterrupt:
             pass
         finally:
-            wdiot.stop_scan(on_event)
+            wdndds.stop_scan(on_event)
 
 
 if __name__ == "__main__":

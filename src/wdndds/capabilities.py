@@ -10,7 +10,7 @@ Callback = Callable[[Any, Callable[[Any], None]], None]
 
 
 class Capability:
-    """Base class for every capability a wdiot device can advertise.
+    """Base class for every capability a wdndds device can advertise.
 
     Subclasses must set :attr:`capability_type` (the string used on the DDS
     wire). They may override :meth:`_default_handle` to provide a sensible
@@ -87,7 +87,7 @@ class HWCapability(Capability):
     """硬件能力基类 — 物理 I/O 设备（摄像头、麦克风、扬声器、HDMI 等）。
 
     ``capability_type`` 必须以 ``hwcap_`` 开头，用于在 DDS topic
-    ``wdiot/capability/<type>`` 上区分硬件通路。
+    ``wdndds/capability/<type>`` 上区分硬件通路。
 
     该基类不直接对外导出，外部代码请使用具体的叶子类
     （``HWVideoInput`` / ``HWAudioInput`` / ``HWAudioOutput`` /

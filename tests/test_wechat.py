@@ -1,4 +1,4 @@
-"""Tests for the synchronous ``wdiot.Wechat`` facade.
+"""Tests for the synchronous ``wdndds.Wechat`` facade.
 
 The real ``wechatbot.WeChatBot`` would make a network round-trip the moment
 it's constructed (it sets up an ``aiohttp.ClientSession``). We monkey-patch
@@ -15,9 +15,9 @@ from unittest.mock import patch
 
 import pytest
 
-import wdiot
-from wdiot import Wechat
-from wdiot.wechat import DEFAULT_CRED_PATH
+import wdndds
+from wdndds import Wechat
+from wdndds.wechat import DEFAULT_CRED_PATH
 
 
 # --------------------------------------------------------------------- fakes
@@ -129,7 +129,7 @@ async def _sleep(secs: float) -> None:
 @pytest.fixture(autouse=True)
 def _patch_wechatbot(monkeypatch):
     """Replace ``wechatbot.WeChatBot`` with the in-memory fake for every test."""
-    monkeypatch.setattr("wdiot.wechat.WeChatBot", _FakeBot)
+    monkeypatch.setattr("wdndds.wechat.WeChatBot", _FakeBot)
     _FakeBot.last_instance = None
     yield
 
@@ -145,8 +145,8 @@ def _wait_until(predicate: Callable[[], bool], timeout: float = 2.0) -> bool:
 
 
 def test_class_exports():
-    assert wdiot.Wechat is Wechat
-    assert "Wechat" in wdiot.__all__
+    assert wdndds.Wechat is Wechat
+    assert "Wechat" in wdndds.__all__
     # Error aliases for nested-attribute style:
     assert hasattr(Wechat, "NoContextError")
     assert hasattr(Wechat, "AuthError")
@@ -156,7 +156,7 @@ def test_class_exports():
 def test_constructor_does_not_block_on_network():
     """``__init__`` only spins up the loop + bot; it doesn't network."""
     t0 = time.monotonic()
-    wc = Wechat(cred_path="/tmp/wdiot-test-creds.json")
+    wc = Wechat(cred_path="/tmp/wdndds-test-creds.json")
     elapsed = time.monotonic() - t0
     wc.close()
     # Should be quick (sub-second); proves we don't call ``bot.login()`` here.
@@ -170,7 +170,7 @@ def test_default_cred_path():
 
 def test_env_override(monkeypatch, tmp_path):
     custom = tmp_path / "wc.json"
-    monkeypatch.setenv("WDIOT_WECHAT_CRED_PATH", str(custom))
+    monkeypatch.setenv("WDNDDS_WECHAT_CRED_PATH", str(custom))
     wc = Wechat()
     try:
         assert wc.cred_path == str(custom)
@@ -179,7 +179,7 @@ def test_env_override(monkeypatch, tmp_path):
 
 
 def test_start_login_then_confirmed_runs_long_poll():
-    wc = Wechat(cred_path="/tmp/wdiot-test-creds.json")
+    wc = Wechat(cred_path="/tmp/wdndds-test-creds.json")
     try:
         wc.start_login(force=True)
         # The fake bot completes login instantly, so the state races
@@ -212,8 +212,8 @@ def test_login_qr_callback_can_be_observed_with_slow_fake(monkeypatch):
             await _asyncio.sleep(0.05)
             return _FakeCredentials()
 
-    monkeypatch.setattr("wdiot.wechat.WeChatBot", SlowFake)
-    wc = Wechat(cred_path="/tmp/wdiot-test-creds.json")
+    monkeypatch.setattr("wdndds.wechat.WeChatBot", SlowFake)
+    wc = Wechat(cred_path="/tmp/wdndds-test-creds.json")
     try:
         wc.start_login(force=True)
         # Within the 200 ms QR window we should see ``awaiting_scan``.
@@ -236,7 +236,7 @@ def test_login_qr_callback_can_be_observed_with_slow_fake(monkeypatch):
 
 
 def test_send_text_records_outbound():
-    wc = Wechat(cred_path="/tmp/wdiot-test-creds.json")
+    wc = Wechat(cred_path="/tmp/wdndds-test-creds.json")
     try:
         wc.start_login(force=True)
         assert _wait_until(lambda: wc.started, timeout=3.0)
@@ -249,7 +249,7 @@ def test_send_text_records_outbound():
 
 
 def test_send_without_context_raises():
-    wc = Wechat(cred_path="/tmp/wdiot-test-creds.json")
+    wc = Wechat(cred_path="/tmp/wdndds-test-creds.json")
     try:
         wc.start_login(force=True)
         assert _wait_until(lambda: wc.started, timeout=3.0)
@@ -261,7 +261,7 @@ def test_send_without_context_raises():
 
 
 def test_inbound_message_appears_in_recent():
-    wc = Wechat(cred_path="/tmp/wdiot-test-creds.json")
+    wc = Wechat(cred_path="/tmp/wdndds-test-creds.json")
     try:
         wc.start_login(force=True)
         assert _wait_until(lambda: wc.started, timeout=3.0)
@@ -294,7 +294,7 @@ def test_inbound_message_appears_in_recent():
 def test_handler_invoked_on_inbound():
     seen: list[Any] = []
 
-    wc = Wechat(cred_path="/tmp/wdiot-test-creds.json")
+    wc = Wechat(cred_path="/tmp/wdndds-test-creds.json")
     try:
         wc.register_message_handler(lambda msg: seen.append(msg.user_id))
         wc.start_login(force=True)
@@ -317,7 +317,7 @@ def test_handler_invoked_on_inbound():
 
 
 def test_cancel_login_idempotent():
-    wc = Wechat(cred_path="/tmp/wdiot-test-creds.json")
+    wc = Wechat(cred_path="/tmp/wdndds-test-creds.json")
     try:
         wc.start_login(force=True)
         snap = wc.cancel_login()
@@ -330,7 +330,7 @@ def test_cancel_login_idempotent():
 
 
 def test_stop_then_close_is_idempotent():
-    wc = Wechat(cred_path="/tmp/wdiot-test-creds.json")
+    wc = Wechat(cred_path="/tmp/wdndds-test-creds.json")
     wc.start_login(force=True)
     assert _wait_until(lambda: wc.started, timeout=3.0)
     wc.stop()
@@ -341,7 +341,7 @@ def test_stop_then_close_is_idempotent():
 
 
 def test_logout_clears_credentials():
-    wc = Wechat(cred_path="/tmp/wdiot-test-creds.json")
+    wc = Wechat(cred_path="/tmp/wdndds-test-creds.json")
     try:
         wc.start_login(force=True)
         assert _wait_until(lambda: wc.started and wc.user_id is not None, timeout=3.0)

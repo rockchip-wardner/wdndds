@@ -1,18 +1,18 @@
-# wdiot - wardner.iot
+# wdndds - wardner.iot
 
 Pythonic wrapper around [eProsima Fast DDS](https://www.eprosima.com/en/products/all-products/fast-dds)
 Python bindings. The package re-exports the bindings through a small, ergonomic
 facade — context managers, QoS presets, lazy import — so you can spin up a DDS
 participant, publisher, and subscriber in a few lines.
 
-`wdiot` is the distribution / import name; the FastDDS surface lives under
-`wdiot.dds`. On top of that, `wdiot` itself exposes a small **capability
+`wdndds` is the distribution / import name; the FastDDS surface lives under
+`wdndds.dds`. On top of that, `wdndds` itself exposes a small **capability
 registry** so devices on the same DDS domain can advertise what they do and
 call each other with one-liners.
 
 ## Prerequisites
 
-`wdiot` has **no PyPI dependencies** — it is a pure-Python facade. The native
+`wdndds` has **no PyPI dependencies** — it is a pure-Python facade. The native
 eProsima Fast DDS Python bindings (`fastdds` / `fastdds_python`) are NOT on
 PyPI, so you must install them via your OS or build from source. Choose one:
 
@@ -40,16 +40,16 @@ python -c 'import fastdds; print(fastdds.__file__)'
 
 If that prints a path, you're good.
 
-## Install `wdiot`
+## Install `wdndds`
 
 ```bash
-pip install wdiot
+pip install wdndds
 ```
 
 ## Diagnose at runtime
 
 ```python
-from wdiot import dds
+from wdndds import dds
 print(dds.check_runtime())
 # -> {'available': True, 'module': 'fastdds', 'path': '...', 'version': '2.10.x'}
 ```
@@ -65,11 +65,11 @@ their capabilities. Every network invocation returns a
 `concurrent.futures.Future`.
 
 ```python
-import wdiot
-from wdiot import HWVideoInput, SWVideoQuery, HWAudioOutput
+import wdndds
+from wdndds import HWVideoInput, SWVideoQuery, HWAudioOutput
 
-with wdiot.connect():
-    wdiot.register("Gate1Office", [
+with wdndds.connect():
+    wdndds.register("Gate1Office", [
         HWVideoInput("大门正门",   callback=on_frame),
         SWVideoQuery("大门正门",   callback=on_query),
         HWAudioOutput("大门喇叭", callback=on_play),
@@ -80,19 +80,19 @@ Discovery is push-based: register a callback and the user-owned dictionary is
 kept in sync.
 
 ```python
-import wdiot
+import wdndds
 
-devices: dict[str, wdiot.Device] = {}
+devices: dict[str, wdndds.Device] = {}
 
-def on_event(device: wdiot.Device, event: wdiot.Event) -> None:
+def on_event(device: wdndds.Device, event: wdndds.Event) -> None:
     if event.kind == "added":
         devices[device.name] = device
         print(f"+ {device.name} caps={[c.__name__ for c in device.capabilities]}")
     elif event.kind == "removed":
         devices.pop(device.name, None)
 
-with wdiot.connect():
-    wdiot.start_scan(on_event)
+with wdndds.connect():
+    wdndds.start_scan(on_event)
     # ... when a Gate1Office appears in `devices`:
     gate1 = devices["Gate1Office"]
     fut = gate1.SWVideoQuery["大门正门"]({"q": "what do you see?"})
@@ -140,7 +140,7 @@ def my_handler(payload, reply):
     reply({"echo": payload})
 ```
 
-For remote invocations the same callback runs on a wdiot background thread
+For remote invocations the same callback runs on a wdndds background thread
 when a message arrives on the capability topic; for local invocations
 (`cap(...)` on a freshly constructed instance) it runs synchronously and
 `cap(...)` returns the reply value.
@@ -160,10 +160,10 @@ python samples/register_and_find.py --name Gate1Office
 python samples/register_and_find.py --name Gate2Office
 ```
 
-## Low-level DDS facade (`wdiot.dds`)
+## Low-level DDS facade (`wdndds.dds`)
 
 ```python
-from wdiot import dds
+from wdndds import dds
 
 with dds.Participant(domain_id=0) as participant:
     topic = participant.create_topic("Hello", "HelloWorld")
@@ -184,7 +184,7 @@ with participant.create_subscriber() as sub:
 ## QoS presets
 
 ```python
-from wdiot import dds
+from wdndds import dds
 
 writer_qos = dds.reliable_writer_qos()
 reader_qos = dds.best_effort_reader_qos()
@@ -201,12 +201,12 @@ python -m venv .venv
 .venv/bin/python -m build
 ```
 
-This produces `dist/wdiot-<version>-py3-none-any.whl` and the matching sdist.
+This produces `dist/wdndds-<version>-py3-none-any.whl` and the matching sdist.
 
 ## Project layout
 
 ```
-src/wdiot/
+src/wdndds/
 ├── __init__.py        # public API: Capability classes, connect, register,
 │                      #             start_scan, stop_scan, Device, Event
 ├── _version.py
@@ -229,7 +229,7 @@ samples/
 └── register_and_find.py   # provider / caller two-role end-to-end sample
 ```
 
-## WeChat 机器人 (`wdiot.Wechat`)
+## WeChat 机器人 (`wdndds.Wechat`)
 
 A small synchronous wrapper around the [`wechatbot-sdk`](https://pypi.org/project/wechatbot-sdk/)
 async client. It exposes QR-code login, long-poll message reception, and
@@ -238,13 +238,13 @@ process (FastAPI handler, cron script, debugging CLI) without managing an
 asyncio loop yourself.
 
 ```bash
-pip install wdiot[wechat]    # also installs wechatbot-sdk
+pip install wdndds            # wechatbot-sdk is a required dependency
 ```
 
 ```python
-import wdiot
+import wdndds
 
-wc = wdiot.Wechat()          # spins up a private asyncio loop on a daemon thread
+wc = wdndds.Wechat()          # spins up a private asyncio loop on a daemon thread
 print(wc.check_runtime())    # {'available': True, 'module': 'wechatbot', ...}
 
 wc.start_login(force=True)   # schedules bot.login() on the loop; returns immediately
@@ -257,7 +257,7 @@ def on_message(msg):
     wc.send_text(msg.user_id, f"Echo: {msg.text}")
 
 # Backed by ~/.wechatbot/credentials.json by default — set
-# WDIOT_WECHAT_CRED_PATH to override.
+# WDNDDS_WECHAT_CRED_PATH to override.
 wc.logout()                  # clears on-disk creds + stops the long-poll
 wc.close()                   # tears down the daemon loop
 ```
@@ -266,7 +266,7 @@ Credentials
 -----------
 
 Stored on disk under `~/.wechatbot/credentials.json` (the SDK default).
-Override globally with the `WDIOT_WECHAT_CRED_PATH` environment variable
+Override globally with the `WDNDDS_WECHAT_CRED_PATH` environment variable
 or per-instance with `Wechat(cred_path=...)`. Pass `force=True` to
 `start_login()` to discard the stored credentials and re-issue a QR.
 
@@ -283,7 +283,7 @@ Error classes
 
 `Wechat.NoContextError` / `Wechat.AuthError` / `Wechat.MediaError` /
 `Wechat.WeChatBotError` are re-exported as nested attributes so callers
-can `except wdiot.Wechat.NoContextError` without taking a direct dep on
+can `except wdndds.Wechat.NoContextError` without taking a direct dep on
 `wechatbot`. The originals stay importable too.
 
 ## License
