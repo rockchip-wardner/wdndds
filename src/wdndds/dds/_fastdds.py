@@ -14,95 +14,121 @@ _fastdds: Any | None = None
 #
 #   src/wdndds/dds/_native/fastdds/__init__.py + _fastdds_python.so
 #   src/wdndds/dds/_native/lib/libfastdds.so.3.6[.2.0] + libfastcdr.so.2[.3.6]
+#   (or 1.x flat layout: _native/fastdds.py + _native/_fastdds_python.so +
+#    _native/lib/libfastrtps.so.2.6 + libfastcdr.so.1)
 #
 # 用户 ``pip install wdndds`` 一次就把所有原生依赖带进来；不需要 apt 装
 # libfastdds-dev / fastdds-python3 / 从源码 colcon 构建 —— 那条路径根本
 # 不存在（apt 上没包，PyPI 上也没包）。
 #
-# 加载顺序:
-#   1. ctypes.CDLL(RTLD_GLOBAL) 显式预加载 bundled libfastcdr + libfastdds,
-#      让 _fastdds_python.so 里的 dlopen(libfastdds.so.3.6) 能找到 SONAME
+# 加载顺序 (在 import _fastdds 阶段就同步跑完,后面 ``import fastdds`` /
+# ``import wdndds_string`` 直接受益,不会被它们的 dlopen 抢跑):
+#
+#   1. ctypes.CDLL(RTLD_GLOBAL) 显式预加载 bundled libfastcdr +
+#      libfastdds/libfastrtps + _wdndds_string.so,把 SONAME 注册到
+#      进程全局已加载库表,让 _fastdds_python.so 里的 dlopen(SONAME) 找得到
 #   2. 把 bundled ``_native/`` 目录 prepend 到 sys.path, 让 ``import fastdds``
-#      命中 ``_native/fastdds/__init__.py``,而不是系统可能存在的同名包
-#   3. 系统 fastdds (apt 装的是 libfastcdr1,SONAME .so.1,跟我们要的 .so.2
-#      不兼容) 不可能满足, 所以不需要"先试系统再试内置"的分流
+#      命中 bundled,而不是系统可能存在的同名包
+#   3. 同步设 ``LD_LIBRARY_PATH`` —— 当前进程来不及生效(动态链接器已
+#      初始化),但后续 subprocess 继承,可兜底外部工具链
+#   4. 每条 SONAME 的 present / loaded / error 记到 _PRELOAD_RESULTS,
+#      ``import fastdds`` 失败时把真实根因(arch / glibc / 损坏)wrap 进
+#      ImportError,而不是把"cannot open shared object file"这层表象抛给用户
 # --------------------------------------------------------------------------- #
 _BUNDLED_NATIVE_DIR = os.path.join(os.path.dirname(__file__), "_native")
 _BUNDLED_LIB_DIR = os.path.join(_BUNDLED_NATIVE_DIR, "lib")
 
+# 每条 SONAME 的预加载结果: {soname, path, present, loaded, error}
+# 供 get() 的 import 失败分支 + check_runtime() 读取。
+_PRELOAD_RESULTS: list[dict[str, Any]] = []
 
-# At import time, add the bundled fastdds directory to sys.path so any
-# subsequent ``import fastdds`` (by us, by callers, by transitive
-# dependencies) hits the bundled module. We also preload the shared
-# libs that ``_fastdds_python.so`` transitively needs (libfastcdr +
-# libfastdds) BEFORE any fastdds import — otherwise Python's own
-# dlopen on the .so fails with "libfastdds.so.3.6: cannot open shared
-# object file".
-def _bootstrap_bundled_at_import() -> None:
-    native_dir = _BUNDLED_NATIVE_DIR
-    if not os.path.isdir(os.path.join(native_dir, "fastdds")):
-        return
 
-    # 1. Preload shared libs (CTYPES_CDLL with RTLD_GLOBAL).
+def _record_preload(soname: str, path: str) -> dict[str, Any]:
+    """Try to preload a single .so with ctypes+RTLD_GLOBAL and record the outcome.
+
+    Returns the record dict (also appended to _PRELOAD_RESULTS). Error
+    is captured verbatim — the original ``import fastdds`` failure
+    ("cannot open shared object file") is a red herring; the real
+    cause is whatever OSError ctypes raises here (wrong arch, GLIBC
+    version missing, file truncated, etc.).
+    """
     import ctypes as _ct
-    for _soname in ("libfastcdr.so.2", "libfastdds.so.3.6"):
-        _p = os.path.join(_BUNDLED_LIB_DIR, _soname)
-        if os.path.isfile(_p):
-            try:
-                _ct.CDLL(_p, mode=_ct.RTLD_GLOBAL)
-            except OSError:
-                pass
 
-    # 2. Preload bundled C++ helper (WdnddsStringTopicDataType SWIG).
+    rec: dict[str, Any] = {
+        "soname": soname,
+        "path": path,
+        "present": False,
+        "loaded": False,
+        "error": None,
+    }
+    if not os.path.isfile(path):
+        _PRELOAD_RESULTS.append(rec)
+        return rec
+    rec["present"] = True
+    try:
+        _ct.CDLL(path, mode=_ct.RTLD_GLOBAL)
+        rec["loaded"] = True
+    except OSError as e:
+        rec["error"] = f"{type(e).__name__}: {e}"
+    _PRELOAD_RESULTS.append(rec)
+    return rec
+
+
+def _bootstrap_bundled_at_import() -> None:
+    """在 import _fastdds 阶段同步预加载,覆盖 1.x flat / 2.x package 两种 layout。
+
+    早期版本对 1.x flat layout 是 no-op,preload 推到 ``_get()`` 懒路径——
+    缺点是任何在 ``get()`` 之前发生的 ``import fastdds`` 都会因 SONAME
+    找不到而失败。现在统一在 import 阶段同步做。
+    """
+    native_dir = _BUNDLED_NATIVE_DIR
+    lib_dir = _BUNDLED_LIB_DIR
+
+    # 0. LD_LIBRARY_PATH 子进程继承兜底 (对当前进程动态链接器不生效,
+    #    留作 spawn 出去的 rkv encoder / external DDS 工具用)
+    if os.path.isdir(lib_dir):
+        current = os.environ.get("LD_LIBRARY_PATH", "")
+        parts = [p for p in current.split(":") if p]
+        if lib_dir not in parts:
+            parts.insert(0, lib_dir)
+            os.environ["LD_LIBRARY_PATH"] = ":".join(parts)
+
+    # 1. libfastcdr 必须先于 libfastdds/libfastrtps (后者对它有 DT_NEEDED)
+    for soname in (
+        # 3.x (master)
+        "libfastcdr.so.2",
+        "libfastdds.so.3.6",
+        # 2.x (legacy FastRTPS naming, 当前 bundled 即此分支)
+        "libfastcdr.so.1",
+        "libfastrtps.so.2.6",
+    ):
+        _record_preload(soname, os.path.join(lib_dir, soname))
+
+    # 2. bundled C++ helper (WdnddsStringTopicDataType SWIG) 同样 RTLD_GLOBAL
     _wds_so = os.path.join(native_dir, "_wdndds_string.so")
     if os.path.isfile(_wds_so):
-        try:
-            _ct.CDLL(_wds_so, mode=_ct.RTLD_GLOBAL)
-        except OSError:
-            pass
+        _record_preload("_wdndds_string.so", _wds_so)
 
-    # 3. Prepend to sys.path so ``import fastdds`` / ``import wdndds_string``
-    #    hit the bundled modules before any same-named site-packages entry.
-    if native_dir not in sys.path:
+    # 3. sys.path prepend,让后续 ``import fastdds`` / ``import wdndds_string``
+    #    命中 bundled,而不是系统 site-packages 里碰巧同名的包
+    if os.path.isdir(native_dir) and native_dir not in sys.path:
         sys.path.insert(0, native_dir)
 
 
 _bootstrap_bundled_at_import()
 
 
+def _preload_diagnostics() -> list[dict[str, Any]]:
+    return list(_PRELOAD_RESULTS)
+
+
 def _preload_bundled_libs() -> None:
-    """ctypes 预加载 bundled shared libs (RTLD_GLOBAL)。
+    """Backward-compat no-op。
 
-    wdndds 两种 FastDDS 大版本都支持:
-
-    * 3.x (``libfastdds.so.3.6`` + ``libfastcdr.so.2`` —— 大版本名 ``fastdds``)
-    * 2.x (``libfastrtps.so.2.6`` + ``libfastcdr.so.1`` —— 大版本名 ``fastrtps``)
-
-    _fastdds_python.so 启动时 dlopen 自己的 SONAME,后者再依赖 fastcdr;
-    SONAME 必须满足。系统 apt 的 ``libfastcdr`` 是 ``.so.1.x``,与 3.x 的
-    ``.so.2`` 不兼容;与 2.x 的 ``.so.1`` 兼容,但 bundled 的 ``.so.1.0.24``
-    是我们 build 时生成的,符号表更全。不显式预加载 bundled 的版本,
-    import 阶段就会因 SONAME 不满足而失败。
+    早期版本懒路径的入口。preload 已经在 :func:`_bootstrap_bundled_at_import`
+    阶段同步跑完,这里只需返回,避免对同一 SONAME 二次 ctypes.CDLL。
     """
-    import ctypes
-
-    # libfastcdr 必须先于 libfastdds/fastrtps,后者对它有依赖
-    for soname in (
-        # 3.x (master)
-        "libfastcdr.so.2",
-        "libfastdds.so.3.6",
-        # 2.x (legacy FastRTPS naming)
-        "libfastcdr.so.1",
-        "libfastrtps.so.2.6",
-    ):
-        path = os.path.join(_BUNDLED_LIB_DIR, soname)
-        if not os.path.isfile(path):
-            continue
-        try:
-            ctypes.CDLL(path, mode=ctypes.RTLD_GLOBAL)
-        except OSError:
-            # 已经加载过同名 SONAME 没关系,跳过
-            pass
+    return
 
 
 def _ensure_bundled_on_path() -> None:
@@ -141,25 +167,46 @@ def _bundled_available() -> bool:
 
 
 def _preload_bundled_wdndds_string() -> None:
-    """Preload the bundled C++ ``WdnddsStringTopicDataType`` SWIG extension.
+    """Backward-compat no-op。
 
-    The wdndds wheel ships a tiny C++ helper that defines a working
-    string-typed TopicDataType (the upstream ``eprosima::fastdds::dds::
-    StringTopicDataType`` is C++-only, never SWIG-wrapped). The SWIG
-    glue and impl are linked into ``_wdndds_string.so`` which we
-    preload with ``RTLD_GLOBAL`` so its symbols (which reference the
-    bundled ``libfastdds.so``) are available before any
-    ``fastdds.DomainParticipant.register_type`` call.
+    preload 已在 :func:`_bootstrap_bundled_at_import` 同步跑完,
+    这里只是占位以防外部代码继续调用。
     """
-    import ctypes
+    return
 
-    so_path = os.path.join(_BUNDLED_NATIVE_DIR, "_wdndds_string.so")
-    if not os.path.isfile(so_path):
-        return
-    try:
-        ctypes.CDLL(so_path, mode=ctypes.RTLD_GLOBAL)
-    except OSError:
-        pass
+
+def _format_import_error(exc: BaseException) -> str:
+    """Build a diagnostic ImportError message from preload + import results.
+
+    Original ``import fastdds`` failure is typically a red herring
+    ("libfastrtps.so.2.6: cannot open shared object file") — the
+    real cause is whatever OSError ctypes raised during preload
+    (wrong arch, GLIBC version missing, file truncated, RTLD_GLOBAL
+    not propagated). Re-surface the preload error verbatim so the
+    user can act on it.
+    """
+    diag = _preload_diagnostics()
+    failed = [r for r in diag if r.get("present") and not r.get("loaded")]
+    missing = [r for r in diag if not r.get("present")]
+
+    parts: list[str] = ["wdndds.dds: bundled fastdds bindings failed to import."]
+    if failed:
+        lines = "\n".join(f"  - {r['soname']}: {r['error']}" for r in failed)
+        parts.append(
+            "Preload failures (this is the actual root cause, NOT the "
+            "import error below — that one is just the symptom):\n" + lines
+        )
+    elif missing:
+        lines = "\n".join(
+            f"  - {r['soname']}: not present at {r['path']}" for r in missing
+        )
+        parts.append(
+            "Bundled .so files missing from _native/lib/ (the wheel was "
+            "built without them — reinstall a wheel that matches your "
+            "platform: aarch64 Debian 12 / glibc 2.36 / Python 3.11):\n" + lines
+        )
+    parts.append(f"Original import error: {type(exc).__name__}: {exc}")
+    return "\n".join(parts)
 
 
 def get() -> Any:
@@ -169,21 +216,20 @@ def get() -> Any:
 
     # 先尝试内置 fastdds (正常路径)
     if _bundled_available():
+        # preload 已在 import _fastdds 阶段同步跑完 (覆盖 1.x flat +
+        # 2.x package 两种 layout)。这里只需确保 _native/ 在 sys.path
+        # 上,以及退化情况下还能再尝试一次 preload (例如 _get() 被多次
+        # 调用且之间 sys.path 被改过)。
         _preload_bundled_libs()
         _preload_bundled_wdndds_string()
         _ensure_bundled_on_path()
         try:
             import fastdds as _mod
         except Exception as exc:
-            # 内置版本导入失败 —— 继续 fallback 到系统 fastdds,给用户
-            # 一个自救路径 (例如他们在另一个 wheel 里塞了同样 bundled,
-            # 但二进制不兼容;此时报个清晰错误比较好)
-            raise ImportError(
-                "wdndds.dds: bundled fastdds bindings failed to import. "
-                "Try ``pip install --force-reinstall --no-deps wdndds`` "
-                "to overwrite the wheel. Original error: "
-                f"{type(exc).__name__}: {exc}"
-            ) from exc
+            # 内置版本导入失败 —— 真实原因九成九在 _PRELOAD_RESULTS 里
+            # (arch / glibc / 二进制损坏),而不是"wheel 不对"。把 preload
+            # 失败贴出来,避免客户在错的修复路径上瞎撞。
+            raise ImportError(_format_import_error(exc)) from exc
     else:
         # 没内置 (用户自己 wheel 出来的旧版本?) —— 退回系统 fastdds,行为
         # 跟之前一样: 找不到就 raise 一个有用的指引。注意此时不需要再
@@ -249,6 +295,7 @@ def get() -> Any:
 
 def check_runtime() -> dict[str, Any]:
     info: dict[str, Any] = {"available": False}
+    info["preload"] = _preload_diagnostics()
     try:
         mod = get()
     except ImportError as exc:
