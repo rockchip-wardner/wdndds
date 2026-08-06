@@ -30,9 +30,16 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
-# wheel 现在带着 built eProsima FastDDS Python bindings (aarch64 / Debian 12
-# / Python 3.11 / libfastdds 3.6.x)。换平台要 rebuild —— 用 ``/tmp/fastdds_ws``
-# 那个 colcon 流程 (参见 README + .venv/src/wdndds/src/wdndds/dds/_fastdds.py)。
+# wheel 现在带着 built eProsima FastDDS Python bindings + 自写的
+# WdnddsStringTopicDataType helper (aarch64 / Debian 12 / Python 3.11 /
+# libfastdds 2.6.12)。换平台要 rebuild —— 跑 ``build_native.sh`` (README
+# + ``.venv/src/wdndds/src/wdndds/dds/_fastdds.py`` 里有详细流程)。
+#
+# 支持两种 layout (setuptools 自动按文件存在与否 pick):
+#   * 1.x flat:     ``_native/fastdds.py`` + ``_native/_fastdds_python.so``
+#                   (Fast-DDS-Python 1.1.x, FastDDS 2.6.x 配套)
+#   * 2.x/3.x pkg:  ``_native/fastdds/__init__.py`` + ``_native/fastdds/_fastdds_python.so``
+#                   (Fast-DDS-Python 2.x/3.x, FastDDS 2.x/3.x 配套)
 
 [project.optional-dependencies]
 dev = [
@@ -45,7 +52,6 @@ packages = [
     "wdndds",
     "wdndds.dds",
     "wdndds.dds._native",
-    "wdndds.dds._native.fastdds",
 ]
 include-package-data = true
 
@@ -56,13 +62,16 @@ include-package-data = true
 "wdndds" = [
     "py.typed",
     "dds/_native/lib/*.so*",
+    "dds/_native/fastdds.py",       # 1.x flat layout
+    "dds/_native/_fastdds_python.so",  # 1.x flat layout
 ]
 "wdndds.dds._native" = [
     "_wdndds_string.so",
+    "wdndds_string.py",
 ]
-"wdndds.dds._native.fastdds" = [
-    "_fastdds_python.so",
-]
+# 2.x/3.x pkg layout（可选）：用 glob 列举，有就装、没有就当没这个包
+# setuptools 不支持自动检测空 package，但我们的 _native/fastdds/__init__.py
+# 可以保留空 stub，方便 _bundled_available() 在两种 layout 之间正确判断。
 
 [tool.ruff]
 line-length = 100
