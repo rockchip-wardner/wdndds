@@ -48,5 +48,6 @@ coverage.xml
 # of the broad `*.so` rule above. These MUST come AFTER `*.so` and
 # AFTER `lib/` — git's last-match rule means later patterns win.
 !src/wdndds/dds/_native/fastdds/_fastdds_python.so
+!src/wdndds/dds/_native/_fastdds_python.so
 !src/wdndds/dds/_native/_wdndds_string.so
 !src/wdndds/dds/_native/lib/
