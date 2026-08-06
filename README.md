@@ -16,13 +16,19 @@ call each other with one-liners.
 eProsima Fast DDS Python bindings (`fastdds` / `fastdds_python`) are NOT on
 PyPI, so you must install them via your OS or build from source. Choose one:
 
-**Debian / Ubuntu (recommended)**
+**Debian / Ubuntu (build deps only — Python bindings must be built from source)**
 
 ```bash
-sudo apt install -y libasio-dev libtinyxml2-dev libfastdds-dev fastdds-python3
+sudo apt install -y libasio-dev libtinyxml2-dev libfastrtps-dev
 ```
 
-**Build from source** (see [docs](https://fast-dds.docs.eprosima.com/en/latest/fastdds/python_bindings/python_bindings.html))
+> NOTE: there is **no `libfastdds-dev` / `fastdds-python3` apt package** —
+> the C++ dev package is `libfastrtps-dev`, and the Python bindings have
+> to be compiled from the Fast-DDS-Python source tree. The four lines
+> above only fetch the shared libs needed at runtime + the headers
+> needed at build time; the bindings themselves are not on PyPI either.
+
+**Build Fast-DDS-Python from source** (see [docs](https://fast-dds.docs.eprosima.com/en/latest/fastdds/python_bindings/python_bindings.html))
 
 ```bash
 pip install -U colcon-common-extensions vcstool
