@@ -3,13 +3,15 @@
 #
 # This produces the wheel-payload files under wdndds/dds/_native/:
 #
-#   fastdds/                       # SWIG-generated fastdds Python module
-#   lib/libfastdds.so.3.6 + libfastcdr.so.2
-#   _wdndds_string.so              # our custom C++ TopicDataType
-#   wdndds_string.py               # its Python wrapper
+#   _fastdds_python.so + fastdds.py   # SWIG-generated, 1.x flat layout
+#       (or fastdds/__init__.py + fastdds/_fastdds_python.so  # 2.x+ package)
+#   lib/libfast{rtps,dds}.so* + libfastcdr.so*
+#   _wdndds_string.so                 # our custom C++ TopicDataType
+#   wdndds_string.py                  # its Python wrapper
 #
 # Usage:
 #   ./build_native.sh [PLATFORM_TAG]
+#   FASTDDDS_BRANCH=origin/2.14.x ./build_native.sh   # build a specific tag
 #
 # PLATFORM_TAG defaults to ``aarch64-bookworm-py3.11``. The current
 # shipped artifacts match this tag; rebuilding for a different
@@ -55,7 +57,8 @@ dpkg -l libasio-dev libtinyxml2-dev libfastrtps-dev >/dev/null 2>&1 \
     || die "missing apt deps; run: sudo apt install libasio-dev libtinyxml2-dev libfastrtps-dev"
 
 # --------------------------------------------------------------------------- #
-# Step 1: clone Fast-DDS-Python repos via vcs
+# Step 1: clone Fast-DDS-Python repos via vcs (or use the FASTDDDS_WS that
+# the user pre-populated with a specific branch).
 # --------------------------------------------------------------------------- #
 if [ ! -d "${WS_DIR}/src/fastdds_python" ]; then
     log "cloning Fast-DDS-Python repos into ${WS_DIR} ..."
@@ -67,10 +70,27 @@ else
     log "fastdds_python repos already present at ${WS_DIR}/src"
 fi
 
+# Optional: switch the source trees to a specific FastDDS / Fast-DDS-Python
+# branch. The wdndds SDK bootstraps both 1.x (flat fastdds.py) and 2.x+
+# (package fastdds/__init__.py) layouts from this build directory, so the
+# pinned branch decides which API the bundled .so + .py target.
+if [ -n "${FASTDDDS_BRANCH:-}" ]; then
+    log "switching fastdds source to ${FASTDDDS_BRANCH}"
+    ( cd "${WS_DIR}/src/fastdds" && git fetch --all >/dev/null 2>&1 || true )
+    ( cd "${WS_DIR}/src/fastdds" && git checkout "${FASTDDDS_BRANCH}" )
+    ( cd "${WS_DIR}/src/fastdds" && git submodule update --init --recursive )
+fi
+
 # --------------------------------------------------------------------------- #
 # Step 2: build the fastdds Python module via colcon
 # --------------------------------------------------------------------------- #
 log "running colcon build --packages-up-to fastdds_python (this takes ~6 minutes)..."
+# Always start from a clean build dir if FASTDDDS_BRANCH was set — the
+# CMake cache from a previous branch pollutes include paths and breaks the
+# 3.x → 2.x ABI transition.
+if [ -n "${FASTDDDS_BRANCH:-}" ]; then
+    rm -rf "${WS_DIR}/build" "${WS_DIR}/install" "${WS_DIR}/log"
+fi
 if [ ! -d "${WS_DIR}/build" ] || [ ! -f "${WS_DIR}/install/setup.bash" ]; then
     ( cd "${WS_DIR}" && colcon build --merge-install --symlink-install \
         --packages-up-to fastdds_python \
@@ -82,10 +102,18 @@ else
         --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release )
 fi
 
-[ -f "${WS_DIR}/install/lib/python3.11/site-packages/fastdds/_fastdds_python.so" ] \
-    || die "colcon build did not produce ${WS_DIR}/install/lib/python3.11/site-packages/fastdds/_fastdds_python.so"
-
-log "fastdds python bindings OK"
+# Detect the built layout. Fast-DDS-Python 1.x ships flat
+# ``fastdds.py`` + ``_fastdds_python.so`` in site-packages; 2.x+ ships a
+# ``fastdds/`` package directory with __init__.py and the .so inside.
+PY_SITE="${WS_DIR}/install/lib/python3.11/site-packages"
+if [ -f "${PY_SITE}/fastdds.py" ]; then
+    LAYOUT="1.x-flat"
+elif [ -f "${PY_SITE}/fastdds/__init__.py" ]; then
+    LAYOUT="2.x+package"
+else
+    die "colcon build produced neither ${PY_SITE}/fastdds.py nor ${PY_SITE}/fastdds/__init__.py"
+fi
+log "detected bindings layout: ${LAYOUT}"
 
 # --------------------------------------------------------------------------- #
 # Step 3: build the bundled C++ helper (WdnddsStringTopicDataType + SWIG)
@@ -110,17 +138,28 @@ log "WdnddsStringTopicDataType OK"
 # Step 4: drop everything into wdndds/dds/_native/
 # --------------------------------------------------------------------------- #
 log "populating ${NATIVE_DIR} ..."
-mkdir -p "${NATIVE_DIR}/fastdds" "${NATIVE_DIR}/lib"
+mkdir -p "${NATIVE_DIR}/lib"
 
-# Reset _native/fastdds with the colcon build's fastdds package.
-rm -rf "${NATIVE_DIR}/fastdds"
-cp -r "${WS_DIR}/install/lib/python3.11/site-packages/fastdds" "${NATIVE_DIR}/fastdds"
+# Reset the previous fastdds payload (either flat fastdds.py or
+# fastdds/ package dir).
+rm -rf "${NATIVE_DIR}/fastdds.py" "${NATIVE_DIR}/fastdds"
+case "${LAYOUT}" in
+    1.x-flat)
+        cp "${PY_SITE}/fastdds.py" "${NATIVE_DIR}/fastdds.py"
+        cp "${PY_SITE}/_fastdds_python.so" "${NATIVE_DIR}/_fastdds_python.so"
+        ;;
+    2.x+package)
+        cp -r "${PY_SITE}/fastdds" "${NATIVE_DIR}/fastdds"
+        cp "${PY_SITE}/fastdds/_fastdds_python.so" "${NATIVE_DIR}/fastdds/_fastdds_python.so"
+        ;;
+esac
 
 # Reset _native/lib with the colcon build's shared libs (preserve symlinks).
 rm -rf "${NATIVE_DIR}/lib"
 mkdir -p "${NATIVE_DIR}/lib"
-cp -P "${WS_DIR}/install/lib/libfastdds.so"* "${NATIVE_DIR}/lib/"
-cp -P "${WS_DIR}/install/lib/libfastcdr.so"* "${NATIVE_DIR}/lib/"
+cp -P "${WS_DIR}/install/lib/libfastdds.so"* "${NATIVE_DIR}/lib/" 2>/dev/null || true
+cp -P "${WS_DIR}/install/lib/libfastrtps.so"* "${NATIVE_DIR}/lib/" 2>/dev/null || true
+cp -P "${WS_DIR}/install/lib/libfastcdr.so"* "${NATIVE_DIR}/lib/" 2>/dev/null || true
 
 # Copy the WdnddsStringTopicDataType helper.
 cp "${WDNDDS_CXX_DIR}/generated/_wdndds_string.so" "${NATIVE_DIR}/"
