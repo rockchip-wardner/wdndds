@@ -22,7 +22,11 @@ class Publisher:
         fd = get()
         if qos is None:
             qos = fd.PublisherQos()
-        raw = participant.create_publisher(qos, None, fd.STATUS_MASK_NONE)
+        # See ``topic.py`` — modern FastDDS Python bindings only support
+        # the 3-arg ``create_publisher(qos) -> Publisher*`` form; the
+        # listener + StatusMask overloads require a ReturnCode_t& that
+        # SWIG can't satisfy from Python.
+        raw = participant.create_publisher(qos)
         if raw is None:
             raise RuntimeError("failed to create publisher")
         return cls(raw, owned=True)
@@ -39,11 +43,12 @@ class Publisher:
         fd = get()
         if qos is None:
             qos = fd.DataWriterQos()
+        # See ``topic.py`` — modern FastDDS Python bindings only support
+        # the 3-arg ``create_datawriter(topic, qos) -> DataWriter*``
+        # form from Python.
         raw = self._raw.create_datawriter(
             topic.raw if hasattr(topic, "raw") else topic,
             qos,
-            None,
-            fd.STATUS_MASK_NONE,
         )
         if raw is None:
             raise RuntimeError("failed to create data writer")

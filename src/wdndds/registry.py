@@ -56,10 +56,22 @@ class Hub:
         self._t_cap = self._participant.register_string_type("cap")
         self._t_reply = self._participant.register_string_type("reply")
 
+        # NOTE: registry.py originally called
+        # ``dds.transient_local_reader_qos()`` for ``create_topic``, but
+        # that's a DataReaderQos factory — passing it to create_topic is
+        # a SWIG type error. We build the TopicQos directly here and
+        # set TRANSIENT_LOCAL durability so late-joining subscribers
+        # still see our previous registry broadcasts. QoS constants live
+        # on the bundled ``fastdds`` module, not on ``wdndds.dds``.
+        from wdndds.dds._fastdds import get as _fd_get
+        fd = _fd_get()
+        registry_qos = dds.topic_qos()
+        registry_qos.durability().kind = fd.TRANSIENT_LOCAL_DURABILITY_QOS
+        registry_qos.reliability().kind = fd.RELIABLE_RELIABILITY_QOS
         self._registry_topic = self._participant.create_topic(
             _REGISTRY_TOPIC,
             self._t_registry,
-            dds.transient_local_reader_qos(),
+            registry_qos,
         )
         self._registry_writer = self._publisher.create_writer(
             self._registry_topic,

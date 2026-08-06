@@ -10,41 +10,31 @@ participant, publisher, and subscriber in a few lines.
 registry** so devices on the same DDS domain can advertise what they do and
 call each other with one-liners.
 
-## Prerequisites
+## What's in the wheel
 
-`wdndds` has **no PyPI dependencies** — it is a pure-Python facade. The native
-eProsima Fast DDS Python bindings (`fastdds` / `fastdds_python`) are NOT on
-PyPI, so you must install them via your OS or build from source. Choose one:
+Starting with v0.2.0, the wheel ships **pre-built eProsima FastDDS Python
+bindings + shared libs** under `wdndds/dds/_native/`:
 
-**Debian / Ubuntu (build deps only — Python bindings must be built from source)**
-
-```bash
-sudo apt install -y libasio-dev libtinyxml2-dev libfastrtps-dev
+```
+wdndds/dds/_native/
+├── fastdds/                  # bundled Python extension (_fastdds_python.so + __init__.py)
+├── lib/
+│   ├── libfastdds.so.3.6.2.0 + libfastdds.so + libfastdds.so.3.6   # SONAME links
+│   └── libfastcdr.so.2.3.6  + libfastcdr.so.2 + libfastcdr.so      # SONAME links
+├── _wdndds_string.so         # bundled C++ helper for StringTopicDataType
+└── wdndds_string.py          # SWIG-generated Python wrapper
 ```
 
-> NOTE: there is **no `libfastdds-dev` / `fastdds-python3` apt package** —
-> the C++ dev package is `libfastrtps-dev`, and the Python bindings have
-> to be compiled from the Fast-DDS-Python source tree. The four lines
-> above only fetch the shared libs needed at runtime + the headers
-> needed at build time; the bindings themselves are not on PyPI either.
+`pip install wdndds` is **all you need** — no apt deps, no colcon
+build, no source tree. The bundled binary was built against:
 
-**Build Fast-DDS-Python from source** (see [docs](https://fast-dds.docs.eprosima.com/en/latest/fastdds/python_bindings/python_bindings.html))
+* aarch64
+* Debian 12 (glibc 2.36)
+* Python 3.11
+* libfastdds 3.6.x, libfastcdr 2.3.x
 
-```bash
-pip install -U colcon-common-extensions vcstool
-mkdir -p fastdds_ws/src && cd fastdds_ws
-wget https://raw.githubusercontent.com/eProsima/Fast-DDS-Python/main/fastdds_python.repos
-vcs import src < fastdds_python.repos
-colcon build
-```
-
-Verify the bindings are importable:
-
-```bash
-python -c 'import fastdds; print(fastdds.__file__)'
-```
-
-If that prints a path, you're good.
+For other platforms (x86_64, Ubuntu 22.04, etc.) you must rebuild
+from source; see [Rebuilding for a different platform](#rebuilding-for-a-different-platform).
 
 ## Install `wdndds`
 
@@ -61,7 +51,86 @@ print(dds.check_runtime())
 ```
 
 If `available` is `False`, the returned dict carries an `error` field with
-install instructions.
+install instructions. The ``bundled`` field is ``True`` when the wheel's
+embedded bindings were loaded (vs. a system-installed ``fastdds``).
+
+```python
+>>> from wdndds import dds
+>>> dds.check_runtime()
+{
+  'available': True,
+  'module': 'fastdds',
+  'path': '/…/wdndds/dds/_native/fastdds/__init__.py',
+  'version': 'unknown',
+  'bundled': True,
+}
+```
+
+## Why a bundled C++ helper (`WdnddsStringTopicDataType`)?
+
+The official `eProsima Fast-DDS Python` bindings **don't ship a
+built-in string-typed `TopicDataType`**. The upstream
+`eprosima::fastdds::dds::StringTopicDataType` is C++-only and SWIG
+doesn't auto-generate a wrapper. Even if we could define one in
+Python, the SWIG-generated `fastdds.TypeSupport(TopicDataType *)`
+overload refuses anything that isn't a SWIG-generated child of
+`TopicDataType`.
+
+Workaround: a sibling repo (`../wdndds_cxx/`) defines
+`wdndds::WdnddsStringTopicDataType : public eprosima::fastdds::dds::TopicDataType`
+and exposes `wdndds_register_string_type(participant, alias)` —
+doing the `TypeSupport` wrap and registration on the C++ side. SWIG
+generates the Python wrapper (`wdndds_string.py`) automatically.
+
+The CDR encoding is straightforward: `u32 LE length + UTF-8 payload`
+(no NUL terminator — FastDDS CDR doesn't write one). Max string
+size is 4 MiB to bound memory from a malicious peer.
+
+```python
+import wdndds.dds
+from wdndds.dds.domain import Participant
+
+hub = Participant(domain_id=0)
+type_name = hub.register_string_type("registry")   # uses bundled C++ helper
+print(type_name)                                     # wdndds::string::registry
+```
+
+## Rebuilding for a different platform
+
+The bundled artifacts are platform-specific. To rebuild for another
+target (x86_64, Ubuntu 22.04, Python 3.10, etc.):
+
+```bash
+# 1. host build deps
+sudo apt install -y libasio-dev libtinyxml2-dev libfastrtps-dev swig cmake g++ python3-dev
+.venv/bin/pip install -U colcon-common-extensions vcstool
+
+# 2. all-in-one build (uses $FASTDDDS_WS=/tmp/fastdds_ws by default;
+#    override the env var to share a workspace across builds)
+./build_native.sh [<platform-tag>]
+
+# 3. reinstall
+.venv/bin/pip install -e . --force-reinstall --no-deps
+```
+
+The full build takes ~6 minutes on a small board. Required disk
+space: 5-10 GB (colcon build intermediates).
+
+## Network requirements
+
+DDS discovery uses **UDP multicast** (`239.255.0.1`, port range starting
+at 7400). Both peers must be on the same Layer-2 network with multicast
+forwarding enabled. Verify with:
+
+```bash
+tcpdump -n -i any 'udp port 7400 or igmp'   # should show SPDP participant traffic
+```
+
+In sandbox environments without multicast (Docker without
+`--network=host`, restrictive CNI plugins), the initial Discovery
+Participant can hang on `create_writer` / `create_reader` — configure
+FastDDS to use a localhost-only XML profile via
+`FASTRTPS_DEFAULT_PROFILES_FILE` instead.
 
 ## Capability registry (high-level)
 
@@ -212,24 +281,38 @@ This produces `dist/wdndds-<version>-py3-none-any.whl` and the matching sdist.
 ## Project layout
 
 ```
-src/wdndds/
-├── __init__.py        # public API: Capability classes, connect, register,
-│                      #             start_scan, stop_scan, Device, Event
-├── _version.py
-├── py.typed
-├── capabilities.py    # Capability base + HWCapability/SWCapability + 8 predefined subclasses
-├── event.py           # Event dataclass
-├── registry.py        # Hub, Device, CapabilityNamespace, scan/invoke
-└── dds/
-    ├── __init__.py     # re-exports the public surface
-    ├── _fastdds.py     # lazy loader for the native `fastdds` module
-    ├── exceptions.py
-    ├── qos.py          # QoS factories and presets
-    ├── types.py        # register_string_type + topic introspection
-    ├── domain.py       # Participant
-    ├── topic.py        # Topic
-    ├── publisher.py    # Publisher, Writer
-    └── subscriber.py   # Subscriber, Reader
+wdndds/
+├── pyproject.toml
+├── build_native.sh       # rebuilds the bundled FastDDS Python bindings + C++ helper
+├── src/wdndds/
+│   ├── __init__.py       # public API: Capability classes, connect, register,
+│   │                     #             start_scan, stop_scan, Device, Event
+│   ├── _version.py
+│   ├── py.typed
+│   ├── capabilities.py   # Capability base + HWCapability/SWCapability + 11 predefined subclasses
+│   ├── event.py          # Event dataclass
+│   ├── registry.py       # Hub, Device, CapabilityNamespace, scan/invoke
+│   └── dds/
+│       ├── __init__.py    # re-exports the public surface
+│       ├── _fastdds.py    # bootstrap: preloads libfastcdr + libfastdds, then
+│       │                  # imports the bundled `fastdds` Python module
+│       ├── exceptions.py
+│       ├── qos.py         # QoS factories and presets
+│       ├── types.py       # register_string_type via bundled C++ helper
+│       ├── domain.py      # Participant
+│       ├── topic.py       # Topic
+│       ├── publisher.py   # Publisher, Writer
+│       ├── subscriber.py  # Subscriber, Reader
+│       └── _native/       # wheel-shipped native payloads (FastDDS + helper):
+│           ├── fastdds/__init__.py + _fastdds_python.so
+│           ├── lib/libfastdds.so.3.6[.2.0] + libfastcdr.so.2[.3.6]
+│           ├── _wdndds_string.so   # bundled WdnddsStringTopicDataType SWIG ext
+│           └── wdndds_string.py    # SWIG-generated Python wrapper
+└── ../wdndds_cxx/        # sibling C++ project (built by build_native.sh):
+    ├── CMakeLists.txt
+    ├── include/WdnddsString.hpp
+    ├── src/WdnddsString.cpp + WdnddsString.i
+    └── build/generated/   # → wdndds/dds/_native/_wdndds_string.so + wdndds_string.py
 
 samples/
 └── register_and_find.py   # provider / caller two-role end-to-end sample

@@ -1,6 +1,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
+# Default: ignore .so. We override this for the bundled native payloads
+# under src/wdndds/dds/_native/ via the explicit `!` rules at the bottom
+# — setuptools doesn't auto-pick up compiled extensions, and the wheel
+# needs them to ship.
 *.so
 .Python
 build/
@@ -38,3 +42,11 @@ coverage.xml
 .vscode/
 *.swp
 .DS_Store
+
+# Re-include the bundled native binaries + Python wrapper we ship in
+# the wheel. setuptools' MANIFEST would otherwise drop them because
+# of the broad `*.so` rule above. These MUST come AFTER `*.so` and
+# AFTER `lib/` — git's last-match rule means later patterns win.
+!src/wdndds/dds/_native/fastdds/_fastdds_python.so
+!src/wdndds/dds/_native/_wdndds_string.so
+!src/wdndds/dds/_native/lib/

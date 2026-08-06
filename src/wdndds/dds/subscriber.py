@@ -22,7 +22,9 @@ class Subscriber:
         fd = get()
         if qos is None:
             qos = fd.SubscriberQos()
-        raw = participant.create_subscriber(qos, None, fd.STATUS_MASK_NONE)
+        # See ``topic.py`` — modern FastDDS Python bindings only support
+        # the 3-arg ``create_subscriber(qos) -> Subscriber*`` form.
+        raw = participant.create_subscriber(qos)
         if raw is None:
             raise RuntimeError("failed to create subscriber")
         return cls(raw, owned=True)
@@ -41,11 +43,12 @@ class Subscriber:
         fd = get()
         if qos is None:
             qos = fd.DataReaderQos()
+        # See ``topic.py`` — modern FastDDS Python bindings only support
+        # the 3-arg ``create_datareader(topic, qos) -> DataReader*``
+        # form.
         raw = self._raw.create_datareader(
             topic.raw if hasattr(topic, "raw") else topic,
             qos,
-            None,
-            fd.STATUS_MASK_NONE,
         )
         if raw is None:
             raise RuntimeError("failed to create data reader")

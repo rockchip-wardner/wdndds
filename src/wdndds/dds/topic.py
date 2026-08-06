@@ -27,7 +27,15 @@ class Topic:
         fd = get()
         if qos is None:
             qos = fd.TopicQos()
-        raw = participant.create_topic(name, type_name, qos, None, fd.STATUS_MASK_NONE)
+        # Modern FastDDS Python bindings (≥2.10) changed the
+        # ``create_topic`` signature: the listener + StatusMask overloads
+        # require a ``ReturnCode_t &`` out-parameter that SWIG can't
+        # match from Python. The 3-arg overload
+        # ``create_topic(name, type_name, qos) -> Topic*`` is still
+        # available and avoids the SWIG mismatch — the return code is
+        # observable via ``topic.get_name()`` returning ``None`` on
+        # failure (which we treat as an error below).
+        raw = participant.create_topic(name, type_name, qos)
         if raw is None:
             raise RuntimeError(f"failed to create topic '{name}'")
         return cls(raw, owned=True)

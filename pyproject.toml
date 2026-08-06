@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wdndds"
-version = "0.1.0"
+version = "0.2.0"
 description = "Pythonic wrapper around eProsima FastDDS Python bindings."
 readme = "README.md"
 license = { text = "MIT" }
@@ -18,6 +18,8 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: POSIX :: Linux :: aarch64",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
@@ -28,6 +30,10 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
+# wheel 现在带着 built eProsima FastDDS Python bindings (aarch64 / Debian 12
+# / Python 3.11 / libfastdds 3.6.x)。换平台要 rebuild —— 用 ``/tmp/fastdds_ws``
+# 那个 colcon 流程 (参见 README + .venv/src/wdndds/src/wdndds/dds/_fastdds.py)。
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7",
@@ -35,14 +41,28 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["wdndds", "wdndds.dds"]
+packages = [
+    "wdndds",
+    "wdndds.dds",
+    "wdndds.dds._native",
+    "wdndds.dds._native.fastdds",
+]
 include-package-data = true
 
 [tool.setuptools.package-dir]
 "" = "src"
 
 [tool.setuptools.package-data]
-wdndds = ["py.typed"]
+"wdndds" = [
+    "py.typed",
+    "dds/_native/lib/*.so*",
+]
+"wdndds.dds._native" = [
+    "_wdndds_string.so",
+]
+"wdndds.dds._native.fastdds" = [
+    "_fastdds_python.so",
+]
 
 [tool.ruff]
 line-length = 100
