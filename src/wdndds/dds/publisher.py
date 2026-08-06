@@ -87,8 +87,28 @@ class Writer:
         return self._raw
 
     def write(self, data: Any) -> None:
+        # Fast-DDS-Python 1.x ``DataWriter::write(void *)`` 要求一个
+        # SwigPyObject（指向 std::string），不接受 Python 原生 str；
+        # 2.x 之后 ``write`` 自带 str → CDR 转换，但 1.x 没有 —— 必须
+        # 走 C++ helper ``wdndds_create_string_data_with(value)`` 在 C
+        # 端建一个 std::string，把 SwigPyObject 喂给 write()，再用
+        # ``wdndds_delete_string_data`` 释放。Python str 走 fallback
+        # 分支直接当 raw 喂（3.x 兼容），其它类型保持原样透传。
+        fd = get()
+        if isinstance(data, str):
+            from .types import _import_wdndds_string
+
+            wds = _import_wdndds_string()
+            if wds is not None and hasattr(wds, "wdndds_create_string_data_with"):
+                sample = wds.wdndds_create_string_data_with(data)
+                try:
+                    rc = self._raw.write(sample)
+                finally:
+                    wds.wdndds_delete_string_data(sample)
+                check(rc, "DataWriter.write", fd.RETCODE_OK)
+                return
         rc = self._raw.write(data)
-        check(rc, "DataWriter.write", get().RETCODE_OK)
+        check(rc, "DataWriter.write", fd.RETCODE_OK)
 
     def close(self) -> None:
         if not self._owned:

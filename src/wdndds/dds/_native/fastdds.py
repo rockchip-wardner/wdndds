@@ -5,8 +5,8 @@
 # the SWIG interface file instead.
 
 from sys import version_info as _swig_python_version_info
-if __import__('os').name == 'nt': import win32api; win32api.LoadLibrary('libfastdds.so.3.6.2.0')
-if __package__ or '.' in __name__:
+# Import the low-level C/C++ module
+if __package__ or "." in __name__:
     from . import _fastdds_python
 else:
     import _fastdds_python
@@ -229,607 +229,6 @@ class StringVector(object):
 
 # Register StringVector in _fastdds_python:
 _fastdds_python.StringVector_swigregister(StringVector)
-class uint8_t_vector(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def iterator(self):
-        return _fastdds_python.uint8_t_vector_iterator(self)
-    def __iter__(self):
-        return self.iterator()
-
-    def __nonzero__(self):
-        return _fastdds_python.uint8_t_vector___nonzero__(self)
-
-    def __bool__(self):
-        return _fastdds_python.uint8_t_vector___bool__(self)
-
-    def __len__(self):
-        return _fastdds_python.uint8_t_vector___len__(self)
-
-    def __getslice__(self, i, j):
-        return _fastdds_python.uint8_t_vector___getslice__(self, i, j)
-
-    def __setslice__(self, *args):
-        return _fastdds_python.uint8_t_vector___setslice__(self, *args)
-
-    def __delslice__(self, i, j):
-        return _fastdds_python.uint8_t_vector___delslice__(self, i, j)
-
-    def __delitem__(self, *args):
-        return _fastdds_python.uint8_t_vector___delitem__(self, *args)
-
-    def __getitem__(self, *args):
-        return _fastdds_python.uint8_t_vector___getitem__(self, *args)
-
-    def __setitem__(self, *args):
-        return _fastdds_python.uint8_t_vector___setitem__(self, *args)
-
-    def pop(self):
-        return _fastdds_python.uint8_t_vector_pop(self)
-
-    def append(self, x):
-        return _fastdds_python.uint8_t_vector_append(self, x)
-
-    def empty(self):
-        return _fastdds_python.uint8_t_vector_empty(self)
-
-    def size(self):
-        return _fastdds_python.uint8_t_vector_size(self)
-
-    def swap(self, v):
-        return _fastdds_python.uint8_t_vector_swap(self, v)
-
-    def begin(self):
-        return _fastdds_python.uint8_t_vector_begin(self)
-
-    def end(self):
-        return _fastdds_python.uint8_t_vector_end(self)
-
-    def rbegin(self):
-        return _fastdds_python.uint8_t_vector_rbegin(self)
-
-    def rend(self):
-        return _fastdds_python.uint8_t_vector_rend(self)
-
-    def clear(self):
-        return _fastdds_python.uint8_t_vector_clear(self)
-
-    def get_allocator(self):
-        return _fastdds_python.uint8_t_vector_get_allocator(self)
-
-    def pop_back(self):
-        return _fastdds_python.uint8_t_vector_pop_back(self)
-
-    def erase(self, *args):
-        return _fastdds_python.uint8_t_vector_erase(self, *args)
-
-    def __init__(self, *args):
-        _fastdds_python.uint8_t_vector_swiginit(self, _fastdds_python.new_uint8_t_vector(*args))
-
-    def push_back(self, x):
-        return _fastdds_python.uint8_t_vector_push_back(self, x)
-
-    def front(self):
-        return _fastdds_python.uint8_t_vector_front(self)
-
-    def back(self):
-        return _fastdds_python.uint8_t_vector_back(self)
-
-    def assign(self, n, x):
-        return _fastdds_python.uint8_t_vector_assign(self, n, x)
-
-    def resize(self, *args):
-        return _fastdds_python.uint8_t_vector_resize(self, *args)
-
-    def insert(self, *args):
-        return _fastdds_python.uint8_t_vector_insert(self, *args)
-
-    def reserve(self, n):
-        return _fastdds_python.uint8_t_vector_reserve(self, n)
-
-    def capacity(self):
-        return _fastdds_python.uint8_t_vector_capacity(self)
-    __swig_destroy__ = _fastdds_python.delete_uint8_t_vector
-
-# Register uint8_t_vector in _fastdds_python:
-_fastdds_python.uint8_t_vector_swigregister(uint8_t_vector)
-class uint16_t_vector(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def iterator(self):
-        return _fastdds_python.uint16_t_vector_iterator(self)
-    def __iter__(self):
-        return self.iterator()
-
-    def __nonzero__(self):
-        return _fastdds_python.uint16_t_vector___nonzero__(self)
-
-    def __bool__(self):
-        return _fastdds_python.uint16_t_vector___bool__(self)
-
-    def __len__(self):
-        return _fastdds_python.uint16_t_vector___len__(self)
-
-    def __getslice__(self, i, j):
-        return _fastdds_python.uint16_t_vector___getslice__(self, i, j)
-
-    def __setslice__(self, *args):
-        return _fastdds_python.uint16_t_vector___setslice__(self, *args)
-
-    def __delslice__(self, i, j):
-        return _fastdds_python.uint16_t_vector___delslice__(self, i, j)
-
-    def __delitem__(self, *args):
-        return _fastdds_python.uint16_t_vector___delitem__(self, *args)
-
-    def __getitem__(self, *args):
-        return _fastdds_python.uint16_t_vector___getitem__(self, *args)
-
-    def __setitem__(self, *args):
-        return _fastdds_python.uint16_t_vector___setitem__(self, *args)
-
-    def pop(self):
-        return _fastdds_python.uint16_t_vector_pop(self)
-
-    def append(self, x):
-        return _fastdds_python.uint16_t_vector_append(self, x)
-
-    def empty(self):
-        return _fastdds_python.uint16_t_vector_empty(self)
-
-    def size(self):
-        return _fastdds_python.uint16_t_vector_size(self)
-
-    def swap(self, v):
-        return _fastdds_python.uint16_t_vector_swap(self, v)
-
-    def begin(self):
-        return _fastdds_python.uint16_t_vector_begin(self)
-
-    def end(self):
-        return _fastdds_python.uint16_t_vector_end(self)
-
-    def rbegin(self):
-        return _fastdds_python.uint16_t_vector_rbegin(self)
-
-    def rend(self):
-        return _fastdds_python.uint16_t_vector_rend(self)
-
-    def clear(self):
-        return _fastdds_python.uint16_t_vector_clear(self)
-
-    def get_allocator(self):
-        return _fastdds_python.uint16_t_vector_get_allocator(self)
-
-    def pop_back(self):
-        return _fastdds_python.uint16_t_vector_pop_back(self)
-
-    def erase(self, *args):
-        return _fastdds_python.uint16_t_vector_erase(self, *args)
-
-    def __init__(self, *args):
-        _fastdds_python.uint16_t_vector_swiginit(self, _fastdds_python.new_uint16_t_vector(*args))
-
-    def push_back(self, x):
-        return _fastdds_python.uint16_t_vector_push_back(self, x)
-
-    def front(self):
-        return _fastdds_python.uint16_t_vector_front(self)
-
-    def back(self):
-        return _fastdds_python.uint16_t_vector_back(self)
-
-    def assign(self, n, x):
-        return _fastdds_python.uint16_t_vector_assign(self, n, x)
-
-    def resize(self, *args):
-        return _fastdds_python.uint16_t_vector_resize(self, *args)
-
-    def insert(self, *args):
-        return _fastdds_python.uint16_t_vector_insert(self, *args)
-
-    def reserve(self, n):
-        return _fastdds_python.uint16_t_vector_reserve(self, n)
-
-    def capacity(self):
-        return _fastdds_python.uint16_t_vector_capacity(self)
-    __swig_destroy__ = _fastdds_python.delete_uint16_t_vector
-
-# Register uint16_t_vector in _fastdds_python:
-_fastdds_python.uint16_t_vector_swigregister(uint16_t_vector)
-class int32_t_vector(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def iterator(self):
-        return _fastdds_python.int32_t_vector_iterator(self)
-    def __iter__(self):
-        return self.iterator()
-
-    def __nonzero__(self):
-        return _fastdds_python.int32_t_vector___nonzero__(self)
-
-    def __bool__(self):
-        return _fastdds_python.int32_t_vector___bool__(self)
-
-    def __len__(self):
-        return _fastdds_python.int32_t_vector___len__(self)
-
-    def __getslice__(self, i, j):
-        return _fastdds_python.int32_t_vector___getslice__(self, i, j)
-
-    def __setslice__(self, *args):
-        return _fastdds_python.int32_t_vector___setslice__(self, *args)
-
-    def __delslice__(self, i, j):
-        return _fastdds_python.int32_t_vector___delslice__(self, i, j)
-
-    def __delitem__(self, *args):
-        return _fastdds_python.int32_t_vector___delitem__(self, *args)
-
-    def __getitem__(self, *args):
-        return _fastdds_python.int32_t_vector___getitem__(self, *args)
-
-    def __setitem__(self, *args):
-        return _fastdds_python.int32_t_vector___setitem__(self, *args)
-
-    def pop(self):
-        return _fastdds_python.int32_t_vector_pop(self)
-
-    def append(self, x):
-        return _fastdds_python.int32_t_vector_append(self, x)
-
-    def empty(self):
-        return _fastdds_python.int32_t_vector_empty(self)
-
-    def size(self):
-        return _fastdds_python.int32_t_vector_size(self)
-
-    def swap(self, v):
-        return _fastdds_python.int32_t_vector_swap(self, v)
-
-    def begin(self):
-        return _fastdds_python.int32_t_vector_begin(self)
-
-    def end(self):
-        return _fastdds_python.int32_t_vector_end(self)
-
-    def rbegin(self):
-        return _fastdds_python.int32_t_vector_rbegin(self)
-
-    def rend(self):
-        return _fastdds_python.int32_t_vector_rend(self)
-
-    def clear(self):
-        return _fastdds_python.int32_t_vector_clear(self)
-
-    def get_allocator(self):
-        return _fastdds_python.int32_t_vector_get_allocator(self)
-
-    def pop_back(self):
-        return _fastdds_python.int32_t_vector_pop_back(self)
-
-    def erase(self, *args):
-        return _fastdds_python.int32_t_vector_erase(self, *args)
-
-    def __init__(self, *args):
-        _fastdds_python.int32_t_vector_swiginit(self, _fastdds_python.new_int32_t_vector(*args))
-
-    def push_back(self, x):
-        return _fastdds_python.int32_t_vector_push_back(self, x)
-
-    def front(self):
-        return _fastdds_python.int32_t_vector_front(self)
-
-    def back(self):
-        return _fastdds_python.int32_t_vector_back(self)
-
-    def assign(self, n, x):
-        return _fastdds_python.int32_t_vector_assign(self, n, x)
-
-    def resize(self, *args):
-        return _fastdds_python.int32_t_vector_resize(self, *args)
-
-    def insert(self, *args):
-        return _fastdds_python.int32_t_vector_insert(self, *args)
-
-    def reserve(self, n):
-        return _fastdds_python.int32_t_vector_reserve(self, n)
-
-    def capacity(self):
-        return _fastdds_python.int32_t_vector_capacity(self)
-    __swig_destroy__ = _fastdds_python.delete_int32_t_vector
-
-# Register int32_t_vector in _fastdds_python:
-_fastdds_python.int32_t_vector_swigregister(int32_t_vector)
-class uint32_t_vector(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def iterator(self):
-        return _fastdds_python.uint32_t_vector_iterator(self)
-    def __iter__(self):
-        return self.iterator()
-
-    def __nonzero__(self):
-        return _fastdds_python.uint32_t_vector___nonzero__(self)
-
-    def __bool__(self):
-        return _fastdds_python.uint32_t_vector___bool__(self)
-
-    def __len__(self):
-        return _fastdds_python.uint32_t_vector___len__(self)
-
-    def __getslice__(self, i, j):
-        return _fastdds_python.uint32_t_vector___getslice__(self, i, j)
-
-    def __setslice__(self, *args):
-        return _fastdds_python.uint32_t_vector___setslice__(self, *args)
-
-    def __delslice__(self, i, j):
-        return _fastdds_python.uint32_t_vector___delslice__(self, i, j)
-
-    def __delitem__(self, *args):
-        return _fastdds_python.uint32_t_vector___delitem__(self, *args)
-
-    def __getitem__(self, *args):
-        return _fastdds_python.uint32_t_vector___getitem__(self, *args)
-
-    def __setitem__(self, *args):
-        return _fastdds_python.uint32_t_vector___setitem__(self, *args)
-
-    def pop(self):
-        return _fastdds_python.uint32_t_vector_pop(self)
-
-    def append(self, x):
-        return _fastdds_python.uint32_t_vector_append(self, x)
-
-    def empty(self):
-        return _fastdds_python.uint32_t_vector_empty(self)
-
-    def size(self):
-        return _fastdds_python.uint32_t_vector_size(self)
-
-    def swap(self, v):
-        return _fastdds_python.uint32_t_vector_swap(self, v)
-
-    def begin(self):
-        return _fastdds_python.uint32_t_vector_begin(self)
-
-    def end(self):
-        return _fastdds_python.uint32_t_vector_end(self)
-
-    def rbegin(self):
-        return _fastdds_python.uint32_t_vector_rbegin(self)
-
-    def rend(self):
-        return _fastdds_python.uint32_t_vector_rend(self)
-
-    def clear(self):
-        return _fastdds_python.uint32_t_vector_clear(self)
-
-    def get_allocator(self):
-        return _fastdds_python.uint32_t_vector_get_allocator(self)
-
-    def pop_back(self):
-        return _fastdds_python.uint32_t_vector_pop_back(self)
-
-    def erase(self, *args):
-        return _fastdds_python.uint32_t_vector_erase(self, *args)
-
-    def __init__(self, *args):
-        _fastdds_python.uint32_t_vector_swiginit(self, _fastdds_python.new_uint32_t_vector(*args))
-
-    def push_back(self, x):
-        return _fastdds_python.uint32_t_vector_push_back(self, x)
-
-    def front(self):
-        return _fastdds_python.uint32_t_vector_front(self)
-
-    def back(self):
-        return _fastdds_python.uint32_t_vector_back(self)
-
-    def assign(self, n, x):
-        return _fastdds_python.uint32_t_vector_assign(self, n, x)
-
-    def resize(self, *args):
-        return _fastdds_python.uint32_t_vector_resize(self, *args)
-
-    def insert(self, *args):
-        return _fastdds_python.uint32_t_vector_insert(self, *args)
-
-    def reserve(self, n):
-        return _fastdds_python.uint32_t_vector_reserve(self, n)
-
-    def capacity(self):
-        return _fastdds_python.uint32_t_vector_capacity(self)
-    __swig_destroy__ = _fastdds_python.delete_uint32_t_vector
-
-# Register uint32_t_vector in _fastdds_python:
-_fastdds_python.uint32_t_vector_swigregister(uint32_t_vector)
-class uint64_t_vector(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def iterator(self):
-        return _fastdds_python.uint64_t_vector_iterator(self)
-    def __iter__(self):
-        return self.iterator()
-
-    def __nonzero__(self):
-        return _fastdds_python.uint64_t_vector___nonzero__(self)
-
-    def __bool__(self):
-        return _fastdds_python.uint64_t_vector___bool__(self)
-
-    def __len__(self):
-        return _fastdds_python.uint64_t_vector___len__(self)
-
-    def __getslice__(self, i, j):
-        return _fastdds_python.uint64_t_vector___getslice__(self, i, j)
-
-    def __setslice__(self, *args):
-        return _fastdds_python.uint64_t_vector___setslice__(self, *args)
-
-    def __delslice__(self, i, j):
-        return _fastdds_python.uint64_t_vector___delslice__(self, i, j)
-
-    def __delitem__(self, *args):
-        return _fastdds_python.uint64_t_vector___delitem__(self, *args)
-
-    def __getitem__(self, *args):
-        return _fastdds_python.uint64_t_vector___getitem__(self, *args)
-
-    def __setitem__(self, *args):
-        return _fastdds_python.uint64_t_vector___setitem__(self, *args)
-
-    def pop(self):
-        return _fastdds_python.uint64_t_vector_pop(self)
-
-    def append(self, x):
-        return _fastdds_python.uint64_t_vector_append(self, x)
-
-    def empty(self):
-        return _fastdds_python.uint64_t_vector_empty(self)
-
-    def size(self):
-        return _fastdds_python.uint64_t_vector_size(self)
-
-    def swap(self, v):
-        return _fastdds_python.uint64_t_vector_swap(self, v)
-
-    def begin(self):
-        return _fastdds_python.uint64_t_vector_begin(self)
-
-    def end(self):
-        return _fastdds_python.uint64_t_vector_end(self)
-
-    def rbegin(self):
-        return _fastdds_python.uint64_t_vector_rbegin(self)
-
-    def rend(self):
-        return _fastdds_python.uint64_t_vector_rend(self)
-
-    def clear(self):
-        return _fastdds_python.uint64_t_vector_clear(self)
-
-    def get_allocator(self):
-        return _fastdds_python.uint64_t_vector_get_allocator(self)
-
-    def pop_back(self):
-        return _fastdds_python.uint64_t_vector_pop_back(self)
-
-    def erase(self, *args):
-        return _fastdds_python.uint64_t_vector_erase(self, *args)
-
-    def __init__(self, *args):
-        _fastdds_python.uint64_t_vector_swiginit(self, _fastdds_python.new_uint64_t_vector(*args))
-
-    def push_back(self, x):
-        return _fastdds_python.uint64_t_vector_push_back(self, x)
-
-    def front(self):
-        return _fastdds_python.uint64_t_vector_front(self)
-
-    def back(self):
-        return _fastdds_python.uint64_t_vector_back(self)
-
-    def assign(self, n, x):
-        return _fastdds_python.uint64_t_vector_assign(self, n, x)
-
-    def resize(self, *args):
-        return _fastdds_python.uint64_t_vector_resize(self, *args)
-
-    def insert(self, *args):
-        return _fastdds_python.uint64_t_vector_insert(self, *args)
-
-    def reserve(self, n):
-        return _fastdds_python.uint64_t_vector_reserve(self, n)
-
-    def capacity(self):
-        return _fastdds_python.uint64_t_vector_capacity(self)
-    __swig_destroy__ = _fastdds_python.delete_uint64_t_vector
-
-# Register uint64_t_vector in _fastdds_python:
-_fastdds_python.uint64_t_vector_swigregister(uint64_t_vector)
-FASTCDR_VERSION_MAJOR = _fastdds_python.FASTCDR_VERSION_MAJOR
-FASTCDR_VERSION_MINOR = _fastdds_python.FASTCDR_VERSION_MINOR
-FASTCDR_VERSION_MICRO = _fastdds_python.FASTCDR_VERSION_MICRO
-FASTCDR_VERSION_STR = _fastdds_python.FASTCDR_VERSION_STR
-HAVE_CXX11 = _fastdds_python.HAVE_CXX11
-FASTCDR_IS_BIG_ENDIAN_TARGET = _fastdds_python.FASTCDR_IS_BIG_ENDIAN_TARGET
-FASTCDR_HAVE_FLOAT128 = _fastdds_python.FASTCDR_HAVE_FLOAT128
-FASTCDR_SIZEOF_LONG_DOUBLE = _fastdds_python.FASTCDR_SIZEOF_LONG_DOUBLE
-class nullopt_t(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def __init__(self, arg2):
-        _fastdds_python.nullopt_t_swiginit(self, _fastdds_python.new_nullopt_t(arg2))
-    __swig_destroy__ = _fastdds_python.delete_nullopt_t
-
-# Register nullopt_t in _fastdds_python:
-_fastdds_python.nullopt_t_swigregister(nullopt_t)
-class string_255(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-    max_size = _fastdds_python.string_255_max_size
-
-    def assign(self, c_array, n_chars):
-        return _fastdds_python.string_255_assign(self, c_array, n_chars)
-
-    def __init__(self, *args):
-        _fastdds_python.string_255_swiginit(self, _fastdds_python.new_string_255(*args))
-
-    def c_str(self):
-        return _fastdds_python.string_255_c_str(self)
-
-    def to_string(self):
-        return _fastdds_python.string_255_to_string(self)
-
-    def __eq__(self, *args):
-        return _fastdds_python.string_255___eq__(self, *args)
-
-    def __ne__(self, *args):
-        return _fastdds_python.string_255___ne__(self, *args)
-
-    def __lt__(self, rhs):
-        return _fastdds_python.string_255___lt__(self, rhs)
-
-    def __gt__(self, rhs):
-        return _fastdds_python.string_255___gt__(self, rhs)
-
-    def size(self):
-        return _fastdds_python.string_255_size(self)
-
-    def compare(self, *args):
-        return _fastdds_python.string_255_compare(self, *args)
-    __swig_destroy__ = _fastdds_python.delete_string_255
-
-# Register string_255 in _fastdds_python:
-_fastdds_python.string_255_swigregister(string_255)
-cvar = _fastdds_python.cvar
-nullopt = cvar.nullopt
-
-INTRAPROCESS_OFF = _fastdds_python.INTRAPROCESS_OFF
-INTRAPROCESS_USER_DATA_ONLY = _fastdds_python.INTRAPROCESS_USER_DATA_ONLY
-INTRAPROCESS_FULL = _fastdds_python.INTRAPROCESS_FULL
-class LibrarySettings(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def __init__(self):
-        _fastdds_python.LibrarySettings_swiginit(self, _fastdds_python.new_LibrarySettings())
-    __swig_destroy__ = _fastdds_python.delete_LibrarySettings
-
-    def __eq__(self, b):
-        return _fastdds_python.LibrarySettings___eq__(self, b)
-    intraprocess_delivery = property(_fastdds_python.LibrarySettings_intraprocess_delivery_get, _fastdds_python.LibrarySettings_intraprocess_delivery_set)
-
-# Register LibrarySettings in _fastdds_python:
-_fastdds_python.LibrarySettings_swigregister(LibrarySettings)
 BIGEND = _fastdds_python.BIGEND
 LITTLEEND = _fastdds_python.LITTLEEND
 RELIABLE = _fastdds_python.RELIABLE
@@ -868,53 +267,86 @@ class ProtocolVersion_t(object):
 
 # Register ProtocolVersion_t in _fastdds_python:
 _fastdds_python.ProtocolVersion_t_swigregister(ProtocolVersion_t)
+cvar = _fastdds_python.cvar
 c_VendorId_Unknown = cvar.c_VendorId_Unknown
 c_VendorId_eProsima = cvar.c_VendorId_eProsima
 c_VendorId_SafeDDS = cvar.c_VendorId_SafeDDS
-c_VendorId_rti_connext = cvar.c_VendorId_rti_connext
-c_VendorId_opendds = cvar.c_VendorId_opendds
 DEFAULT_ENDIAN = cvar.DEFAULT_ENDIAN
 
-class RTPSTime_t(object):
+class Time_t(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
+    INFINITE_SECONDS = _fastdds_python.Time_t_INFINITE_SECONDS
+    INFINITE_NANOSECONDS = _fastdds_python.Time_t_INFINITE_NANOSECONDS
+    seconds = property(_fastdds_python.Time_t_seconds_get, _fastdds_python.Time_t_seconds_set)
+    nanosec = property(_fastdds_python.Time_t_nanosec_get, _fastdds_python.Time_t_nanosec_set)
 
-    def to_ns(self):
-        return _fastdds_python.RTPSTime_t_to_ns(self)
-
-    def from_ns(self, nanosecs):
-        return _fastdds_python.RTPSTime_t_from_ns(self, nanosecs)
-
-    def seconds(self, *args):
-        return _fastdds_python.RTPSTime_t_seconds(self, *args)
-
-    def nanosec(self, *args):
-        return _fastdds_python.RTPSTime_t_nanosec(self, *args)
+    def __init__(self, *args):
+        _fastdds_python.Time_t_swiginit(self, _fastdds_python.new_Time_t(*args))
 
     def fraction(self, *args):
-        return _fastdds_python.RTPSTime_t_fraction(self, *args)
+        return _fastdds_python.Time_t_fraction(self, *args)
 
-    def to_duration_t(self):
-        return _fastdds_python.RTPSTime_t_to_duration_t(self)
-
-    def from_duration_t(self, duration):
-        return _fastdds_python.RTPSTime_t_from_duration_t(self, duration)
+    def to_ns(self):
+        return _fastdds_python.Time_t_to_ns(self)
 
     @staticmethod
     def now(ret):
-        return _fastdds_python.RTPSTime_t_now(ret)
+        return _fastdds_python.Time_t_now(ret)
 
-    def __init__(self, *args):
-        _fastdds_python.RTPSTime_t_swiginit(self, _fastdds_python.new_RTPSTime_t(*args))
-    __swig_destroy__ = _fastdds_python.delete_RTPSTime_t
+    @staticmethod
+    def is_infinite(*args):
+        return _fastdds_python.Time_t_is_infinite(*args)
 
-# Register RTPSTime_t in _fastdds_python:
-_fastdds_python.RTPSTime_t_swigregister(RTPSTime_t)
+    def __eq__(self, other):
+        return _fastdds_python.Time_t___eq__(self, other)
+
+    def __ne__(self, other):
+        return _fastdds_python.Time_t___ne__(self, other)
+
+    def __lt__(self, other):
+        return _fastdds_python.Time_t___lt__(self, other)
+
+    def __gt__(self, other):
+        return _fastdds_python.Time_t___gt__(self, other)
+
+    def __le__(self, other):
+        return _fastdds_python.Time_t___le__(self, other)
+
+    def __ge__(self, other):
+        return _fastdds_python.Time_t___ge__(self, other)
+
+    def __add__(self, other):
+        return _fastdds_python.Time_t___add__(self, other)
+
+    def __sub__(self, other):
+        return _fastdds_python.Time_t___sub__(self, other)
+    __swig_destroy__ = _fastdds_python.delete_Time_t
+
+# Register Time_t in _fastdds_python:
+_fastdds_python.Time_t_swigregister(Time_t)
 c_ProtocolVersion_2_0 = cvar.c_ProtocolVersion_2_0
 c_ProtocolVersion_2_1 = cvar.c_ProtocolVersion_2_1
 c_ProtocolVersion_2_2 = cvar.c_ProtocolVersion_2_2
 c_ProtocolVersion_2_3 = cvar.c_ProtocolVersion_2_3
 c_ProtocolVersion = cvar.c_ProtocolVersion
+
+class Duration_t(Time_t):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+
+    def __init__(self, *args):
+        _fastdds_python.Duration_t_swiginit(self, _fastdds_python.new_Duration_t(*args))
+    __swig_destroy__ = _fastdds_python.delete_Duration_t
+
+# Register Duration_t in _fastdds_python:
+_fastdds_python.Duration_t_swigregister(Duration_t)
+c_RTPSTimeInfinite = cvar.c_RTPSTimeInfinite
+c_RTPSTimeZero = cvar.c_RTPSTimeZero
+c_RTPSTimeInvalid = cvar.c_RTPSTimeInvalid
+c_TimeInfinite = cvar.c_TimeInfinite
+c_TimeZero = cvar.c_TimeZero
+c_TimeInvalid = cvar.c_TimeInvalid
 
 LOCATOR_KIND_INVALID = _fastdds_python.LOCATOR_KIND_INVALID
 LOCATOR_PORT_INVALID = _fastdds_python.LOCATOR_PORT_INVALID
@@ -923,7 +355,7 @@ LOCATOR_KIND_UDPv4 = _fastdds_python.LOCATOR_KIND_UDPv4
 LOCATOR_KIND_UDPv6 = _fastdds_python.LOCATOR_KIND_UDPv6
 LOCATOR_KIND_TCPv4 = _fastdds_python.LOCATOR_KIND_TCPv4
 LOCATOR_KIND_TCPv6 = _fastdds_python.LOCATOR_KIND_TCPv6
-LOCATOR_KIND_ETHERNET = _fastdds_python.LOCATOR_KIND_ETHERNET
+LOCATOR_KIND_SHM = _fastdds_python.LOCATOR_KIND_SHM
 class Locator_t(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -943,10 +375,6 @@ class Locator_t(object):
     def set_Invalid_Address(self):
         return _fastdds_python.Locator_t_set_Invalid_Address(self)
 
-    @staticmethod
-    def create_locator(kind, address, port):
-        return _fastdds_python.Locator_t_create_locator(kind, address, port)
-
     def __eq__(self, other_locator):
         return _fastdds_python.Locator_t___eq__(self, other_locator)
 
@@ -956,10 +384,6 @@ class Locator_t(object):
 
 # Register Locator_t in _fastdds_python:
 _fastdds_python.Locator_t_swigregister(Locator_t)
-c_RTPSTimeInfinite = cvar.c_RTPSTimeInfinite
-c_RTPSTimeZero = cvar.c_RTPSTimeZero
-c_RTPSTimeInvalid = cvar.c_RTPSTimeInvalid
-
 
 def IsAddressDefined(loc):
     return _fastdds_python.IsAddressDefined(loc)
@@ -989,9 +413,6 @@ class LocatorList(object):
 
     def __eq__(self, locator_list):
         return _fastdds_python.LocatorList___eq__(self, locator_list)
-
-    def __ne__(self, locator_list):
-        return _fastdds_python.LocatorList___ne__(self, locator_list)
 
     def begin(self, *args):
         return _fastdds_python.LocatorList_begin(self, *args)
@@ -1028,9 +449,6 @@ class LocatorList(object):
 
     def swap(self, locatorList):
         return _fastdds_python.LocatorList_swap(self, locatorList)
-
-    def copy_to(self, locator_list):
-        return _fastdds_python.LocatorList_copy_to(self, locator_list)
 
     def __len__(self):
         return _fastdds_python.LocatorList___len__(self)
@@ -1326,10 +744,6 @@ class PropertyParser(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
-    @staticmethod
-    def as_bool(property):
-        return _fastdds_python.PropertyParser_as_bool(property)
-
     def __init__(self):
         _fastdds_python.PropertyParser_swiginit(self, _fastdds_python.new_PropertyParser())
     __swig_destroy__ = _fastdds_python.delete_PropertyParser
@@ -1409,17 +823,8 @@ class GuidPrefix_t(object):
     size = _fastdds_python.GuidPrefix_t_size
     value = property(_fastdds_python.GuidPrefix_t_value_get, _fastdds_python.GuidPrefix_t_value_set)
 
-    def is_on_same_host_as(self, other_guid_prefix):
-        return _fastdds_python.GuidPrefix_t_is_on_same_host_as(self, other_guid_prefix)
-
-    def is_from_this_host(self):
-        return _fastdds_python.GuidPrefix_t_is_from_this_host(self)
-
-    def is_on_same_process_as(self, other_guid_prefix):
-        return _fastdds_python.GuidPrefix_t_is_on_same_process_as(self, other_guid_prefix)
-
-    def is_from_this_process(self):
-        return _fastdds_python.GuidPrefix_t_is_from_this_process(self)
+    def __init__(self):
+        _fastdds_python.GuidPrefix_t_swiginit(self, _fastdds_python.new_GuidPrefix_t())
 
     @staticmethod
     def unknown():
@@ -1443,9 +848,6 @@ class GuidPrefix_t(object):
 
     def __hash__(self):
         return _fastdds_python.GuidPrefix_t___hash__(self)
-
-    def __init__(self, *args):
-        _fastdds_python.GuidPrefix_t_swiginit(self, _fastdds_python.new_GuidPrefix_t(*args))
     __swig_destroy__ = _fastdds_python.delete_GuidPrefix_t
 
 # Register GuidPrefix_t in _fastdds_python:
@@ -1475,17 +877,14 @@ class GUID_t(object):
     guidPrefix = property(_fastdds_python.GUID_t_guidPrefix_get, _fastdds_python.GUID_t_guidPrefix_set)
     entityId = property(_fastdds_python.GUID_t_entityId_get, _fastdds_python.GUID_t_entityId_set)
 
+    def __init__(self, *args):
+        _fastdds_python.GUID_t_swiginit(self, _fastdds_python.new_GUID_t(*args))
+
     def is_on_same_host_as(self, other_guid):
         return _fastdds_python.GUID_t_is_on_same_host_as(self, other_guid)
 
-    def is_from_this_host(self):
-        return _fastdds_python.GUID_t_is_from_this_host(self)
-
     def is_on_same_process_as(self, other_guid):
         return _fastdds_python.GUID_t_is_on_same_process_as(self, other_guid)
-
-    def is_from_this_process(self):
-        return _fastdds_python.GUID_t_is_from_this_process(self)
 
     def is_builtin(self):
         return _fastdds_python.GUID_t_is_builtin(self)
@@ -1511,9 +910,6 @@ class GUID_t(object):
 
     def __hash__(self):
         return _fastdds_python.GUID_t___hash__(self)
-
-    def __init__(self, *args):
-        _fastdds_python.GUID_t_swiginit(self, _fastdds_python.new_GUID_t(*args))
     __swig_destroy__ = _fastdds_python.delete_GUID_t
 
 # Register GUID_t in _fastdds_python:
@@ -1536,9 +932,6 @@ class PortParameters(object):
 
     def getUnicastPort(self, domainId, RTPSParticipantID):
         return _fastdds_python.PortParameters_getUnicastPort(self, domainId, RTPSParticipantID)
-
-    def get_discovery_server_port(self, domainId):
-        return _fastdds_python.PortParameters_get_discovery_server_port(self, domainId)
     portBase = property(_fastdds_python.PortParameters_portBase_get, _fastdds_python.PortParameters_portBase_set)
     domainIDGain = property(_fastdds_python.PortParameters_domainIDGain_get, _fastdds_python.PortParameters_domainIDGain_set)
     participantIDGain = property(_fastdds_python.PortParameters_participantIDGain_get, _fastdds_python.PortParameters_participantIDGain_set)
@@ -1546,7 +939,6 @@ class PortParameters(object):
     offsetd1 = property(_fastdds_python.PortParameters_offsetd1_get, _fastdds_python.PortParameters_offsetd1_set)
     offsetd2 = property(_fastdds_python.PortParameters_offsetd2_get, _fastdds_python.PortParameters_offsetd2_set)
     offsetd3 = property(_fastdds_python.PortParameters_offsetd3_get, _fastdds_python.PortParameters_offsetd3_set)
-    offsetd4 = property(_fastdds_python.PortParameters_offsetd4_get, _fastdds_python.PortParameters_offsetd4_set)
 
 # Register PortParameters in _fastdds_python:
 _fastdds_python.PortParameters_swigregister(PortParameters)
@@ -1661,6 +1053,12 @@ class InstanceHandleValue_t(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
+    def write_pointer_cast(self):
+        return _fastdds_python.InstanceHandleValue_t_write_pointer_cast(self)
+
+    def read_pointer_cast(self):
+        return _fastdds_python.InstanceHandleValue_t_read_pointer_cast(self)
+
     def has_been_set(self):
         return _fastdds_python.InstanceHandleValue_t_has_been_set(self)
 
@@ -1673,26 +1071,16 @@ class InstanceHandleValue_t(object):
     def __lt__(self, other):
         return _fastdds_python.InstanceHandleValue_t___lt__(self, other)
 
-    def __init__(self, seq):
-        _fastdds_python.InstanceHandleValue_t_swiginit(self, _fastdds_python.new_InstanceHandleValue_t(seq))
-
-    def __len__(self):
-        return _fastdds_python.InstanceHandleValue_t___len__(self)
-
-    def __getitem__(self, i):
-        return _fastdds_python.InstanceHandleValue_t___getitem__(self, i)
-
-    def __setitem__(self, i, v):
-        return _fastdds_python.InstanceHandleValue_t___setitem__(self, i, v)
+    def __init__(self):
+        _fastdds_python.InstanceHandleValue_t_swiginit(self, _fastdds_python.new_InstanceHandleValue_t())
     __swig_destroy__ = _fastdds_python.delete_InstanceHandleValue_t
 
 # Register InstanceHandleValue_t in _fastdds_python:
 _fastdds_python.InstanceHandleValue_t_swigregister(InstanceHandleValue_t)
-RTPS_KEY_HASH_SIZE = cvar.RTPS_KEY_HASH_SIZE
-
 class InstanceHandle_t(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
+    value = property(_fastdds_python.InstanceHandle_t_value_get, _fastdds_python.InstanceHandle_t_value_set)
 
     def __init__(self, *args):
         _fastdds_python.InstanceHandle_t_swiginit(self, _fastdds_python.new_InstanceHandle_t(*args))
@@ -1717,12 +1105,6 @@ class InstanceHandle_t(object):
 
     def __hash__(self):
         return _fastdds_python.InstanceHandle_t___hash__(self)
-
-    def from_sequence(self, seq):
-        return _fastdds_python.InstanceHandle_t_from_sequence(self, seq)
-
-    def to_sequence(self):
-        return _fastdds_python.InstanceHandle_t_to_sequence(self)
     __swig_destroy__ = _fastdds_python.delete_InstanceHandle_t
 
 # Register InstanceHandle_t in _fastdds_python:
@@ -1730,16 +1112,305 @@ _fastdds_python.InstanceHandle_t_swigregister(InstanceHandle_t)
 
 def iHandle2GUID(*args):
     return _fastdds_python.iHandle2GUID(*args)
+class OctetSeq(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
 
-def _ihv_get_value(self):
-    return self.to_sequence()
+    def iterator(self):
+        return _fastdds_python.OctetSeq_iterator(self)
+    def __iter__(self):
+        return self.iterator()
 
-def _ihv_set_value(self, seq):
-    self.from_sequence(seq)
+    def __nonzero__(self):
+        return _fastdds_python.OctetSeq___nonzero__(self)
 
-InstanceHandle_t.value = property(_ihv_get_value, _ihv_set_value,
-                                       doc="16-byte value as list/tuple/bytes/bytearray")
+    def __bool__(self):
+        return _fastdds_python.OctetSeq___bool__(self)
 
+    def __len__(self):
+        return _fastdds_python.OctetSeq___len__(self)
+
+    def __getslice__(self, i, j):
+        return _fastdds_python.OctetSeq___getslice__(self, i, j)
+
+    def __setslice__(self, *args):
+        return _fastdds_python.OctetSeq___setslice__(self, *args)
+
+    def __delslice__(self, i, j):
+        return _fastdds_python.OctetSeq___delslice__(self, i, j)
+
+    def __delitem__(self, *args):
+        return _fastdds_python.OctetSeq___delitem__(self, *args)
+
+    def __getitem__(self, *args):
+        return _fastdds_python.OctetSeq___getitem__(self, *args)
+
+    def __setitem__(self, *args):
+        return _fastdds_python.OctetSeq___setitem__(self, *args)
+
+    def pop(self):
+        return _fastdds_python.OctetSeq_pop(self)
+
+    def append(self, x):
+        return _fastdds_python.OctetSeq_append(self, x)
+
+    def empty(self):
+        return _fastdds_python.OctetSeq_empty(self)
+
+    def size(self):
+        return _fastdds_python.OctetSeq_size(self)
+
+    def swap(self, v):
+        return _fastdds_python.OctetSeq_swap(self, v)
+
+    def begin(self):
+        return _fastdds_python.OctetSeq_begin(self)
+
+    def end(self):
+        return _fastdds_python.OctetSeq_end(self)
+
+    def rbegin(self):
+        return _fastdds_python.OctetSeq_rbegin(self)
+
+    def rend(self):
+        return _fastdds_python.OctetSeq_rend(self)
+
+    def clear(self):
+        return _fastdds_python.OctetSeq_clear(self)
+
+    def get_allocator(self):
+        return _fastdds_python.OctetSeq_get_allocator(self)
+
+    def pop_back(self):
+        return _fastdds_python.OctetSeq_pop_back(self)
+
+    def erase(self, *args):
+        return _fastdds_python.OctetSeq_erase(self, *args)
+
+    def __init__(self, *args):
+        _fastdds_python.OctetSeq_swiginit(self, _fastdds_python.new_OctetSeq(*args))
+
+    def push_back(self, x):
+        return _fastdds_python.OctetSeq_push_back(self, x)
+
+    def front(self):
+        return _fastdds_python.OctetSeq_front(self)
+
+    def back(self):
+        return _fastdds_python.OctetSeq_back(self)
+
+    def assign(self, n, x):
+        return _fastdds_python.OctetSeq_assign(self, n, x)
+
+    def resize(self, *args):
+        return _fastdds_python.OctetSeq_resize(self, *args)
+
+    def insert(self, *args):
+        return _fastdds_python.OctetSeq_insert(self, *args)
+
+    def reserve(self, n):
+        return _fastdds_python.OctetSeq_reserve(self, n)
+
+    def capacity(self):
+        return _fastdds_python.OctetSeq_capacity(self)
+    __swig_destroy__ = _fastdds_python.delete_OctetSeq
+
+# Register OctetSeq in _fastdds_python:
+_fastdds_python.OctetSeq_swigregister(OctetSeq)
+c_InstanceHandle_Unknown = cvar.c_InstanceHandle_Unknown
+
+class ReturnCode_t(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+    RETCODE_OK = _fastdds_python.ReturnCode_t_RETCODE_OK
+    RETCODE_ERROR = _fastdds_python.ReturnCode_t_RETCODE_ERROR
+    RETCODE_UNSUPPORTED = _fastdds_python.ReturnCode_t_RETCODE_UNSUPPORTED
+    RETCODE_BAD_PARAMETER = _fastdds_python.ReturnCode_t_RETCODE_BAD_PARAMETER
+    RETCODE_PRECONDITION_NOT_MET = _fastdds_python.ReturnCode_t_RETCODE_PRECONDITION_NOT_MET
+    RETCODE_OUT_OF_RESOURCES = _fastdds_python.ReturnCode_t_RETCODE_OUT_OF_RESOURCES
+    RETCODE_NOT_ENABLED = _fastdds_python.ReturnCode_t_RETCODE_NOT_ENABLED
+    RETCODE_IMMUTABLE_POLICY = _fastdds_python.ReturnCode_t_RETCODE_IMMUTABLE_POLICY
+    RETCODE_INCONSISTENT_POLICY = _fastdds_python.ReturnCode_t_RETCODE_INCONSISTENT_POLICY
+    RETCODE_ALREADY_DELETED = _fastdds_python.ReturnCode_t_RETCODE_ALREADY_DELETED
+    RETCODE_TIMEOUT = _fastdds_python.ReturnCode_t_RETCODE_TIMEOUT
+    RETCODE_NO_DATA = _fastdds_python.ReturnCode_t_RETCODE_NO_DATA
+    RETCODE_ILLEGAL_OPERATION = _fastdds_python.ReturnCode_t_RETCODE_ILLEGAL_OPERATION
+    RETCODE_NOT_ALLOWED_BY_SECURITY = _fastdds_python.ReturnCode_t_RETCODE_NOT_ALLOWED_BY_SECURITY
+
+    def __init__(self, *args):
+        _fastdds_python.ReturnCode_t_swiginit(self, _fastdds_python.new_ReturnCode_t(*args))
+
+    def __call__(self):
+        return _fastdds_python.ReturnCode_t___call__(self)
+
+    def __str__(self):
+        return _fastdds_python.ReturnCode_t___str__(self)
+
+    def __eq__(self, *args):
+        return _fastdds_python.ReturnCode_t___eq__(self, *args)
+
+    def __ne__(self, *args):
+        return _fastdds_python.ReturnCode_t___ne__(self, *args)
+    __swig_destroy__ = _fastdds_python.delete_ReturnCode_t
+
+# Register ReturnCode_t in _fastdds_python:
+_fastdds_python.ReturnCode_t_swigregister(ReturnCode_t)
+BOUND_UNLIMITED = cvar.BOUND_UNLIMITED
+CONST_TRUE = cvar.CONST_TRUE
+CONST_FALSE = cvar.CONST_FALSE
+ANNOTATION_KEY_ID = cvar.ANNOTATION_KEY_ID
+ANNOTATION_EPKEY_ID = cvar.ANNOTATION_EPKEY_ID
+ANNOTATION_TOPIC_ID = cvar.ANNOTATION_TOPIC_ID
+ANNOTATION_EXTENSIBILITY_ID = cvar.ANNOTATION_EXTENSIBILITY_ID
+ANNOTATION_FINAL_ID = cvar.ANNOTATION_FINAL_ID
+ANNOTATION_APPENDABLE_ID = cvar.ANNOTATION_APPENDABLE_ID
+ANNOTATION_MUTABLE_ID = cvar.ANNOTATION_MUTABLE_ID
+ANNOTATION_NESTED_ID = cvar.ANNOTATION_NESTED_ID
+ANNOTATION_OPTIONAL_ID = cvar.ANNOTATION_OPTIONAL_ID
+ANNOTATION_MUST_UNDERSTAND_ID = cvar.ANNOTATION_MUST_UNDERSTAND_ID
+ANNOTATION_NON_SERIALIZED_ID = cvar.ANNOTATION_NON_SERIALIZED_ID
+ANNOTATION_BIT_BOUND_ID = cvar.ANNOTATION_BIT_BOUND_ID
+ANNOTATION_DEFAULT_ID = cvar.ANNOTATION_DEFAULT_ID
+ANNOTATION_DEFAULT_LITERAL_ID = cvar.ANNOTATION_DEFAULT_LITERAL_ID
+ANNOTATION_VALUE_ID = cvar.ANNOTATION_VALUE_ID
+ANNOTATION_POSITION_ID = cvar.ANNOTATION_POSITION_ID
+EXTENSIBILITY_FINAL = cvar.EXTENSIBILITY_FINAL
+EXTENSIBILITY_APPENDABLE = cvar.EXTENSIBILITY_APPENDABLE
+EXTENSIBILITY_MUTABLE = cvar.EXTENSIBILITY_MUTABLE
+TKNAME_BOOLEAN = cvar.TKNAME_BOOLEAN
+TKNAME_INT16 = cvar.TKNAME_INT16
+TKNAME_UINT16 = cvar.TKNAME_UINT16
+TKNAME_INT32 = cvar.TKNAME_INT32
+TKNAME_UINT32 = cvar.TKNAME_UINT32
+TKNAME_INT64 = cvar.TKNAME_INT64
+TKNAME_UINT64 = cvar.TKNAME_UINT64
+TKNAME_CHAR8 = cvar.TKNAME_CHAR8
+TKNAME_BYTE = cvar.TKNAME_BYTE
+TKNAME_INT8 = cvar.TKNAME_INT8
+TKNAME_UINT8 = cvar.TKNAME_UINT8
+TKNAME_CHAR16 = cvar.TKNAME_CHAR16
+TKNAME_CHAR16T = cvar.TKNAME_CHAR16T
+TKNAME_FLOAT32 = cvar.TKNAME_FLOAT32
+TKNAME_FLOAT64 = cvar.TKNAME_FLOAT64
+TKNAME_FLOAT128 = cvar.TKNAME_FLOAT128
+TKNAME_STRING8 = cvar.TKNAME_STRING8
+TKNAME_STRING16 = cvar.TKNAME_STRING16
+TKNAME_ALIAS = cvar.TKNAME_ALIAS
+TKNAME_ENUM = cvar.TKNAME_ENUM
+TKNAME_BITMASK = cvar.TKNAME_BITMASK
+TKNAME_ANNOTATION = cvar.TKNAME_ANNOTATION
+TKNAME_STRUCTURE = cvar.TKNAME_STRUCTURE
+TKNAME_UNION = cvar.TKNAME_UNION
+TKNAME_BITSET = cvar.TKNAME_BITSET
+TKNAME_SEQUENCE = cvar.TKNAME_SEQUENCE
+TKNAME_ARRAY = cvar.TKNAME_ARRAY
+TKNAME_MAP = cvar.TKNAME_MAP
+EK_MINIMAL = cvar.EK_MINIMAL
+EK_COMPLETE = cvar.EK_COMPLETE
+EK_BOTH = cvar.EK_BOTH
+TK_NONE = cvar.TK_NONE
+TK_BOOLEAN = cvar.TK_BOOLEAN
+TK_BYTE = cvar.TK_BYTE
+TK_INT16 = cvar.TK_INT16
+TK_INT32 = cvar.TK_INT32
+TK_INT64 = cvar.TK_INT64
+TK_UINT16 = cvar.TK_UINT16
+TK_UINT32 = cvar.TK_UINT32
+TK_UINT64 = cvar.TK_UINT64
+TK_FLOAT32 = cvar.TK_FLOAT32
+TK_FLOAT64 = cvar.TK_FLOAT64
+TK_FLOAT128 = cvar.TK_FLOAT128
+TK_CHAR8 = cvar.TK_CHAR8
+TK_CHAR16 = cvar.TK_CHAR16
+TK_STRING8 = cvar.TK_STRING8
+TK_STRING16 = cvar.TK_STRING16
+TK_ALIAS = cvar.TK_ALIAS
+TK_ENUM = cvar.TK_ENUM
+TK_BITMASK = cvar.TK_BITMASK
+TK_ANNOTATION = cvar.TK_ANNOTATION
+TK_STRUCTURE = cvar.TK_STRUCTURE
+TK_UNION = cvar.TK_UNION
+TK_BITSET = cvar.TK_BITSET
+TK_SEQUENCE = cvar.TK_SEQUENCE
+TK_ARRAY = cvar.TK_ARRAY
+TK_MAP = cvar.TK_MAP
+MEMBER_NAME_MAX_LENGTH = cvar.MEMBER_NAME_MAX_LENGTH
+TYPE_NAME_MAX_LENGTH = cvar.TYPE_NAME_MAX_LENGTH
+MemberFlagMinimalMask = cvar.MemberFlagMinimalMask
+
+MEMBER_ID_INVALID = _fastdds_python.MEMBER_ID_INVALID
+class MemberFlag(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+
+    def __init__(self, *args):
+        _fastdds_python.MemberFlag_swiginit(self, _fastdds_python.new_MemberFlag(*args))
+
+    def TRY_CONSTRUCT1(self, *args):
+        return _fastdds_python.MemberFlag_TRY_CONSTRUCT1(self, *args)
+
+    def TRY_CONSTRUCT2(self, *args):
+        return _fastdds_python.MemberFlag_TRY_CONSTRUCT2(self, *args)
+
+    def IS_EXTERNAL(self, *args):
+        return _fastdds_python.MemberFlag_IS_EXTERNAL(self, *args)
+
+    def IS_OPTIONAL(self, *args):
+        return _fastdds_python.MemberFlag_IS_OPTIONAL(self, *args)
+
+    def IS_MUST_UNDERSTAND(self, *args):
+        return _fastdds_python.MemberFlag_IS_MUST_UNDERSTAND(self, *args)
+
+    def IS_KEY(self, *args):
+        return _fastdds_python.MemberFlag_IS_KEY(self, *args)
+
+    def IS_DEFAULT(self, *args):
+        return _fastdds_python.MemberFlag_IS_DEFAULT(self, *args)
+
+    def __eq__(self, other):
+        return _fastdds_python.MemberFlag___eq__(self, other)
+    __swig_destroy__ = _fastdds_python.delete_MemberFlag
+
+# Register MemberFlag in _fastdds_python:
+_fastdds_python.MemberFlag_swigregister(MemberFlag)
+MAX_BITMASK_LENGTH = cvar.MAX_BITMASK_LENGTH
+MAX_ELEMENTS_COUNT = cvar.MAX_ELEMENTS_COUNT
+MAX_STRING_LENGTH = cvar.MAX_STRING_LENGTH
+INVALID_LBOUND = cvar.INVALID_LBOUND
+INVALID_SBOUND = cvar.INVALID_SBOUND
+
+class TypeFlag(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+
+    def __init__(self, *args):
+        _fastdds_python.TypeFlag_swiginit(self, _fastdds_python.new_TypeFlag(*args))
+
+    def IS_FINAL(self, *args):
+        return _fastdds_python.TypeFlag_IS_FINAL(self, *args)
+
+    def IS_APPENDABLE(self, *args):
+        return _fastdds_python.TypeFlag_IS_APPENDABLE(self, *args)
+
+    def IS_MUTABLE(self, *args):
+        return _fastdds_python.TypeFlag_IS_MUTABLE(self, *args)
+
+    def IS_NESTED(self, *args):
+        return _fastdds_python.TypeFlag_IS_NESTED(self, *args)
+
+    def IS_AUTOID_HASH(self, *args):
+        return _fastdds_python.TypeFlag_IS_AUTOID_HASH(self, *args)
+
+    def __eq__(self, other):
+        return _fastdds_python.TypeFlag___eq__(self, other)
+    __swig_destroy__ = _fastdds_python.delete_TypeFlag
+
+# Register TypeFlag in _fastdds_python:
+_fastdds_python.TypeFlag_swigregister(TypeFlag)
+PREALLOCATED_MEMORY_MODE = _fastdds_python.PREALLOCATED_MEMORY_MODE
+PREALLOCATED_WITH_REALLOC_MEMORY_MODE = _fastdds_python.PREALLOCATED_WITH_REALLOC_MEMORY_MODE
+DYNAMIC_RESERVE_MEMORY_MODE = _fastdds_python.DYNAMIC_RESERVE_MEMORY_MODE
+DYNAMIC_REUSABLE_MEMORY_MODE = _fastdds_python.DYNAMIC_REUSABLE_MEMORY_MODE
 class ResourceLimitedContainerConfig(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -1761,15 +1432,13 @@ class ResourceLimitedContainerConfig(object):
 
 # Register ResourceLimitedContainerConfig in _fastdds_python:
 _fastdds_python.ResourceLimitedContainerConfig_swigregister(ResourceLimitedContainerConfig)
-c_InstanceHandle_Unknown = cvar.c_InstanceHandle_Unknown
+TypeFlagMinimalMask = cvar.TypeFlagMinimalMask
+ANNOTATION_STR_VALUE_MAX_LEN = cvar.ANNOTATION_STR_VALUE_MAX_LEN
+ANNOTATION_OCTETSEC_VALUE_MAX_LEN = cvar.ANNOTATION_OCTETSEC_VALUE_MAX_LEN
 
 
 def __eq__(lhs, rhs):
     return _fastdds_python.__eq__(lhs, rhs)
-PREALLOCATED_MEMORY_MODE = _fastdds_python.PREALLOCATED_MEMORY_MODE
-PREALLOCATED_WITH_REALLOC_MEMORY_MODE = _fastdds_python.PREALLOCATED_WITH_REALLOC_MEMORY_MODE
-DYNAMIC_RESERVE_MEMORY_MODE = _fastdds_python.DYNAMIC_RESERVE_MEMORY_MODE
-DYNAMIC_REUSABLE_MEMORY_MODE = _fastdds_python.DYNAMIC_REUSABLE_MEMORY_MODE
 class RemoteLocatorsAllocationAttributes(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -1793,7 +1462,6 @@ class SendBuffersAllocationAttributes(object):
         return _fastdds_python.SendBuffersAllocationAttributes___eq__(self, b)
     preallocated_number = property(_fastdds_python.SendBuffersAllocationAttributes_preallocated_number_get, _fastdds_python.SendBuffersAllocationAttributes_preallocated_number_set)
     dynamic = property(_fastdds_python.SendBuffersAllocationAttributes_dynamic_get, _fastdds_python.SendBuffersAllocationAttributes_dynamic_set)
-    network_buffers_config = property(_fastdds_python.SendBuffersAllocationAttributes_network_buffers_config_get, _fastdds_python.SendBuffersAllocationAttributes_network_buffers_config_set)
 
     def __init__(self):
         _fastdds_python.SendBuffersAllocationAttributes_swiginit(self, _fastdds_python.new_SendBuffersAllocationAttributes())
@@ -1844,28 +1512,6 @@ class RTPSParticipantAllocationAttributes(object):
 
 # Register RTPSParticipantAllocationAttributes in _fastdds_python:
 _fastdds_python.RTPSParticipantAllocationAttributes_swigregister(RTPSParticipantAllocationAttributes)
-class ThreadSettings(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-    scheduling_policy = property(_fastdds_python.ThreadSettings_scheduling_policy_get, _fastdds_python.ThreadSettings_scheduling_policy_set)
-    priority = property(_fastdds_python.ThreadSettings_priority_get, _fastdds_python.ThreadSettings_priority_set)
-    affinity = property(_fastdds_python.ThreadSettings_affinity_get, _fastdds_python.ThreadSettings_affinity_set)
-    stack_size = property(_fastdds_python.ThreadSettings_stack_size_get, _fastdds_python.ThreadSettings_stack_size_set)
-
-    def __eq__(self, rhs):
-        return _fastdds_python.ThreadSettings___eq__(self, rhs)
-
-    def __ne__(self, rhs):
-        return _fastdds_python.ThreadSettings___ne__(self, rhs)
-
-    def __init__(self):
-        _fastdds_python.ThreadSettings_swiginit(self, _fastdds_python.new_ThreadSettings())
-    __swig_destroy__ = _fastdds_python.delete_ThreadSettings
-
-# Register ThreadSettings in _fastdds_python:
-_fastdds_python.ThreadSettings_swigregister(ThreadSettings)
-c_default_RTPSParticipantAllocationAttributes = cvar.c_default_RTPSParticipantAllocationAttributes
-
 FlowControllerSchedulerPolicy_FIFO = _fastdds_python.FlowControllerSchedulerPolicy_FIFO
 FlowControllerSchedulerPolicy_ROUND_ROBIN = _fastdds_python.FlowControllerSchedulerPolicy_ROUND_ROBIN
 FlowControllerSchedulerPolicy_HIGH_PRIORITY = _fastdds_python.FlowControllerSchedulerPolicy_HIGH_PRIORITY
@@ -1876,10 +1522,6 @@ class FlowControllerDescriptor(object):
     scheduler = property(_fastdds_python.FlowControllerDescriptor_scheduler_get, _fastdds_python.FlowControllerDescriptor_scheduler_set)
     max_bytes_per_period = property(_fastdds_python.FlowControllerDescriptor_max_bytes_per_period_get, _fastdds_python.FlowControllerDescriptor_max_bytes_per_period_set)
     period_ms = property(_fastdds_python.FlowControllerDescriptor_period_ms_get, _fastdds_python.FlowControllerDescriptor_period_ms_set)
-    sender_thread = property(_fastdds_python.FlowControllerDescriptor_sender_thread_get, _fastdds_python.FlowControllerDescriptor_sender_thread_set)
-
-    def __eq__(self, b):
-        return _fastdds_python.FlowControllerDescriptor___eq__(self, b)
 
     def __init__(self):
         _fastdds_python.FlowControllerDescriptor_swiginit(self, _fastdds_python.new_FlowControllerDescriptor())
@@ -1888,6 +1530,8 @@ class FlowControllerDescriptor(object):
 
 # Register FlowControllerDescriptor in _fastdds_python:
 _fastdds_python.FlowControllerDescriptor_swigregister(FlowControllerDescriptor)
+c_default_RTPSParticipantAllocationAttributes = cvar.c_default_RTPSParticipantAllocationAttributes
+
 class PropertyPolicy(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -1897,9 +1541,6 @@ class PropertyPolicy(object):
 
     def __eq__(self, b):
         return _fastdds_python.PropertyPolicy___eq__(self, b)
-
-    def __ne__(self, b):
-        return _fastdds_python.PropertyPolicy___ne__(self, b)
 
     def properties(self, *args):
         return _fastdds_python.PropertyPolicy_properties(self, *args)
@@ -1928,16 +1569,13 @@ class ParticipantType(object):
 
 # Register ParticipantType in _fastdds_python:
 _fastdds_python.ParticipantType_swigregister(ParticipantType)
-DiscoveryProtocol_NONE = _fastdds_python.DiscoveryProtocol_NONE
-DiscoveryProtocol_SIMPLE = _fastdds_python.DiscoveryProtocol_SIMPLE
-DiscoveryProtocol_EXTERNAL = _fastdds_python.DiscoveryProtocol_EXTERNAL
-DiscoveryProtocol_CLIENT = _fastdds_python.DiscoveryProtocol_CLIENT
-DiscoveryProtocol_SERVER = _fastdds_python.DiscoveryProtocol_SERVER
-DiscoveryProtocol_BACKUP = _fastdds_python.DiscoveryProtocol_BACKUP
-DiscoveryProtocol_SUPER_CLIENT = _fastdds_python.DiscoveryProtocol_SUPER_CLIENT
-
-def get_server_client_default_guidPrefix(id, guid):
-    return _fastdds_python.get_server_client_default_guidPrefix(id, guid)
+NONE = _fastdds_python.NONE
+SIMPLE = _fastdds_python.SIMPLE
+EXTERNAL = _fastdds_python.EXTERNAL
+CLIENT = _fastdds_python.CLIENT
+SERVER = _fastdds_python.SERVER
+BACKUP = _fastdds_python.BACKUP
+SUPER_CLIENT = _fastdds_python.SUPER_CLIENT
 NO_FILTER = _fastdds_python.NO_FILTER
 FILTER_DIFFERENT_HOST = _fastdds_python.FILTER_DIFFERENT_HOST
 FILTER_DIFFERENT_PROCESS = _fastdds_python.FILTER_DIFFERENT_PROCESS
@@ -1958,9 +1596,6 @@ class PDPFactory(object):
 
 # Register PDPFactory in _fastdds_python:
 _fastdds_python.PDPFactory_swigregister(PDPFactory)
-DEFAULT_ROS2_SERVER_PORT = cvar.DEFAULT_ROS2_SERVER_PORT
-DEFAULT_TCP_SERVER_PORT = cvar.DEFAULT_TCP_SERVER_PORT
-
 class SimpleEDPAttributes(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -2018,55 +1653,26 @@ class DiscoverySettings(object):
 
 # Register DiscoverySettings in _fastdds_python:
 _fastdds_python.DiscoverySettings_swigregister(DiscoverySettings)
-class MutableDiscoverySettings(object):
+class TypeLookupSettings(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
-    m_DiscoveryServers = property(_fastdds_python.MutableDiscoverySettings_m_DiscoveryServers_get, _fastdds_python.MutableDiscoverySettings_m_DiscoveryServers_set)
+    use_client = property(_fastdds_python.TypeLookupSettings_use_client_get, _fastdds_python.TypeLookupSettings_use_client_set)
+    use_server = property(_fastdds_python.TypeLookupSettings_use_server_get, _fastdds_python.TypeLookupSettings_use_server_set)
 
-    def __init__(self, *args):
-        _fastdds_python.MutableDiscoverySettings_swiginit(self, _fastdds_python.new_MutableDiscoverySettings(*args))
+    def __init__(self):
+        _fastdds_python.TypeLookupSettings_swiginit(self, _fastdds_python.new_TypeLookupSettings())
+    __swig_destroy__ = _fastdds_python.delete_TypeLookupSettings
 
-    def __eq__(self, b):
-        return _fastdds_python.MutableDiscoverySettings___eq__(self, b)
-    __swig_destroy__ = _fastdds_python.delete_MutableDiscoverySettings
-
-# Register MutableDiscoverySettings in _fastdds_python:
-_fastdds_python.MutableDiscoverySettings_swigregister(MutableDiscoverySettings)
-class ConstantDiscoverySettings(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-    discoveryProtocol = property(_fastdds_python.ConstantDiscoverySettings_discoveryProtocol_get, _fastdds_python.ConstantDiscoverySettings_discoveryProtocol_set)
-    use_SIMPLE_EndpointDiscoveryProtocol = property(_fastdds_python.ConstantDiscoverySettings_use_SIMPLE_EndpointDiscoveryProtocol_get, _fastdds_python.ConstantDiscoverySettings_use_SIMPLE_EndpointDiscoveryProtocol_set)
-    use_STATIC_EndpointDiscoveryProtocol = property(_fastdds_python.ConstantDiscoverySettings_use_STATIC_EndpointDiscoveryProtocol_get, _fastdds_python.ConstantDiscoverySettings_use_STATIC_EndpointDiscoveryProtocol_set)
-    leaseDuration = property(_fastdds_python.ConstantDiscoverySettings_leaseDuration_get, _fastdds_python.ConstantDiscoverySettings_leaseDuration_set)
-    leaseDuration_announcementperiod = property(_fastdds_python.ConstantDiscoverySettings_leaseDuration_announcementperiod_get, _fastdds_python.ConstantDiscoverySettings_leaseDuration_announcementperiod_set)
-    initial_announcements = property(_fastdds_python.ConstantDiscoverySettings_initial_announcements_get, _fastdds_python.ConstantDiscoverySettings_initial_announcements_set)
-    m_simpleEDP = property(_fastdds_python.ConstantDiscoverySettings_m_simpleEDP_get, _fastdds_python.ConstantDiscoverySettings_m_simpleEDP_set)
-    m_PDPfactory = property(_fastdds_python.ConstantDiscoverySettings_m_PDPfactory_get, _fastdds_python.ConstantDiscoverySettings_m_PDPfactory_set)
-    discoveryServer_client_syncperiod = property(_fastdds_python.ConstantDiscoverySettings_discoveryServer_client_syncperiod_get, _fastdds_python.ConstantDiscoverySettings_discoveryServer_client_syncperiod_set)
-    ignoreParticipantFlags = property(_fastdds_python.ConstantDiscoverySettings_ignoreParticipantFlags_get, _fastdds_python.ConstantDiscoverySettings_ignoreParticipantFlags_set)
-
-    def __init__(self, *args):
-        _fastdds_python.ConstantDiscoverySettings_swiginit(self, _fastdds_python.new_ConstantDiscoverySettings(*args))
-
-    def __eq__(self, b):
-        return _fastdds_python.ConstantDiscoverySettings___eq__(self, b)
-
-    def static_edp_xml_config(self):
-        return _fastdds_python.ConstantDiscoverySettings_static_edp_xml_config(self)
-    __swig_destroy__ = _fastdds_python.delete_ConstantDiscoverySettings
-
-# Register ConstantDiscoverySettings in _fastdds_python:
-_fastdds_python.ConstantDiscoverySettings_swigregister(ConstantDiscoverySettings)
+# Register TypeLookupSettings in _fastdds_python:
+_fastdds_python.TypeLookupSettings_swigregister(TypeLookupSettings)
 class BuiltinAttributes(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
     discovery_config = property(_fastdds_python.BuiltinAttributes_discovery_config_get, _fastdds_python.BuiltinAttributes_discovery_config_set)
     use_WriterLivelinessProtocol = property(_fastdds_python.BuiltinAttributes_use_WriterLivelinessProtocol_get, _fastdds_python.BuiltinAttributes_use_WriterLivelinessProtocol_set)
-    network_configuration = property(_fastdds_python.BuiltinAttributes_network_configuration_get, _fastdds_python.BuiltinAttributes_network_configuration_set)
+    typelookup_config = property(_fastdds_python.BuiltinAttributes_typelookup_config_get, _fastdds_python.BuiltinAttributes_typelookup_config_set)
     metatrafficUnicastLocatorList = property(_fastdds_python.BuiltinAttributes_metatrafficUnicastLocatorList_get, _fastdds_python.BuiltinAttributes_metatrafficUnicastLocatorList_set)
     metatrafficMulticastLocatorList = property(_fastdds_python.BuiltinAttributes_metatrafficMulticastLocatorList_get, _fastdds_python.BuiltinAttributes_metatrafficMulticastLocatorList_set)
-    metatraffic_external_unicast_locators = property(_fastdds_python.BuiltinAttributes_metatraffic_external_unicast_locators_get, _fastdds_python.BuiltinAttributes_metatraffic_external_unicast_locators_set)
     initialPeersList = property(_fastdds_python.BuiltinAttributes_initialPeersList_get, _fastdds_python.BuiltinAttributes_initialPeersList_set)
     readerHistoryMemoryPolicy = property(_fastdds_python.BuiltinAttributes_readerHistoryMemoryPolicy_get, _fastdds_python.BuiltinAttributes_readerHistoryMemoryPolicy_set)
     readerPayloadSize = property(_fastdds_python.BuiltinAttributes_readerPayloadSize_get, _fastdds_python.BuiltinAttributes_readerPayloadSize_set)
@@ -2074,118 +1680,216 @@ class BuiltinAttributes(object):
     writerPayloadSize = property(_fastdds_python.BuiltinAttributes_writerPayloadSize_get, _fastdds_python.BuiltinAttributes_writerPayloadSize_set)
     mutation_tries = property(_fastdds_python.BuiltinAttributes_mutation_tries_get, _fastdds_python.BuiltinAttributes_mutation_tries_set)
     avoid_builtin_multicast = property(_fastdds_python.BuiltinAttributes_avoid_builtin_multicast_get, _fastdds_python.BuiltinAttributes_avoid_builtin_multicast_set)
-    flow_controller_name = property(_fastdds_python.BuiltinAttributes_flow_controller_name_get, _fastdds_python.BuiltinAttributes_flow_controller_name_set)
 
     def __init__(self):
         _fastdds_python.BuiltinAttributes_swiginit(self, _fastdds_python.new_BuiltinAttributes())
     __swig_destroy__ = _fastdds_python.delete_BuiltinAttributes
-
-    def compose(self, builtin_const, builtin_mutable):
-        return _fastdds_python.BuiltinAttributes_compose(self, builtin_const, builtin_mutable)
 
     def __eq__(self, b):
         return _fastdds_python.BuiltinAttributes___eq__(self, b)
 
 # Register BuiltinAttributes in _fastdds_python:
 _fastdds_python.BuiltinAttributes_swigregister(BuiltinAttributes)
-class BuiltinMutableAttributes(object):
+class RemoteServerAttributesList(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
-    discovery_config = property(_fastdds_python.BuiltinMutableAttributes_discovery_config_get, _fastdds_python.BuiltinMutableAttributes_discovery_config_set)
-    metatrafficUnicastLocatorList = property(_fastdds_python.BuiltinMutableAttributes_metatrafficUnicastLocatorList_get, _fastdds_python.BuiltinMutableAttributes_metatrafficUnicastLocatorList_set)
-    metatraffic_external_unicast_locators = property(_fastdds_python.BuiltinMutableAttributes_metatraffic_external_unicast_locators_get, _fastdds_python.BuiltinMutableAttributes_metatraffic_external_unicast_locators_set)
+
+    def iterator(self):
+        return _fastdds_python.RemoteServerAttributesList_iterator(self)
+    def __iter__(self):
+        return self.iterator()
+
+    def __nonzero__(self):
+        return _fastdds_python.RemoteServerAttributesList___nonzero__(self)
+
+    def __bool__(self):
+        return _fastdds_python.RemoteServerAttributesList___bool__(self)
+
+    def __len__(self):
+        return _fastdds_python.RemoteServerAttributesList___len__(self)
+
+    def __getslice__(self, i, j):
+        return _fastdds_python.RemoteServerAttributesList___getslice__(self, i, j)
+
+    def __setslice__(self, *args):
+        return _fastdds_python.RemoteServerAttributesList___setslice__(self, *args)
+
+    def __delslice__(self, i, j):
+        return _fastdds_python.RemoteServerAttributesList___delslice__(self, i, j)
+
+    def __delitem__(self, *args):
+        return _fastdds_python.RemoteServerAttributesList___delitem__(self, *args)
+
+    def __getitem__(self, *args):
+        return _fastdds_python.RemoteServerAttributesList___getitem__(self, *args)
+
+    def __setitem__(self, *args):
+        return _fastdds_python.RemoteServerAttributesList___setitem__(self, *args)
+
+    def pop(self):
+        return _fastdds_python.RemoteServerAttributesList_pop(self)
+
+    def append(self, x):
+        return _fastdds_python.RemoteServerAttributesList_append(self, x)
+
+    def empty(self):
+        return _fastdds_python.RemoteServerAttributesList_empty(self)
+
+    def size(self):
+        return _fastdds_python.RemoteServerAttributesList_size(self)
+
+    def swap(self, v):
+        return _fastdds_python.RemoteServerAttributesList_swap(self, v)
+
+    def begin(self):
+        return _fastdds_python.RemoteServerAttributesList_begin(self)
+
+    def end(self):
+        return _fastdds_python.RemoteServerAttributesList_end(self)
+
+    def rbegin(self):
+        return _fastdds_python.RemoteServerAttributesList_rbegin(self)
+
+    def rend(self):
+        return _fastdds_python.RemoteServerAttributesList_rend(self)
+
+    def clear(self):
+        return _fastdds_python.RemoteServerAttributesList_clear(self)
+
+    def get_allocator(self):
+        return _fastdds_python.RemoteServerAttributesList_get_allocator(self)
+
+    def pop_back(self):
+        return _fastdds_python.RemoteServerAttributesList_pop_back(self)
+
+    def erase(self, *args):
+        return _fastdds_python.RemoteServerAttributesList_erase(self, *args)
 
     def __init__(self, *args):
-        _fastdds_python.BuiltinMutableAttributes_swiginit(self, _fastdds_python.new_BuiltinMutableAttributes(*args))
-    __swig_destroy__ = _fastdds_python.delete_BuiltinMutableAttributes
+        _fastdds_python.RemoteServerAttributesList_swiginit(self, _fastdds_python.new_RemoteServerAttributesList(*args))
 
-    def __eq__(self, b):
-        return _fastdds_python.BuiltinMutableAttributes___eq__(self, b)
+    def push_back(self, x):
+        return _fastdds_python.RemoteServerAttributesList_push_back(self, x)
 
-# Register BuiltinMutableAttributes in _fastdds_python:
-_fastdds_python.BuiltinMutableAttributes_swigregister(BuiltinMutableAttributes)
-class BuiltinConstantAttributes(object):
+    def front(self):
+        return _fastdds_python.RemoteServerAttributesList_front(self)
+
+    def back(self):
+        return _fastdds_python.RemoteServerAttributesList_back(self)
+
+    def assign(self, n, x):
+        return _fastdds_python.RemoteServerAttributesList_assign(self, n, x)
+
+    def resize(self, *args):
+        return _fastdds_python.RemoteServerAttributesList_resize(self, *args)
+
+    def insert(self, *args):
+        return _fastdds_python.RemoteServerAttributesList_insert(self, *args)
+
+    def pop_front(self):
+        return _fastdds_python.RemoteServerAttributesList_pop_front(self)
+
+    def push_front(self, x):
+        return _fastdds_python.RemoteServerAttributesList_push_front(self, x)
+
+    def reverse(self):
+        return _fastdds_python.RemoteServerAttributesList_reverse(self)
+    __swig_destroy__ = _fastdds_python.delete_RemoteServerAttributesList
+
+# Register RemoteServerAttributesList in _fastdds_python:
+_fastdds_python.RemoteServerAttributesList_swigregister(RemoteServerAttributesList)
+class RemoteServerAttributes(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
-    discovery_config = property(_fastdds_python.BuiltinConstantAttributes_discovery_config_get, _fastdds_python.BuiltinConstantAttributes_discovery_config_set)
-    use_WriterLivelinessProtocol = property(_fastdds_python.BuiltinConstantAttributes_use_WriterLivelinessProtocol_get, _fastdds_python.BuiltinConstantAttributes_use_WriterLivelinessProtocol_set)
-    network_configuration = property(_fastdds_python.BuiltinConstantAttributes_network_configuration_get, _fastdds_python.BuiltinConstantAttributes_network_configuration_set)
-    metatrafficMulticastLocatorList = property(_fastdds_python.BuiltinConstantAttributes_metatrafficMulticastLocatorList_get, _fastdds_python.BuiltinConstantAttributes_metatrafficMulticastLocatorList_set)
-    initialPeersList = property(_fastdds_python.BuiltinConstantAttributes_initialPeersList_get, _fastdds_python.BuiltinConstantAttributes_initialPeersList_set)
-    readerHistoryMemoryPolicy = property(_fastdds_python.BuiltinConstantAttributes_readerHistoryMemoryPolicy_get, _fastdds_python.BuiltinConstantAttributes_readerHistoryMemoryPolicy_set)
-    readerPayloadSize = property(_fastdds_python.BuiltinConstantAttributes_readerPayloadSize_get, _fastdds_python.BuiltinConstantAttributes_readerPayloadSize_set)
-    writerHistoryMemoryPolicy = property(_fastdds_python.BuiltinConstantAttributes_writerHistoryMemoryPolicy_get, _fastdds_python.BuiltinConstantAttributes_writerHistoryMemoryPolicy_set)
-    writerPayloadSize = property(_fastdds_python.BuiltinConstantAttributes_writerPayloadSize_get, _fastdds_python.BuiltinConstantAttributes_writerPayloadSize_set)
-    mutation_tries = property(_fastdds_python.BuiltinConstantAttributes_mutation_tries_get, _fastdds_python.BuiltinConstantAttributes_mutation_tries_set)
-    avoid_builtin_multicast = property(_fastdds_python.BuiltinConstantAttributes_avoid_builtin_multicast_get, _fastdds_python.BuiltinConstantAttributes_avoid_builtin_multicast_set)
-    flow_controller_name = property(_fastdds_python.BuiltinConstantAttributes_flow_controller_name_get, _fastdds_python.BuiltinConstantAttributes_flow_controller_name_set)
 
-    def __init__(self, *args):
-        _fastdds_python.BuiltinConstantAttributes_swiginit(self, _fastdds_python.new_BuiltinConstantAttributes(*args))
-    __swig_destroy__ = _fastdds_python.delete_BuiltinConstantAttributes
+    def __eq__(self, r):
+        return _fastdds_python.RemoteServerAttributes___eq__(self, r)
 
-    def __eq__(self, b):
-        return _fastdds_python.BuiltinConstantAttributes___eq__(self, b)
+    def clear(self):
+        return _fastdds_python.RemoteServerAttributes_clear(self)
 
-# Register BuiltinConstantAttributes in _fastdds_python:
-_fastdds_python.BuiltinConstantAttributes_swigregister(BuiltinConstantAttributes)
+    def GetParticipant(self):
+        return _fastdds_python.RemoteServerAttributes_GetParticipant(self)
+
+    def GetPDPReader(self):
+        return _fastdds_python.RemoteServerAttributes_GetPDPReader(self)
+
+    def GetPDPWriter(self):
+        return _fastdds_python.RemoteServerAttributes_GetPDPWriter(self)
+
+    def ReadguidPrefix(self, pfx):
+        return _fastdds_python.RemoteServerAttributes_ReadguidPrefix(self, pfx)
+    metatrafficUnicastLocatorList = property(_fastdds_python.RemoteServerAttributes_metatrafficUnicastLocatorList_get, _fastdds_python.RemoteServerAttributes_metatrafficUnicastLocatorList_set)
+    metatrafficMulticastLocatorList = property(_fastdds_python.RemoteServerAttributes_metatrafficMulticastLocatorList_get, _fastdds_python.RemoteServerAttributes_metatrafficMulticastLocatorList_set)
+    guidPrefix = property(_fastdds_python.RemoteServerAttributes_guidPrefix_get, _fastdds_python.RemoteServerAttributes_guidPrefix_set)
+    is_connected = property(_fastdds_python.RemoteServerAttributes_is_connected_get, _fastdds_python.RemoteServerAttributes_is_connected_set)
+
+    def __init__(self):
+        _fastdds_python.RemoteServerAttributes_swiginit(self, _fastdds_python.new_RemoteServerAttributes())
+    __swig_destroy__ = _fastdds_python.delete_RemoteServerAttributes
+
+# Register RemoteServerAttributes in _fastdds_python:
+_fastdds_python.RemoteServerAttributes_swigregister(RemoteServerAttributes)
+
+def load_environment_server_info(*args):
+    return _fastdds_python.load_environment_server_info(*args)
+
+def ros_discovery_server_env():
+    return _fastdds_python.ros_discovery_server_env()
+
+def ros_super_client_env():
+    return _fastdds_python.ros_super_client_env()
+
+def get_server_client_default_guidPrefix(id, guid):
+    return _fastdds_python.get_server_client_default_guidPrefix(id, guid)
 class ReaderTimes(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
-
-    def __eq__(self, b):
-        return _fastdds_python.ReaderTimes___eq__(self, b)
-    initial_acknack_delay = property(_fastdds_python.ReaderTimes_initial_acknack_delay_get, _fastdds_python.ReaderTimes_initial_acknack_delay_set)
-    heartbeat_response_delay = property(_fastdds_python.ReaderTimes_heartbeat_response_delay_get, _fastdds_python.ReaderTimes_heartbeat_response_delay_set)
 
     def __init__(self):
         _fastdds_python.ReaderTimes_swiginit(self, _fastdds_python.new_ReaderTimes())
     __swig_destroy__ = _fastdds_python.delete_ReaderTimes
 
+    def __eq__(self, b):
+        return _fastdds_python.ReaderTimes___eq__(self, b)
+    initialAcknackDelay = property(_fastdds_python.ReaderTimes_initialAcknackDelay_get, _fastdds_python.ReaderTimes_initialAcknackDelay_set)
+    heartbeatResponseDelay = property(_fastdds_python.ReaderTimes_heartbeatResponseDelay_get, _fastdds_python.ReaderTimes_heartbeatResponseDelay_set)
+
 # Register ReaderTimes in _fastdds_python:
 _fastdds_python.ReaderTimes_swigregister(ReaderTimes)
+DEFAULT_ROS2_SERVER_PORT = cvar.DEFAULT_ROS2_SERVER_PORT
+DEFAULT_ROS2_SERVER_GUIDPREFIX = cvar.DEFAULT_ROS2_SERVER_GUIDPREFIX
+DEFAULT_TCP_SERVER_PORT = cvar.DEFAULT_TCP_SERVER_PORT
+DEFAULT_ROS2_MASTER_URI = cvar.DEFAULT_ROS2_MASTER_URI
+ROS_SUPER_CLIENT = cvar.ROS_SUPER_CLIENT
+
 SYNCHRONOUS_WRITER = _fastdds_python.SYNCHRONOUS_WRITER
 ASYNCHRONOUS_WRITER = _fastdds_python.ASYNCHRONOUS_WRITER
 class WriterTimes(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
-
-    def __eq__(self, b):
-        return _fastdds_python.WriterTimes___eq__(self, b)
-    initial_heartbeat_delay = property(_fastdds_python.WriterTimes_initial_heartbeat_delay_get, _fastdds_python.WriterTimes_initial_heartbeat_delay_set)
-    heartbeat_period = property(_fastdds_python.WriterTimes_heartbeat_period_get, _fastdds_python.WriterTimes_heartbeat_period_set)
-    nack_response_delay = property(_fastdds_python.WriterTimes_nack_response_delay_get, _fastdds_python.WriterTimes_nack_response_delay_set)
-    nack_supression_duration = property(_fastdds_python.WriterTimes_nack_supression_duration_get, _fastdds_python.WriterTimes_nack_supression_duration_set)
+    initialHeartbeatDelay = property(_fastdds_python.WriterTimes_initialHeartbeatDelay_get, _fastdds_python.WriterTimes_initialHeartbeatDelay_set)
+    heartbeatPeriod = property(_fastdds_python.WriterTimes_heartbeatPeriod_get, _fastdds_python.WriterTimes_heartbeatPeriod_set)
+    nackResponseDelay = property(_fastdds_python.WriterTimes_nackResponseDelay_get, _fastdds_python.WriterTimes_nackResponseDelay_set)
+    nackSupressionDuration = property(_fastdds_python.WriterTimes_nackSupressionDuration_get, _fastdds_python.WriterTimes_nackSupressionDuration_set)
 
     def __init__(self):
         _fastdds_python.WriterTimes_swiginit(self, _fastdds_python.new_WriterTimes())
     __swig_destroy__ = _fastdds_python.delete_WriterTimes
 
+    def __eq__(self, b):
+        return _fastdds_python.WriterTimes___eq__(self, b)
+
 # Register WriterTimes in _fastdds_python:
 _fastdds_python.WriterTimes_swigregister(WriterTimes)
-class RemoteLocatorList(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def __init__(self, *args):
-        _fastdds_python.RemoteLocatorList_swiginit(self, _fastdds_python.new_RemoteLocatorList(*args))
-
-    def add_unicast_locator(self, locator):
-        return _fastdds_python.RemoteLocatorList_add_unicast_locator(self, locator)
-
-    def add_multicast_locator(self, locator):
-        return _fastdds_python.RemoteLocatorList_add_multicast_locator(self, locator)
-    unicast = property(_fastdds_python.RemoteLocatorList_unicast_get, _fastdds_python.RemoteLocatorList_unicast_set)
-    multicast = property(_fastdds_python.RemoteLocatorList_multicast_get, _fastdds_python.RemoteLocatorList_multicast_set)
-    __swig_destroy__ = _fastdds_python.delete_RemoteLocatorList
-
-# Register RemoteLocatorList in _fastdds_python:
-_fastdds_python.RemoteLocatorList_swigregister(RemoteLocatorList)
 class SequenceNumber_t(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
     high = property(_fastdds_python.SequenceNumber_t_high_get, _fastdds_python.SequenceNumber_t_high_set)
     low = property(_fastdds_python.SequenceNumber_t_low_get, _fastdds_python.SequenceNumber_t_low_set)
+
+    def __init__(self, *args):
+        _fastdds_python.SequenceNumber_t_swiginit(self, _fastdds_python.new_SequenceNumber_t(*args))
 
     def to64long(self):
         return _fastdds_python.SequenceNumber_t_to64long(self)
@@ -2196,9 +1900,6 @@ class SequenceNumber_t(object):
     @staticmethod
     def unknown():
         return _fastdds_python.SequenceNumber_t_unknown()
-
-    def __init__(self, *args):
-        _fastdds_python.SequenceNumber_t_swiginit(self, _fastdds_python.new_SequenceNumber_t(*args))
     __swig_destroy__ = _fastdds_python.delete_SequenceNumber_t
 
 # Register SequenceNumber_t in _fastdds_python:
@@ -2256,6 +1957,9 @@ class SampleIdentity(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
+    def __init__(self, *args):
+        _fastdds_python.SampleIdentity_swiginit(self, _fastdds_python.new_SampleIdentity(*args))
+
     def __eq__(self, sample_id):
         return _fastdds_python.SampleIdentity___eq__(self, sample_id)
 
@@ -2274,106 +1978,33 @@ class SampleIdentity(object):
     @staticmethod
     def unknown():
         return _fastdds_python.SampleIdentity_unknown()
-
-    def __init__(self, *args):
-        _fastdds_python.SampleIdentity_swiginit(self, _fastdds_python.new_SampleIdentity(*args))
     __swig_destroy__ = _fastdds_python.delete_SampleIdentity
 
 # Register SampleIdentity in _fastdds_python:
 _fastdds_python.SampleIdentity_swigregister(SampleIdentity)
 
-def __rshift__(*args):
-    return _fastdds_python.__rshift__(*args)
+def __rshift__(input, sid):
+    return _fastdds_python.__rshift__(input, sid)
 
-def __lshift__(*args):
-    return _fastdds_python.__lshift__(*args)
-class OriginalWriterInfo(object):
+def __lshift__(output, sid):
+    return _fastdds_python.__lshift__(output, sid)
+class WriteParams(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
 
     def __init__(self, *args):
-        _fastdds_python.OriginalWriterInfo_swiginit(self, _fastdds_python.new_OriginalWriterInfo(*args))
-
-    def original_writer_guid(self, *args):
-        return _fastdds_python.OriginalWriterInfo_original_writer_guid(self, *args)
-
-    def sequence_number(self, *args):
-        return _fastdds_python.OriginalWriterInfo_sequence_number(self, *args)
-
-    @staticmethod
-    def unknown():
-        return _fastdds_python.OriginalWriterInfo_unknown()
-
-    def __eq__(self, other):
-        return _fastdds_python.OriginalWriterInfo___eq__(self, other)
-
-    def __ne__(self, other):
-        return _fastdds_python.OriginalWriterInfo___ne__(self, other)
-    __swig_destroy__ = _fastdds_python.delete_OriginalWriterInfo
-
-# Register OriginalWriterInfo in _fastdds_python:
-_fastdds_python.OriginalWriterInfo_swigregister(OriginalWriterInfo)
-class WriteParams(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
+        _fastdds_python.WriteParams_swiginit(self, _fastdds_python.new_WriteParams(*args))
 
     def sample_identity(self, *args):
         return _fastdds_python.WriteParams_sample_identity(self, *args)
 
     def related_sample_identity(self, *args):
         return _fastdds_python.WriteParams_related_sample_identity(self, *args)
-
-    def source_timestamp(self, *args):
-        return _fastdds_python.WriteParams_source_timestamp(self, *args)
-
-    def user_write_data(self, *args):
-        return _fastdds_python.WriteParams_user_write_data(self, *args)
-
-    def has_more_replies(self, *args):
-        return _fastdds_python.WriteParams_has_more_replies(self, *args)
-
-    def original_writer_info(self, *args):
-        return _fastdds_python.WriteParams_original_writer_info(self, *args)
     WRITE_PARAM_DEFAULT = property(_fastdds_python.WriteParams_WRITE_PARAM_DEFAULT_get, _fastdds_python.WriteParams_WRITE_PARAM_DEFAULT_set)
-
-    @staticmethod
-    def write_params_default():
-        return _fastdds_python.WriteParams_write_params_default()
-
-    def __init__(self, *args):
-        _fastdds_python.WriteParams_swiginit(self, _fastdds_python.new_WriteParams(*args))
     __swig_destroy__ = _fastdds_python.delete_WriteParams
 
 # Register WriteParams in _fastdds_python:
 _fastdds_python.WriteParams_swigregister(WriteParams)
-class ContentFilterProperty(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def __init__(self, config):
-        _fastdds_python.ContentFilterProperty_swiginit(self, _fastdds_python.new_ContentFilterProperty(config))
-    content_filtered_topic_name = property(_fastdds_python.ContentFilterProperty_content_filtered_topic_name_get, _fastdds_python.ContentFilterProperty_content_filtered_topic_name_set)
-    related_topic_name = property(_fastdds_python.ContentFilterProperty_related_topic_name_get, _fastdds_python.ContentFilterProperty_related_topic_name_set)
-    filter_class_name = property(_fastdds_python.ContentFilterProperty_filter_class_name_get, _fastdds_python.ContentFilterProperty_filter_class_name_set)
-    filter_expression = property(_fastdds_python.ContentFilterProperty_filter_expression_get, _fastdds_python.ContentFilterProperty_filter_expression_set)
-    expression_parameters = property(_fastdds_python.ContentFilterProperty_expression_parameters_get, _fastdds_python.ContentFilterProperty_expression_parameters_set)
-    __swig_destroy__ = _fastdds_python.delete_ContentFilterProperty
-
-# Register ContentFilterProperty in _fastdds_python:
-_fastdds_python.ContentFilterProperty_swigregister(ContentFilterProperty)
-ReaderDiscoveryStatus_DISCOVERED_READER = _fastdds_python.ReaderDiscoveryStatus_DISCOVERED_READER
-ReaderDiscoveryStatus_CHANGED_QOS_READER = _fastdds_python.ReaderDiscoveryStatus_CHANGED_QOS_READER
-ReaderDiscoveryStatus_REMOVED_READER = _fastdds_python.ReaderDiscoveryStatus_REMOVED_READER
-ReaderDiscoveryStatus_IGNORED_READER = _fastdds_python.ReaderDiscoveryStatus_IGNORED_READER
-WriterDiscoveryStatus_DISCOVERED_WRITER = _fastdds_python.WriterDiscoveryStatus_DISCOVERED_WRITER
-WriterDiscoveryStatus_CHANGED_QOS_WRITER = _fastdds_python.WriterDiscoveryStatus_CHANGED_QOS_WRITER
-WriterDiscoveryStatus_REMOVED_WRITER = _fastdds_python.WriterDiscoveryStatus_REMOVED_WRITER
-WriterDiscoveryStatus_IGNORED_WRITER = _fastdds_python.WriterDiscoveryStatus_IGNORED_WRITER
-ParticipantDiscoveryStatus_DISCOVERED_PARTICIPANT = _fastdds_python.ParticipantDiscoveryStatus_DISCOVERED_PARTICIPANT
-ParticipantDiscoveryStatus_CHANGED_QOS_PARTICIPANT = _fastdds_python.ParticipantDiscoveryStatus_CHANGED_QOS_PARTICIPANT
-ParticipantDiscoveryStatus_REMOVED_PARTICIPANT = _fastdds_python.ParticipantDiscoveryStatus_REMOVED_PARTICIPANT
-ParticipantDiscoveryStatus_DROPPED_PARTICIPANT = _fastdds_python.ParticipantDiscoveryStatus_DROPPED_PARTICIPANT
-ParticipantDiscoveryStatus_IGNORED_PARTICIPANT = _fastdds_python.ParticipantDiscoveryStatus_IGNORED_PARTICIPANT
 FASTDDS_STATUS_COUNT = _fastdds_python.FASTDDS_STATUS_COUNT
 class StatusMask(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
@@ -2458,20 +2089,6 @@ class StatusMask(object):
 # Register StatusMask in _fastdds_python:
 _fastdds_python.StatusMask_swigregister(StatusMask)
 HANDLE_NIL = cvar.HANDLE_NIL
-RETCODE_OK = cvar.RETCODE_OK
-RETCODE_ERROR = cvar.RETCODE_ERROR
-RETCODE_UNSUPPORTED = cvar.RETCODE_UNSUPPORTED
-RETCODE_BAD_PARAMETER = cvar.RETCODE_BAD_PARAMETER
-RETCODE_PRECONDITION_NOT_MET = cvar.RETCODE_PRECONDITION_NOT_MET
-RETCODE_OUT_OF_RESOURCES = cvar.RETCODE_OUT_OF_RESOURCES
-RETCODE_NOT_ENABLED = cvar.RETCODE_NOT_ENABLED
-RETCODE_IMMUTABLE_POLICY = cvar.RETCODE_IMMUTABLE_POLICY
-RETCODE_INCONSISTENT_POLICY = cvar.RETCODE_INCONSISTENT_POLICY
-RETCODE_ALREADY_DELETED = cvar.RETCODE_ALREADY_DELETED
-RETCODE_TIMEOUT = cvar.RETCODE_TIMEOUT
-RETCODE_NO_DATA = cvar.RETCODE_NO_DATA
-RETCODE_ILLEGAL_OPERATION = cvar.RETCODE_ILLEGAL_OPERATION
-RETCODE_NOT_ALLOWED_BY_SECURITY = cvar.RETCODE_NOT_ALLOWED_BY_SECURITY
 
 PID_PAD = _fastdds_python.PID_PAD
 PID_SENTINEL = _fastdds_python.PID_SENTINEL
@@ -2540,27 +2157,10 @@ PID_PARTICIPANT_SECURITY_INFO = _fastdds_python.PID_PARTICIPANT_SECURITY_INFO
 PID_ENDPOINT_SECURITY_INFO = _fastdds_python.PID_ENDPOINT_SECURITY_INFO
 PID_IDENTITY_STATUS_TOKEN = _fastdds_python.PID_IDENTITY_STATUS_TOKEN
 PID_DATA_TAGS = _fastdds_python.PID_DATA_TAGS
-PID_SERVICE_INSTANCE_NAME = _fastdds_python.PID_SERVICE_INSTANCE_NAME
-PID_RELATED_ENTITY_GUID = _fastdds_python.PID_RELATED_ENTITY_GUID
-PID_TOPIC_ALIASES = _fastdds_python.PID_TOPIC_ALIASES
-PID_RELATED_SAMPLE_IDENTITY = _fastdds_python.PID_RELATED_SAMPLE_IDENTITY
-PID_PRODUCT_VERSION = _fastdds_python.PID_PRODUCT_VERSION
 PID_PERSISTENCE_GUID = _fastdds_python.PID_PERSISTENCE_GUID
-PID_MACHINE_ID = _fastdds_python.PID_MACHINE_ID
+PID_RELATED_SAMPLE_IDENTITY = _fastdds_python.PID_RELATED_SAMPLE_IDENTITY
 PID_DISABLE_POSITIVE_ACKS = _fastdds_python.PID_DISABLE_POSITIVE_ACKS
 PID_DATASHARING = _fastdds_python.PID_DATASHARING
-PID_NETWORK_CONFIGURATION_SET = _fastdds_python.PID_NETWORK_CONFIGURATION_SET
-PID_CUSTOM_RELATED_SAMPLE_IDENTITY = _fastdds_python.PID_CUSTOM_RELATED_SAMPLE_IDENTITY
-PID_RTPS_ENDPOINT = _fastdds_python.PID_RTPS_ENDPOINT
-PID_WRITER_DATA_LIFECYCLE = _fastdds_python.PID_WRITER_DATA_LIFECYCLE
-PID_PUBLISH_MODE = _fastdds_python.PID_PUBLISH_MODE
-PID_RTPS_RELIABLE_WRITER = _fastdds_python.PID_RTPS_RELIABLE_WRITER
-PID_WRITER_RESOURCE_LIMITS = _fastdds_python.PID_WRITER_RESOURCE_LIMITS
-PID_READER_DATA_LIFECYCLE = _fastdds_python.PID_READER_DATA_LIFECYCLE
-PID_RTPS_RELIABLE_READER = _fastdds_python.PID_RTPS_RELIABLE_READER
-PID_READER_RESOURCE_LIMITS = _fastdds_python.PID_READER_RESOURCE_LIMITS
-PID_WIREPROTOCOL_CONFIG = _fastdds_python.PID_WIREPROTOCOL_CONFIG
-PID_RPC_MORE_REPLIES = _fastdds_python.PID_RPC_MORE_REPLIES
 PID_SAFE_DDS_SIGNATURE = _fastdds_python.PID_SAFE_DDS_SIGNATURE
 class Parameter_t(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
@@ -2644,18 +2244,6 @@ class ParameterGuid_t(Parameter_t):
 # Register ParameterGuid_t in _fastdds_python:
 _fastdds_python.ParameterGuid_t_swigregister(ParameterGuid_t)
 PARAMETER_GUID_LENGTH = _fastdds_python.PARAMETER_GUID_LENGTH
-class ParameterDomainId_t(Parameter_t):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-    domain_id = property(_fastdds_python.ParameterDomainId_t_domain_id_get, _fastdds_python.ParameterDomainId_t_domain_id_set)
-
-    def __init__(self, *args):
-        _fastdds_python.ParameterDomainId_t_swiginit(self, _fastdds_python.new_ParameterDomainId_t(*args))
-    __swig_destroy__ = _fastdds_python.delete_ParameterDomainId_t
-
-# Register ParameterDomainId_t in _fastdds_python:
-_fastdds_python.ParameterDomainId_t_swigregister(ParameterDomainId_t)
-PARAMETER_DOMAINID_LENGTH = _fastdds_python.PARAMETER_DOMAINID_LENGTH
 class ParameterProtocolVersion_t(Parameter_t):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -2680,18 +2268,6 @@ class ParameterVendorId_t(Parameter_t):
 # Register ParameterVendorId_t in _fastdds_python:
 _fastdds_python.ParameterVendorId_t_swigregister(ParameterVendorId_t)
 PARAMETER_VENDOR_LENGTH = _fastdds_python.PARAMETER_VENDOR_LENGTH
-class ParameterProductVersion_t(Parameter_t):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-    version = property(_fastdds_python.ParameterProductVersion_t_version_get, _fastdds_python.ParameterProductVersion_t_version_set)
-
-    def __init__(self, *args):
-        _fastdds_python.ParameterProductVersion_t_swiginit(self, _fastdds_python.new_ParameterProductVersion_t(*args))
-    __swig_destroy__ = _fastdds_python.delete_ParameterProductVersion_t
-
-# Register ParameterProductVersion_t in _fastdds_python:
-_fastdds_python.ParameterProductVersion_t_swigregister(ParameterProductVersion_t)
-PARAMETER_PRODUCT_VERSION_LENGTH = _fastdds_python.PARAMETER_PRODUCT_VERSION_LENGTH
 class ParameterIP4Address_t(Parameter_t):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -2779,18 +2355,6 @@ class ParameterBuiltinEndpointSet_t(Parameter_t):
 # Register ParameterBuiltinEndpointSet_t in _fastdds_python:
 _fastdds_python.ParameterBuiltinEndpointSet_t_swigregister(ParameterBuiltinEndpointSet_t)
 PARAMETER_BUILTINENDPOINTSET_LENGTH = _fastdds_python.PARAMETER_BUILTINENDPOINTSET_LENGTH
-class ParameterNetworkConfigSet_t(Parameter_t):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-    netconfigSet = property(_fastdds_python.ParameterNetworkConfigSet_t_netconfigSet_get, _fastdds_python.ParameterNetworkConfigSet_t_netconfigSet_set)
-
-    def __init__(self, *args):
-        _fastdds_python.ParameterNetworkConfigSet_t_swiginit(self, _fastdds_python.new_ParameterNetworkConfigSet_t(*args))
-    __swig_destroy__ = _fastdds_python.delete_ParameterNetworkConfigSet_t
-
-# Register ParameterNetworkConfigSet_t in _fastdds_python:
-_fastdds_python.ParameterNetworkConfigSet_t_swigregister(ParameterNetworkConfigSet_t)
-PARAMETER_NETWORKCONFIGSET_LENGTH = _fastdds_python.PARAMETER_NETWORKCONFIGSET_LENGTH
 class ParameterProperty_t(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -2863,9 +2427,6 @@ parameter_property_current_ds_version = cvar.parameter_property_current_ds_versi
 parameter_policy_physical_data_host = cvar.parameter_policy_physical_data_host
 parameter_policy_physical_data_user = cvar.parameter_policy_physical_data_user
 parameter_policy_physical_data_process = cvar.parameter_policy_physical_data_process
-parameter_enable_monitor_service = cvar.parameter_enable_monitor_service
-parameter_policy_type_propagation = cvar.parameter_policy_type_propagation
-parameter_serialize_optional_qos = cvar.parameter_serialize_optional_qos
 
 class ParameterPropertyList_t_iterator(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
@@ -2917,18 +2478,6 @@ class ParameterSampleIdentity_t(Parameter_t):
 # Register ParameterSampleIdentity_t in _fastdds_python:
 _fastdds_python.ParameterSampleIdentity_t_swigregister(ParameterSampleIdentity_t)
 PARAMETER_SAMPLEIDENTITY_LENGTH = _fastdds_python.PARAMETER_SAMPLEIDENTITY_LENGTH
-class ParameterOriginalWriterInfo_t(Parameter_t):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-    original_writer_info = property(_fastdds_python.ParameterOriginalWriterInfo_t_original_writer_info_get, _fastdds_python.ParameterOriginalWriterInfo_t_original_writer_info_set)
-
-    def __init__(self, *args):
-        _fastdds_python.ParameterOriginalWriterInfo_t_swiginit(self, _fastdds_python.new_ParameterOriginalWriterInfo_t(*args))
-    __swig_destroy__ = _fastdds_python.delete_ParameterOriginalWriterInfo_t
-
-# Register ParameterOriginalWriterInfo_t in _fastdds_python:
-_fastdds_python.ParameterOriginalWriterInfo_t_swigregister(ParameterOriginalWriterInfo_t)
-PARAMETER_ORIGINALWRITERINFO_LENGTH = _fastdds_python.PARAMETER_ORIGINALWRITERINFO_LENGTH
 class TransportDescriptorInterfaceShrPtr(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -3208,11 +2757,11 @@ class OctetResourceLimitedVector(object):
     def insert(self, *args):
         return _fastdds_python.OctetResourceLimitedVector_insert(self, *args)
 
+    def push_back(self, *args):
+        return _fastdds_python.OctetResourceLimitedVector_push_back(self, *args)
+
     def remove(self, val):
         return _fastdds_python.OctetResourceLimitedVector_remove(self, val)
-
-    def contains(self, val):
-        return _fastdds_python.OctetResourceLimitedVector_contains(self, val)
 
     def assign(self, n, val):
         return _fastdds_python.OctetResourceLimitedVector_assign(self, n, val)
@@ -3265,23 +2814,20 @@ class OctetResourceLimitedVector(object):
     def data(self, *args):
         return _fastdds_python.OctetResourceLimitedVector_data(self, *args)
 
-    def __len__(self):
-        return _fastdds_python.OctetResourceLimitedVector___len__(self)
-
-    def __getitem__(self, i):
-        return _fastdds_python.OctetResourceLimitedVector___getitem__(self, i)
-
     def getitem(self, n):
         return _fastdds_python.OctetResourceLimitedVector_getitem(self, n)
 
     def setitem(self, n, v):
         return _fastdds_python.OctetResourceLimitedVector_setitem(self, n, v)
 
-    def append(self, v):
-        return _fastdds_python.OctetResourceLimitedVector_append(self, v)
-
     def __iter__(self):
         return _fastdds_python.OctetResourceLimitedVector___iter__(self)
+
+    def __len__(self):
+        return _fastdds_python.OctetResourceLimitedVector___len__(self)
+
+    def __getitem__(self, i):
+        return _fastdds_python.OctetResourceLimitedVector___getitem__(self, i)
 
 # Register OctetResourceLimitedVector in _fastdds_python:
 _fastdds_python.OctetResourceLimitedVector_swigregister(OctetResourceLimitedVector)
@@ -3718,6 +3264,8 @@ class ResourceLimitsQosPolicy(Parameter_t, QosPolicy):
 
 # Register ResourceLimitsQosPolicy in _fastdds_python:
 _fastdds_python.ResourceLimitsQosPolicy_swigregister(ResourceLimitsQosPolicy)
+LENGTH_UNLIMITED = cvar.LENGTH_UNLIMITED
+
 class DurabilityServiceQosPolicy(Parameter_t, QosPolicy):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -3831,8 +3379,6 @@ class DataRepresentationQosPolicy(Parameter_t, QosPolicy):
 
 # Register DataRepresentationQosPolicy in _fastdds_python:
 _fastdds_python.DataRepresentationQosPolicy_swigregister(DataRepresentationQosPolicy)
-DEFAULT_DATA_REPRESENTATION = cvar.DEFAULT_DATA_REPRESENTATION
-
 DISALLOW_TYPE_COERCION = _fastdds_python.DISALLOW_TYPE_COERCION
 ALLOW_TYPE_COERCION = _fastdds_python.ALLOW_TYPE_COERCION
 class TypeConsistencyEnforcementQosPolicy(Parameter_t, QosPolicy):
@@ -3909,23 +3455,23 @@ class TypeObjectV1(Parameter_t, QosPolicy):
 
 # Register TypeObjectV1 in _fastdds_python:
 _fastdds_python.TypeObjectV1_swigregister(TypeObjectV1)
-class TypeInformationParameter(Parameter_t, QosPolicy):
+class TypeInformation(Parameter_t, QosPolicy):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
-    type_information = property(_fastdds_python.TypeInformationParameter_type_information_get, _fastdds_python.TypeInformationParameter_type_information_set)
+    type_information = property(_fastdds_python.TypeInformation_type_information_get, _fastdds_python.TypeInformation_type_information_set)
 
     def __init__(self, *args):
-        _fastdds_python.TypeInformationParameter_swiginit(self, _fastdds_python.new_TypeInformationParameter(*args))
-    __swig_destroy__ = _fastdds_python.delete_TypeInformationParameter
+        _fastdds_python.TypeInformation_swiginit(self, _fastdds_python.new_TypeInformation(*args))
+    __swig_destroy__ = _fastdds_python.delete_TypeInformation
 
     def clear(self):
-        return _fastdds_python.TypeInformationParameter_clear(self)
+        return _fastdds_python.TypeInformation_clear(self)
 
     def assigned(self, *args):
-        return _fastdds_python.TypeInformationParameter_assigned(self, *args)
+        return _fastdds_python.TypeInformation_assigned(self, *args)
 
-# Register TypeInformationParameter in _fastdds_python:
-_fastdds_python.TypeInformationParameter_swigregister(TypeInformationParameter)
+# Register TypeInformation in _fastdds_python:
+_fastdds_python.TypeInformation_swigregister(TypeInformation)
 class WireProtocolConfigQos(QosPolicy):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -3945,11 +3491,6 @@ class WireProtocolConfigQos(QosPolicy):
     port = property(_fastdds_python.WireProtocolConfigQos_port_get, _fastdds_python.WireProtocolConfigQos_port_set)
     default_unicast_locator_list = property(_fastdds_python.WireProtocolConfigQos_default_unicast_locator_list_get, _fastdds_python.WireProtocolConfigQos_default_unicast_locator_list_set)
     default_multicast_locator_list = property(_fastdds_python.WireProtocolConfigQos_default_multicast_locator_list_get, _fastdds_python.WireProtocolConfigQos_default_multicast_locator_list_set)
-    default_external_unicast_locators = property(_fastdds_python.WireProtocolConfigQos_default_external_unicast_locators_get, _fastdds_python.WireProtocolConfigQos_default_external_unicast_locators_set)
-    ignore_non_matching_locators = property(_fastdds_python.WireProtocolConfigQos_ignore_non_matching_locators_get, _fastdds_python.WireProtocolConfigQos_ignore_non_matching_locators_set)
-
-    def easy_mode(self, *args):
-        return _fastdds_python.WireProtocolConfigQos_easy_mode(self, *args)
 
 # Register WireProtocolConfigQos in _fastdds_python:
 _fastdds_python.WireProtocolConfigQos_swigregister(WireProtocolConfigQos)
@@ -3970,9 +3511,6 @@ class TransportConfigQos(QosPolicy):
     use_builtin_transports = property(_fastdds_python.TransportConfigQos_use_builtin_transports_get, _fastdds_python.TransportConfigQos_use_builtin_transports_set)
     send_socket_buffer_size = property(_fastdds_python.TransportConfigQos_send_socket_buffer_size_get, _fastdds_python.TransportConfigQos_send_socket_buffer_size_set)
     listen_socket_buffer_size = property(_fastdds_python.TransportConfigQos_listen_socket_buffer_size_get, _fastdds_python.TransportConfigQos_listen_socket_buffer_size_set)
-    builtin_transports_reception_threads_ = property(_fastdds_python.TransportConfigQos_builtin_transports_reception_threads__get, _fastdds_python.TransportConfigQos_builtin_transports_reception_threads__set)
-    max_msg_size_no_frag = property(_fastdds_python.TransportConfigQos_max_msg_size_no_frag_get, _fastdds_python.TransportConfigQos_max_msg_size_no_frag_set)
-    netmask_filter = property(_fastdds_python.TransportConfigQos_netmask_filter_get, _fastdds_python.TransportConfigQos_netmask_filter_set)
 
 # Register TransportConfigQos in _fastdds_python:
 _fastdds_python.TransportConfigQos_swigregister(TransportConfigQos)
@@ -3984,16 +3522,11 @@ class RTPSEndpointQos(object):
         _fastdds_python.RTPSEndpointQos_swiginit(self, _fastdds_python.new_RTPSEndpointQos())
     __swig_destroy__ = _fastdds_python.delete_RTPSEndpointQos
 
-    def clear(self):
-        return _fastdds_python.RTPSEndpointQos_clear(self)
-
     def __eq__(self, b):
         return _fastdds_python.RTPSEndpointQos___eq__(self, b)
     unicast_locator_list = property(_fastdds_python.RTPSEndpointQos_unicast_locator_list_get, _fastdds_python.RTPSEndpointQos_unicast_locator_list_set)
     multicast_locator_list = property(_fastdds_python.RTPSEndpointQos_multicast_locator_list_get, _fastdds_python.RTPSEndpointQos_multicast_locator_list_set)
     remote_locator_list = property(_fastdds_python.RTPSEndpointQos_remote_locator_list_get, _fastdds_python.RTPSEndpointQos_remote_locator_list_set)
-    external_unicast_locators = property(_fastdds_python.RTPSEndpointQos_external_unicast_locators_get, _fastdds_python.RTPSEndpointQos_external_unicast_locators_set)
-    ignore_non_matching_locators = property(_fastdds_python.RTPSEndpointQos_ignore_non_matching_locators_get, _fastdds_python.RTPSEndpointQos_ignore_non_matching_locators_set)
     user_defined_id = property(_fastdds_python.RTPSEndpointQos_user_defined_id_get, _fastdds_python.RTPSEndpointQos_user_defined_id_set)
     entity_id = property(_fastdds_python.RTPSEndpointQos_entity_id_get, _fastdds_python.RTPSEndpointQos_entity_id_set)
     history_memory_policy = property(_fastdds_python.RTPSEndpointQos_history_memory_policy_get, _fastdds_python.RTPSEndpointQos_history_memory_policy_set)
@@ -4007,9 +3540,6 @@ class WriterResourceLimitsQos(object):
     def __init__(self):
         _fastdds_python.WriterResourceLimitsQos_swiginit(self, _fastdds_python.new_WriterResourceLimitsQos())
     __swig_destroy__ = _fastdds_python.delete_WriterResourceLimitsQos
-
-    def clear(self):
-        return _fastdds_python.WriterResourceLimitsQos_clear(self)
 
     def __eq__(self, b):
         return _fastdds_python.WriterResourceLimitsQos___eq__(self, b)
@@ -4062,98 +3592,29 @@ class DataSharingQosPolicy(Parameter_t, QosPolicy):
     def add_domain_id(self, *args):
         return _fastdds_python.DataSharingQosPolicy_add_domain_id(self, *args)
 
-    def data_sharing_listener_thread(self, *args):
-        return _fastdds_python.DataSharingQosPolicy_data_sharing_listener_thread(self, *args)
-
 # Register DataSharingQosPolicy in _fastdds_python:
 _fastdds_python.DataSharingQosPolicy_swigregister(DataSharingQosPolicy)
-class Time_t(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-    INFINITE_SECONDS = _fastdds_python.Time_t_INFINITE_SECONDS
-    INFINITE_NANOSECONDS = _fastdds_python.Time_t_INFINITE_NANOSECONDS
-    seconds = property(_fastdds_python.Time_t_seconds_get, _fastdds_python.Time_t_seconds_set)
-    nanosec = property(_fastdds_python.Time_t_nanosec_get, _fastdds_python.Time_t_nanosec_set)
-
-    def __init__(self, *args):
-        _fastdds_python.Time_t_swiginit(self, _fastdds_python.new_Time_t(*args))
-
-    def fraction(self, *args):
-        return _fastdds_python.Time_t_fraction(self, *args)
-
-    def to_ns(self):
-        return _fastdds_python.Time_t_to_ns(self)
-
-    def is_infinite(self):
-        return _fastdds_python.Time_t_is_infinite(self)
-
-    @staticmethod
-    def now(ret):
-        return _fastdds_python.Time_t_now(ret)
-
-    def __eq__(self, other):
-        return _fastdds_python.Time_t___eq__(self, other)
-
-    def __ne__(self, other):
-        return _fastdds_python.Time_t___ne__(self, other)
-
-    def __lt__(self, other):
-        return _fastdds_python.Time_t___lt__(self, other)
-
-    def __gt__(self, other):
-        return _fastdds_python.Time_t___gt__(self, other)
-
-    def __le__(self, other):
-        return _fastdds_python.Time_t___le__(self, other)
-
-    def __ge__(self, other):
-        return _fastdds_python.Time_t___ge__(self, other)
-
-    def __add__(self, other):
-        return _fastdds_python.Time_t___add__(self, other)
-
-    def __sub__(self, other):
-        return _fastdds_python.Time_t___sub__(self, other)
-    __swig_destroy__ = _fastdds_python.delete_Time_t
-
-# Register Time_t in _fastdds_python:
-_fastdds_python.Time_t_swigregister(Time_t)
-class Duration_t(Time_t):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def __init__(self, *args):
-        _fastdds_python.Duration_t_swiginit(self, _fastdds_python.new_Duration_t(*args))
-    __swig_destroy__ = _fastdds_python.delete_Duration_t
-
-# Register Duration_t in _fastdds_python:
-_fastdds_python.Duration_t_swigregister(Duration_t)
-c_TimeInfinite = cvar.c_TimeInfinite
-c_TimeZero = cvar.c_TimeZero
-c_TimeInvalid = cvar.c_TimeInvalid
-
 class IContentFilter(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
 
     def __init__(self, *args, **kwargs):
         raise AttributeError("No constructor defined - class is abstract")
     __repr__ = _swig_repr
-    __swig_destroy__ = _fastdds_python.delete_IContentFilter
 
     def evaluate(self, payload, sample_info, reader_guid):
         return _fastdds_python.IContentFilter_evaluate(self, payload, sample_info, reader_guid)
+    __swig_destroy__ = _fastdds_python.delete_IContentFilter
 
 # Register IContentFilter in _fastdds_python:
 _fastdds_python.IContentFilter_swigregister(IContentFilter)
 class FilterSampleInfo(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
-
-    def __init__(self, *args):
-        _fastdds_python.FilterSampleInfo_swiginit(self, _fastdds_python.new_FilterSampleInfo(*args))
     sample_identity = property(_fastdds_python.FilterSampleInfo_sample_identity_get, _fastdds_python.FilterSampleInfo_sample_identity_set)
     related_sample_identity = property(_fastdds_python.FilterSampleInfo_related_sample_identity_get, _fastdds_python.FilterSampleInfo_related_sample_identity_set)
-    user_write_data = property(_fastdds_python.FilterSampleInfo_user_write_data_get, _fastdds_python.FilterSampleInfo_user_write_data_set)
+
+    def __init__(self):
+        _fastdds_python.FilterSampleInfo_swiginit(self, _fastdds_python.new_FilterSampleInfo())
     __swig_destroy__ = _fastdds_python.delete_FilterSampleInfo
 
 # Register FilterSampleInfo in _fastdds_python:
@@ -4166,79 +3627,55 @@ class TopicDataType(object):
     __repr__ = _swig_repr
     __swig_destroy__ = _fastdds_python.delete_TopicDataType
 
-    def serialize(self, data, payload, data_representation):
-        return _fastdds_python.TopicDataType_serialize(self, data, payload, data_representation)
-
-    def serialize_ctx(self, context, data, payload, data_representation):
-        return _fastdds_python.TopicDataType_serialize_ctx(self, context, data, payload, data_representation)
+    def serialize(self, data, payload):
+        return _fastdds_python.TopicDataType_serialize(self, data, payload)
 
     def deserialize(self, payload, data):
         return _fastdds_python.TopicDataType_deserialize(self, payload, data)
 
-    def deserialize_ctx(self, context, payload, data):
-        return _fastdds_python.TopicDataType_deserialize_ctx(self, context, payload, data)
+    def getSerializedSizeProvider(self, data):
+        return _fastdds_python.TopicDataType_getSerializedSizeProvider(self, data)
 
-    def calculate_serialized_size(self, data, data_representation):
-        return _fastdds_python.TopicDataType_calculate_serialized_size(self, data, data_representation)
+    def createData(self):
+        return _fastdds_python.TopicDataType_createData(self)
 
-    def calculate_serialized_size_ctx(self, context, data, data_representation):
-        return _fastdds_python.TopicDataType_calculate_serialized_size_ctx(self, context, data, data_representation)
+    def deleteData(self, data):
+        return _fastdds_python.TopicDataType_deleteData(self, data)
 
-    def create_data(self):
-        return _fastdds_python.TopicDataType_create_data(self)
+    def getKey(self, data, ihandle, force_md5=False):
+        return _fastdds_python.TopicDataType_getKey(self, data, ihandle, force_md5)
 
-    def create_data_ctx(self, context):
-        return _fastdds_python.TopicDataType_create_data_ctx(self, context)
+    def setName(self, nam):
+        return _fastdds_python.TopicDataType_setName(self, nam)
 
-    def delete_data(self, data):
-        return _fastdds_python.TopicDataType_delete_data(self, data)
+    def getName(self):
+        return _fastdds_python.TopicDataType_getName(self)
 
-    def delete_data_ctx(self, context, data):
-        return _fastdds_python.TopicDataType_delete_data_ctx(self, context, data)
+    def auto_fill_type_object(self, *args):
+        return _fastdds_python.TopicDataType_auto_fill_type_object(self, *args)
 
-    def compute_key(self, *args):
-        return _fastdds_python.TopicDataType_compute_key(self, *args)
+    def auto_fill_type_information(self, *args):
+        return _fastdds_python.TopicDataType_auto_fill_type_information(self, *args)
 
-    def compute_key_ctx(self, *args):
-        return _fastdds_python.TopicDataType_compute_key_ctx(self, *args)
+    def type_identifier(self, *args):
+        return _fastdds_python.TopicDataType_type_identifier(self, *args)
 
-    def set_name(self, *args):
-        return _fastdds_python.TopicDataType_set_name(self, *args)
+    def type_object(self, *args):
+        return _fastdds_python.TopicDataType_type_object(self, *args)
 
-    def get_name(self):
-        return _fastdds_python.TopicDataType_get_name(self)
-
-    def type_identifiers(self):
-        return _fastdds_python.TopicDataType_type_identifiers(self)
+    def type_information(self, *args):
+        return _fastdds_python.TopicDataType_type_information(self, *args)
 
     def is_bounded(self):
         return _fastdds_python.TopicDataType_is_bounded(self)
 
-    def is_bounded_ctx(self, context):
-        return _fastdds_python.TopicDataType_is_bounded_ctx(self, context)
-
-    def is_plain(self, arg2):
-        return _fastdds_python.TopicDataType_is_plain(self, arg2)
-
-    def is_plain_ctx(self, context, representation):
-        return _fastdds_python.TopicDataType_is_plain_ctx(self, context, representation)
+    def is_plain(self):
+        return _fastdds_python.TopicDataType_is_plain(self)
 
     def construct_sample(self, memory):
         return _fastdds_python.TopicDataType_construct_sample(self, memory)
-
-    def construct_sample_ctx(self, context, memory):
-        return _fastdds_python.TopicDataType_construct_sample_ctx(self, context, memory)
-
-    def register_type_object_representation(self):
-        return _fastdds_python.TopicDataType_register_type_object_representation(self)
-
-    def register_type_object_representation_ctx(self, context):
-        return _fastdds_python.TopicDataType_register_type_object_representation_ctx(self, context)
-
-    def get_max_serialized_size_ctx(self, context):
-        return _fastdds_python.TopicDataType_get_max_serialized_size_ctx(self, context)
-    max_serialized_type_size = property(_fastdds_python.TopicDataType_max_serialized_type_size_get, _fastdds_python.TopicDataType_max_serialized_type_size_set)
-    is_compute_key_provided = property(_fastdds_python.TopicDataType_is_compute_key_provided_get, _fastdds_python.TopicDataType_is_compute_key_provided_set)
+    m_typeSize = property(_fastdds_python.TopicDataType_m_typeSize_get, _fastdds_python.TopicDataType_m_typeSize_set)
+    m_isGetKeyDefined = property(_fastdds_python.TopicDataType_m_isGetKeyDefined_get, _fastdds_python.TopicDataType_m_isGetKeyDefined_set)
 
 # Register TopicDataType in _fastdds_python:
 _fastdds_python.TopicDataType_swigregister(TopicDataType)
@@ -4278,14 +3715,14 @@ class TypeSupport(TopicDataTypeShrPtr):
     def get_type_name(self):
         return _fastdds_python.TypeSupport_get_type_name(self)
 
-    def serialize(self, data, payload, data_representation):
-        return _fastdds_python.TypeSupport_serialize(self, data, payload, data_representation)
+    def serialize(self, data, payload):
+        return _fastdds_python.TypeSupport_serialize(self, data, payload)
 
     def deserialize(self, payload, data):
         return _fastdds_python.TypeSupport_deserialize(self, payload, data)
 
-    def calculate_serialized_size(self, data, data_representation):
-        return _fastdds_python.TypeSupport_calculate_serialized_size(self, data, data_representation)
+    def get_serialized_size_provider(self, data):
+        return _fastdds_python.TypeSupport_get_serialized_size_provider(self, data)
 
     def create_data(self):
         return _fastdds_python.TypeSupport_create_data(self)
@@ -4293,8 +3730,8 @@ class TypeSupport(TopicDataTypeShrPtr):
     def delete_data(self, data):
         return _fastdds_python.TypeSupport_delete_data(self, data)
 
-    def compute_key(self, *args):
-        return _fastdds_python.TypeSupport_compute_key(self, *args)
+    def get_key(self, data, i_handle, force_md5=False):
+        return _fastdds_python.TypeSupport_get_key(self, data, i_handle, force_md5)
 
     def empty(self):
         return _fastdds_python.TypeSupport_empty(self)
@@ -4302,8 +3739,8 @@ class TypeSupport(TopicDataTypeShrPtr):
     def is_bounded(self):
         return _fastdds_python.TypeSupport_is_bounded(self)
 
-    def is_plain(self, data_representation):
-        return _fastdds_python.TypeSupport_is_plain(self, data_representation)
+    def is_plain(self):
+        return _fastdds_python.TypeSupport_is_plain(self)
 
     def __ne__(self, arg2):
         return _fastdds_python.TypeSupport___ne__(self, arg2)
@@ -4331,50 +3768,41 @@ class BuiltinTopicKey_t(object):
 
 # Register BuiltinTopicKey_t in _fastdds_python:
 _fastdds_python.BuiltinTopicKey_t_swigregister(BuiltinTopicKey_t)
+class ParticipantBuiltinTopicData(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+    key = property(_fastdds_python.ParticipantBuiltinTopicData_key_get, _fastdds_python.ParticipantBuiltinTopicData_key_set)
+    user_data = property(_fastdds_python.ParticipantBuiltinTopicData_user_data_get, _fastdds_python.ParticipantBuiltinTopicData_user_data_set)
+
+    def __init__(self):
+        _fastdds_python.ParticipantBuiltinTopicData_swiginit(self, _fastdds_python.new_ParticipantBuiltinTopicData())
+    __swig_destroy__ = _fastdds_python.delete_ParticipantBuiltinTopicData
+
+# Register ParticipantBuiltinTopicData in _fastdds_python:
+_fastdds_python.ParticipantBuiltinTopicData_swigregister(ParticipantBuiltinTopicData)
 class SubscriptionBuiltinTopicData(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
-
-    def __init__(self, *args):
-        _fastdds_python.SubscriptionBuiltinTopicData_swiginit(self, _fastdds_python.new_SubscriptionBuiltinTopicData(*args))
     key = property(_fastdds_python.SubscriptionBuiltinTopicData_key_get, _fastdds_python.SubscriptionBuiltinTopicData_key_set)
     participant_key = property(_fastdds_python.SubscriptionBuiltinTopicData_participant_key_get, _fastdds_python.SubscriptionBuiltinTopicData_participant_key_set)
     topic_name = property(_fastdds_python.SubscriptionBuiltinTopicData_topic_name_get, _fastdds_python.SubscriptionBuiltinTopicData_topic_name_set)
     type_name = property(_fastdds_python.SubscriptionBuiltinTopicData_type_name_get, _fastdds_python.SubscriptionBuiltinTopicData_type_name_set)
-    topic_kind = property(_fastdds_python.SubscriptionBuiltinTopicData_topic_kind_get, _fastdds_python.SubscriptionBuiltinTopicData_topic_kind_set)
     durability = property(_fastdds_python.SubscriptionBuiltinTopicData_durability_get, _fastdds_python.SubscriptionBuiltinTopicData_durability_set)
     deadline = property(_fastdds_python.SubscriptionBuiltinTopicData_deadline_get, _fastdds_python.SubscriptionBuiltinTopicData_deadline_set)
     latency_budget = property(_fastdds_python.SubscriptionBuiltinTopicData_latency_budget_get, _fastdds_python.SubscriptionBuiltinTopicData_latency_budget_set)
-    lifespan = property(_fastdds_python.SubscriptionBuiltinTopicData_lifespan_get, _fastdds_python.SubscriptionBuiltinTopicData_lifespan_set)
     liveliness = property(_fastdds_python.SubscriptionBuiltinTopicData_liveliness_get, _fastdds_python.SubscriptionBuiltinTopicData_liveliness_set)
     reliability = property(_fastdds_python.SubscriptionBuiltinTopicData_reliability_get, _fastdds_python.SubscriptionBuiltinTopicData_reliability_set)
     ownership = property(_fastdds_python.SubscriptionBuiltinTopicData_ownership_get, _fastdds_python.SubscriptionBuiltinTopicData_ownership_set)
     destination_order = property(_fastdds_python.SubscriptionBuiltinTopicData_destination_order_get, _fastdds_python.SubscriptionBuiltinTopicData_destination_order_set)
     user_data = property(_fastdds_python.SubscriptionBuiltinTopicData_user_data_get, _fastdds_python.SubscriptionBuiltinTopicData_user_data_set)
-    time_based_filter = property(_fastdds_python.SubscriptionBuiltinTopicData_time_based_filter_get, _fastdds_python.SubscriptionBuiltinTopicData_time_based_filter_set)
+    m_timeBasedFilter = property(_fastdds_python.SubscriptionBuiltinTopicData_m_timeBasedFilter_get, _fastdds_python.SubscriptionBuiltinTopicData_m_timeBasedFilter_set)
     presentation = property(_fastdds_python.SubscriptionBuiltinTopicData_presentation_get, _fastdds_python.SubscriptionBuiltinTopicData_presentation_set)
     partition = property(_fastdds_python.SubscriptionBuiltinTopicData_partition_get, _fastdds_python.SubscriptionBuiltinTopicData_partition_set)
     topic_data = property(_fastdds_python.SubscriptionBuiltinTopicData_topic_data_get, _fastdds_python.SubscriptionBuiltinTopicData_topic_data_set)
     group_data = property(_fastdds_python.SubscriptionBuiltinTopicData_group_data_get, _fastdds_python.SubscriptionBuiltinTopicData_group_data_set)
-    type_information = property(_fastdds_python.SubscriptionBuiltinTopicData_type_information_get, _fastdds_python.SubscriptionBuiltinTopicData_type_information_set)
-    representation = property(_fastdds_python.SubscriptionBuiltinTopicData_representation_get, _fastdds_python.SubscriptionBuiltinTopicData_representation_set)
-    type_consistency = property(_fastdds_python.SubscriptionBuiltinTopicData_type_consistency_get, _fastdds_python.SubscriptionBuiltinTopicData_type_consistency_set)
-    related_datawriter_key = property(_fastdds_python.SubscriptionBuiltinTopicData_related_datawriter_key_get, _fastdds_python.SubscriptionBuiltinTopicData_related_datawriter_key_set)
-    content_filter = property(_fastdds_python.SubscriptionBuiltinTopicData_content_filter_get, _fastdds_python.SubscriptionBuiltinTopicData_content_filter_set)
-    disable_positive_acks = property(_fastdds_python.SubscriptionBuiltinTopicData_disable_positive_acks_get, _fastdds_python.SubscriptionBuiltinTopicData_disable_positive_acks_set)
-    data_sharing = property(_fastdds_python.SubscriptionBuiltinTopicData_data_sharing_get, _fastdds_python.SubscriptionBuiltinTopicData_data_sharing_set)
-    history = property(_fastdds_python.SubscriptionBuiltinTopicData_history_get, _fastdds_python.SubscriptionBuiltinTopicData_history_set)
-    resource_limits = property(_fastdds_python.SubscriptionBuiltinTopicData_resource_limits_get, _fastdds_python.SubscriptionBuiltinTopicData_resource_limits_set)
-    reader_data_lifecycle = property(_fastdds_python.SubscriptionBuiltinTopicData_reader_data_lifecycle_get, _fastdds_python.SubscriptionBuiltinTopicData_reader_data_lifecycle_set)
-    rtps_reliable_reader = property(_fastdds_python.SubscriptionBuiltinTopicData_rtps_reliable_reader_get, _fastdds_python.SubscriptionBuiltinTopicData_rtps_reliable_reader_set)
-    endpoint = property(_fastdds_python.SubscriptionBuiltinTopicData_endpoint_get, _fastdds_python.SubscriptionBuiltinTopicData_endpoint_set)
-    reader_resource_limits = property(_fastdds_python.SubscriptionBuiltinTopicData_reader_resource_limits_get, _fastdds_python.SubscriptionBuiltinTopicData_reader_resource_limits_set)
-    guid = property(_fastdds_python.SubscriptionBuiltinTopicData_guid_get, _fastdds_python.SubscriptionBuiltinTopicData_guid_set)
-    participant_guid = property(_fastdds_python.SubscriptionBuiltinTopicData_participant_guid_get, _fastdds_python.SubscriptionBuiltinTopicData_participant_guid_set)
-    remote_locators = property(_fastdds_python.SubscriptionBuiltinTopicData_remote_locators_get, _fastdds_python.SubscriptionBuiltinTopicData_remote_locators_set)
-    loopback_transformation = property(_fastdds_python.SubscriptionBuiltinTopicData_loopback_transformation_get, _fastdds_python.SubscriptionBuiltinTopicData_loopback_transformation_set)
-    expects_inline_qos = property(_fastdds_python.SubscriptionBuiltinTopicData_expects_inline_qos_get, _fastdds_python.SubscriptionBuiltinTopicData_expects_inline_qos_set)
-    properties = property(_fastdds_python.SubscriptionBuiltinTopicData_properties_get, _fastdds_python.SubscriptionBuiltinTopicData_properties_set)
+
+    def __init__(self):
+        _fastdds_python.SubscriptionBuiltinTopicData_swiginit(self, _fastdds_python.new_SubscriptionBuiltinTopicData())
     __swig_destroy__ = _fastdds_python.delete_SubscriptionBuiltinTopicData
 
 # Register SubscriptionBuiltinTopicData in _fastdds_python:
@@ -4382,14 +3810,10 @@ _fastdds_python.SubscriptionBuiltinTopicData_swigregister(SubscriptionBuiltinTop
 class PublicationBuiltinTopicData(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
-
-    def __init__(self, *args):
-        _fastdds_python.PublicationBuiltinTopicData_swiginit(self, _fastdds_python.new_PublicationBuiltinTopicData(*args))
     key = property(_fastdds_python.PublicationBuiltinTopicData_key_get, _fastdds_python.PublicationBuiltinTopicData_key_set)
     participant_key = property(_fastdds_python.PublicationBuiltinTopicData_participant_key_get, _fastdds_python.PublicationBuiltinTopicData_participant_key_set)
     topic_name = property(_fastdds_python.PublicationBuiltinTopicData_topic_name_get, _fastdds_python.PublicationBuiltinTopicData_topic_name_set)
     type_name = property(_fastdds_python.PublicationBuiltinTopicData_type_name_get, _fastdds_python.PublicationBuiltinTopicData_type_name_set)
-    topic_kind = property(_fastdds_python.PublicationBuiltinTopicData_topic_kind_get, _fastdds_python.PublicationBuiltinTopicData_topic_kind_set)
     durability = property(_fastdds_python.PublicationBuiltinTopicData_durability_get, _fastdds_python.PublicationBuiltinTopicData_durability_set)
     durability_service = property(_fastdds_python.PublicationBuiltinTopicData_durability_service_get, _fastdds_python.PublicationBuiltinTopicData_durability_service_set)
     deadline = property(_fastdds_python.PublicationBuiltinTopicData_deadline_get, _fastdds_python.PublicationBuiltinTopicData_deadline_set)
@@ -4405,26 +3829,9 @@ class PublicationBuiltinTopicData(object):
     partition = property(_fastdds_python.PublicationBuiltinTopicData_partition_get, _fastdds_python.PublicationBuiltinTopicData_partition_set)
     topic_data = property(_fastdds_python.PublicationBuiltinTopicData_topic_data_get, _fastdds_python.PublicationBuiltinTopicData_topic_data_set)
     group_data = property(_fastdds_python.PublicationBuiltinTopicData_group_data_get, _fastdds_python.PublicationBuiltinTopicData_group_data_set)
-    type_information = property(_fastdds_python.PublicationBuiltinTopicData_type_information_get, _fastdds_python.PublicationBuiltinTopicData_type_information_set)
-    representation = property(_fastdds_python.PublicationBuiltinTopicData_representation_get, _fastdds_python.PublicationBuiltinTopicData_representation_set)
-    related_datareader_key = property(_fastdds_python.PublicationBuiltinTopicData_related_datareader_key_get, _fastdds_python.PublicationBuiltinTopicData_related_datareader_key_set)
-    disable_positive_acks = property(_fastdds_python.PublicationBuiltinTopicData_disable_positive_acks_get, _fastdds_python.PublicationBuiltinTopicData_disable_positive_acks_set)
-    data_sharing = property(_fastdds_python.PublicationBuiltinTopicData_data_sharing_get, _fastdds_python.PublicationBuiltinTopicData_data_sharing_set)
-    history = property(_fastdds_python.PublicationBuiltinTopicData_history_get, _fastdds_python.PublicationBuiltinTopicData_history_set)
-    resource_limits = property(_fastdds_python.PublicationBuiltinTopicData_resource_limits_get, _fastdds_python.PublicationBuiltinTopicData_resource_limits_set)
-    transport_priority = property(_fastdds_python.PublicationBuiltinTopicData_transport_priority_get, _fastdds_python.PublicationBuiltinTopicData_transport_priority_set)
-    writer_data_lifecycle = property(_fastdds_python.PublicationBuiltinTopicData_writer_data_lifecycle_get, _fastdds_python.PublicationBuiltinTopicData_writer_data_lifecycle_set)
-    publish_mode = property(_fastdds_python.PublicationBuiltinTopicData_publish_mode_get, _fastdds_python.PublicationBuiltinTopicData_publish_mode_set)
-    rtps_reliable_writer = property(_fastdds_python.PublicationBuiltinTopicData_rtps_reliable_writer_get, _fastdds_python.PublicationBuiltinTopicData_rtps_reliable_writer_set)
-    endpoint = property(_fastdds_python.PublicationBuiltinTopicData_endpoint_get, _fastdds_python.PublicationBuiltinTopicData_endpoint_set)
-    writer_resource_limits = property(_fastdds_python.PublicationBuiltinTopicData_writer_resource_limits_get, _fastdds_python.PublicationBuiltinTopicData_writer_resource_limits_set)
-    guid = property(_fastdds_python.PublicationBuiltinTopicData_guid_get, _fastdds_python.PublicationBuiltinTopicData_guid_set)
-    persistence_guid = property(_fastdds_python.PublicationBuiltinTopicData_persistence_guid_get, _fastdds_python.PublicationBuiltinTopicData_persistence_guid_set)
-    participant_guid = property(_fastdds_python.PublicationBuiltinTopicData_participant_guid_get, _fastdds_python.PublicationBuiltinTopicData_participant_guid_set)
-    remote_locators = property(_fastdds_python.PublicationBuiltinTopicData_remote_locators_get, _fastdds_python.PublicationBuiltinTopicData_remote_locators_set)
-    max_serialized_size = property(_fastdds_python.PublicationBuiltinTopicData_max_serialized_size_get, _fastdds_python.PublicationBuiltinTopicData_max_serialized_size_set)
-    loopback_transformation = property(_fastdds_python.PublicationBuiltinTopicData_loopback_transformation_get, _fastdds_python.PublicationBuiltinTopicData_loopback_transformation_set)
-    properties = property(_fastdds_python.PublicationBuiltinTopicData_properties_get, _fastdds_python.PublicationBuiltinTopicData_properties_set)
+
+    def __init__(self):
+        _fastdds_python.PublicationBuiltinTopicData_swiginit(self, _fastdds_python.new_PublicationBuiltinTopicData())
     __swig_destroy__ = _fastdds_python.delete_PublicationBuiltinTopicData
 
 # Register PublicationBuiltinTopicData in _fastdds_python:
@@ -4556,9 +3963,6 @@ class Condition(object):
     def to_guard_condition(self):
         return _fastdds_python.Condition_to_guard_condition(self)
 
-    def to_read_condition(self):
-        return _fastdds_python.Condition_to_read_condition(self)
-
 # Register Condition in _fastdds_python:
 _fastdds_python.Condition_swigregister(Condition)
 class StatusCondition(Condition):
@@ -4613,51 +4017,6 @@ class GuardCondition(Condition):
 
 # Register GuardCondition in _fastdds_python:
 _fastdds_python.GuardCondition_swigregister(GuardCondition)
-ALIVE_INSTANCE_STATE = _fastdds_python.ALIVE_INSTANCE_STATE
-NOT_ALIVE_DISPOSED_INSTANCE_STATE = _fastdds_python.NOT_ALIVE_DISPOSED_INSTANCE_STATE
-NOT_ALIVE_NO_WRITERS_INSTANCE_STATE = _fastdds_python.NOT_ALIVE_NO_WRITERS_INSTANCE_STATE
-READ_SAMPLE_STATE = _fastdds_python.READ_SAMPLE_STATE
-NOT_READ_SAMPLE_STATE = _fastdds_python.NOT_READ_SAMPLE_STATE
-NEW_VIEW_STATE = _fastdds_python.NEW_VIEW_STATE
-NOT_NEW_VIEW_STATE = _fastdds_python.NOT_NEW_VIEW_STATE
-class ReadCondition(Condition):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-
-    def __init__(self, *args, **kwargs):
-        raise AttributeError("No constructor defined")
-    __repr__ = _swig_repr
-
-    def get_trigger_value(self):
-        return _fastdds_python.ReadCondition_get_trigger_value(self)
-
-    def get_datareader(self):
-        return _fastdds_python.ReadCondition_get_datareader(self)
-
-    def get_sample_state_mask(self):
-        return _fastdds_python.ReadCondition_get_sample_state_mask(self)
-
-    def get_view_state_mask(self):
-        return _fastdds_python.ReadCondition_get_view_state_mask(self)
-
-    def get_instance_state_mask(self):
-        return _fastdds_python.ReadCondition_get_instance_state_mask(self)
-
-    def get_impl(self):
-        return _fastdds_python.ReadCondition_get_impl(self)
-
-    def __str__(self):
-        return _fastdds_python.ReadCondition___str__(self)
-
-    def __eq__(self, s1):
-        return _fastdds_python.ReadCondition___eq__(self, s1)
-
-# Register ReadCondition in _fastdds_python:
-_fastdds_python.ReadCondition_swigregister(ReadCondition)
-NOT_ALIVE_INSTANCE_STATE = cvar.NOT_ALIVE_INSTANCE_STATE
-ANY_INSTANCE_STATE = cvar.ANY_INSTANCE_STATE
-ANY_SAMPLE_STATE = cvar.ANY_SAMPLE_STATE
-ANY_VIEW_STATE = cvar.ANY_VIEW_STATE
-
 class Entity(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
 
@@ -4686,8 +4045,8 @@ class Entity(object):
     def __eq__(self, other):
         return _fastdds_python.Entity___eq__(self, other)
 
-    def get_statuscondition(self, *args):
-        return _fastdds_python.Entity_get_statuscondition(self, *args)
+    def get_statuscondition(self):
+        return _fastdds_python.Entity_get_statuscondition(self)
 
 # Register Entity in _fastdds_python:
 _fastdds_python.Entity_swigregister(Entity)
@@ -4778,66 +4137,6 @@ class ReaderDataLifecycleQosPolicy(object):
 
 # Register ReaderDataLifecycleQosPolicy in _fastdds_python:
 _fastdds_python.ReaderDataLifecycleQosPolicy_swigregister(ReaderDataLifecycleQosPolicy)
-DOMAIN_ID_UNKNOWN = cvar.DOMAIN_ID_UNKNOWN
-LENGTH_UNLIMITED = cvar.LENGTH_UNLIMITED
-
-class ReaderResourceLimitsQos(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def __init__(self):
-        _fastdds_python.ReaderResourceLimitsQos_swiginit(self, _fastdds_python.new_ReaderResourceLimitsQos())
-    __swig_destroy__ = _fastdds_python.delete_ReaderResourceLimitsQos
-
-    def __eq__(self, b):
-        return _fastdds_python.ReaderResourceLimitsQos___eq__(self, b)
-
-    def clear(self):
-        return _fastdds_python.ReaderResourceLimitsQos_clear(self)
-    matched_publisher_allocation = property(_fastdds_python.ReaderResourceLimitsQos_matched_publisher_allocation_get, _fastdds_python.ReaderResourceLimitsQos_matched_publisher_allocation_set)
-    sample_infos_allocation = property(_fastdds_python.ReaderResourceLimitsQos_sample_infos_allocation_get, _fastdds_python.ReaderResourceLimitsQos_sample_infos_allocation_set)
-    outstanding_reads_allocation = property(_fastdds_python.ReaderResourceLimitsQos_outstanding_reads_allocation_get, _fastdds_python.ReaderResourceLimitsQos_outstanding_reads_allocation_set)
-    max_samples_per_read = property(_fastdds_python.ReaderResourceLimitsQos_max_samples_per_read_get, _fastdds_python.ReaderResourceLimitsQos_max_samples_per_read_set)
-
-# Register ReaderResourceLimitsQos in _fastdds_python:
-_fastdds_python.ReaderResourceLimitsQos_swigregister(ReaderResourceLimitsQos)
-class RTPSReliableReaderQos(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def __init__(self):
-        _fastdds_python.RTPSReliableReaderQos_swiginit(self, _fastdds_python.new_RTPSReliableReaderQos())
-    __swig_destroy__ = _fastdds_python.delete_RTPSReliableReaderQos
-
-    def __eq__(self, b):
-        return _fastdds_python.RTPSReliableReaderQos___eq__(self, b)
-
-    def clear(self):
-        return _fastdds_python.RTPSReliableReaderQos_clear(self)
-    times = property(_fastdds_python.RTPSReliableReaderQos_times_get, _fastdds_python.RTPSReliableReaderQos_times_set)
-    disable_positive_acks = property(_fastdds_python.RTPSReliableReaderQos_disable_positive_acks_get, _fastdds_python.RTPSReliableReaderQos_disable_positive_acks_set)
-
-# Register RTPSReliableReaderQos in _fastdds_python:
-_fastdds_python.RTPSReliableReaderQos_swigregister(RTPSReliableReaderQos)
-class RTPSReliableWriterQos(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def __init__(self):
-        _fastdds_python.RTPSReliableWriterQos_swiginit(self, _fastdds_python.new_RTPSReliableWriterQos())
-    __swig_destroy__ = _fastdds_python.delete_RTPSReliableWriterQos
-
-    def __eq__(self, b):
-        return _fastdds_python.RTPSReliableWriterQos___eq__(self, b)
-
-    def clear(self):
-        return _fastdds_python.RTPSReliableWriterQos_clear(self)
-    times = property(_fastdds_python.RTPSReliableWriterQos_times_get, _fastdds_python.RTPSReliableWriterQos_times_set)
-    disable_positive_acks = property(_fastdds_python.RTPSReliableWriterQos_disable_positive_acks_get, _fastdds_python.RTPSReliableWriterQos_disable_positive_acks_set)
-    disable_heartbeat_piggyback = property(_fastdds_python.RTPSReliableWriterQos_disable_heartbeat_piggyback_get, _fastdds_python.RTPSReliableWriterQos_disable_heartbeat_piggyback_set)
-
-# Register RTPSReliableWriterQos in _fastdds_python:
-_fastdds_python.RTPSReliableWriterQos_swigregister(RTPSReliableWriterQos)
 class WriterDataLifecycleQosPolicy(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -4845,9 +4144,6 @@ class WriterDataLifecycleQosPolicy(object):
     def __init__(self):
         _fastdds_python.WriterDataLifecycleQosPolicy_swiginit(self, _fastdds_python.new_WriterDataLifecycleQosPolicy())
     __swig_destroy__ = _fastdds_python.delete_WriterDataLifecycleQosPolicy
-
-    def clear(self):
-        return _fastdds_python.WriterDataLifecycleQosPolicy_clear(self)
 
     def __eq__(self, b):
         return _fastdds_python.WriterDataLifecycleQosPolicy___eq__(self, b)
@@ -5125,7 +4421,6 @@ NOT_REJECTED = _fastdds_python.NOT_REJECTED
 REJECTED_BY_INSTANCES_LIMIT = _fastdds_python.REJECTED_BY_INSTANCES_LIMIT
 REJECTED_BY_SAMPLES_LIMIT = _fastdds_python.REJECTED_BY_SAMPLES_LIMIT
 REJECTED_BY_SAMPLES_PER_INSTANCE_LIMIT = _fastdds_python.REJECTED_BY_SAMPLES_PER_INSTANCE_LIMIT
-REJECTED_BY_UNKNOWN_INSTANCE = _fastdds_python.REJECTED_BY_UNKNOWN_INSTANCE
 class SampleRejectedStatus(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -5373,6 +4668,64 @@ class SubscriberQos(object):
 
 # Register SubscriberQos in _fastdds_python:
 _fastdds_python.SubscriberQos_swigregister(SubscriberQos)
+class RTPSReliableReaderQos(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+
+    def __init__(self):
+        _fastdds_python.RTPSReliableReaderQos_swiginit(self, _fastdds_python.new_RTPSReliableReaderQos())
+    __swig_destroy__ = _fastdds_python.delete_RTPSReliableReaderQos
+
+    def __eq__(self, b):
+        return _fastdds_python.RTPSReliableReaderQos___eq__(self, b)
+
+    def clear(self):
+        return _fastdds_python.RTPSReliableReaderQos_clear(self)
+    times = property(_fastdds_python.RTPSReliableReaderQos_times_get, _fastdds_python.RTPSReliableReaderQos_times_set)
+    disable_positive_ACKs = property(_fastdds_python.RTPSReliableReaderQos_disable_positive_ACKs_get, _fastdds_python.RTPSReliableReaderQos_disable_positive_ACKs_set)
+
+# Register RTPSReliableReaderQos in _fastdds_python:
+_fastdds_python.RTPSReliableReaderQos_swigregister(RTPSReliableReaderQos)
+SUBSCRIBER_QOS_DEFAULT = cvar.SUBSCRIBER_QOS_DEFAULT
+
+class ReaderResourceLimitsQos(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+
+    def __init__(self):
+        _fastdds_python.ReaderResourceLimitsQos_swiginit(self, _fastdds_python.new_ReaderResourceLimitsQos())
+    __swig_destroy__ = _fastdds_python.delete_ReaderResourceLimitsQos
+
+    def __eq__(self, b):
+        return _fastdds_python.ReaderResourceLimitsQos___eq__(self, b)
+
+    def clear(self):
+        return _fastdds_python.ReaderResourceLimitsQos_clear(self)
+    matched_publisher_allocation = property(_fastdds_python.ReaderResourceLimitsQos_matched_publisher_allocation_get, _fastdds_python.ReaderResourceLimitsQos_matched_publisher_allocation_set)
+    sample_infos_allocation = property(_fastdds_python.ReaderResourceLimitsQos_sample_infos_allocation_get, _fastdds_python.ReaderResourceLimitsQos_sample_infos_allocation_set)
+    outstanding_reads_allocation = property(_fastdds_python.ReaderResourceLimitsQos_outstanding_reads_allocation_get, _fastdds_python.ReaderResourceLimitsQos_outstanding_reads_allocation_set)
+    max_samples_per_read = property(_fastdds_python.ReaderResourceLimitsQos_max_samples_per_read_get, _fastdds_python.ReaderResourceLimitsQos_max_samples_per_read_set)
+
+# Register ReaderResourceLimitsQos in _fastdds_python:
+_fastdds_python.ReaderResourceLimitsQos_swigregister(ReaderResourceLimitsQos)
+class TypeConsistencyQos(QosPolicy):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+
+    def __init__(self):
+        _fastdds_python.TypeConsistencyQos_swiginit(self, _fastdds_python.new_TypeConsistencyQos())
+    __swig_destroy__ = _fastdds_python.delete_TypeConsistencyQos
+
+    def __eq__(self, b):
+        return _fastdds_python.TypeConsistencyQos___eq__(self, b)
+
+    def clear(self):
+        return _fastdds_python.TypeConsistencyQos_clear(self)
+    type_consistency = property(_fastdds_python.TypeConsistencyQos_type_consistency_get, _fastdds_python.TypeConsistencyQos_type_consistency_set)
+    representation = property(_fastdds_python.TypeConsistencyQos_representation_get, _fastdds_python.TypeConsistencyQos_representation_set)
+
+# Register TypeConsistencyQos in _fastdds_python:
+_fastdds_python.TypeConsistencyQos_swigregister(TypeConsistencyQos)
 class DataReaderQos(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -5434,9 +4787,6 @@ class DataReaderQos(object):
     def type_consistency(self, *args):
         return _fastdds_python.DataReaderQos_type_consistency(self, *args)
 
-    def representation(self, *args):
-        return _fastdds_python.DataReaderQos_representation(self, *args)
-
     def expects_inline_qos(self, *args):
         return _fastdds_python.DataReaderQos_expects_inline_qos(self, *args)
 
@@ -5455,8 +4805,6 @@ class DataReaderQos(object):
 
 # Register DataReaderQos in _fastdds_python:
 _fastdds_python.DataReaderQos_swigregister(DataReaderQos)
-SUBSCRIBER_QOS_DEFAULT = cvar.SUBSCRIBER_QOS_DEFAULT
-
 class DataReaderListener(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -5497,7 +4845,6 @@ class DataReaderListener(object):
 # Register DataReaderListener in _fastdds_python:
 _fastdds_python.DataReaderListener_swigregister(DataReaderListener)
 DATAREADER_QOS_DEFAULT = cvar.DATAREADER_QOS_DEFAULT
-DATAREADER_QOS_USE_TOPIC_QOS = cvar.DATAREADER_QOS_USE_TOPIC_QOS
 
 class SubscriberListener(DataReaderListener):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
@@ -5625,6 +4972,8 @@ class ViewStateKindVector(object):
 
 # Register ViewStateKindVector in _fastdds_python:
 _fastdds_python.ViewStateKindVector_swigregister(ViewStateKindVector)
+NEW_VIEW_STATE = _fastdds_python.NEW_VIEW_STATE
+NOT_NEW_VIEW_STATE = _fastdds_python.NOT_NEW_VIEW_STATE
 class SampleStateKindVector(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -5730,6 +5079,10 @@ class SampleStateKindVector(object):
 
 # Register SampleStateKindVector in _fastdds_python:
 _fastdds_python.SampleStateKindVector_swigregister(SampleStateKindVector)
+ANY_VIEW_STATE = cvar.ANY_VIEW_STATE
+
+READ_SAMPLE_STATE = _fastdds_python.READ_SAMPLE_STATE
+NOT_READ_SAMPLE_STATE = _fastdds_python.NOT_READ_SAMPLE_STATE
 class InstanceStateKindVector(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -5835,6 +5188,11 @@ class InstanceStateKindVector(object):
 
 # Register InstanceStateKindVector in _fastdds_python:
 _fastdds_python.InstanceStateKindVector_swigregister(InstanceStateKindVector)
+ANY_SAMPLE_STATE = cvar.ANY_SAMPLE_STATE
+
+ALIVE_INSTANCE_STATE = _fastdds_python.ALIVE_INSTANCE_STATE
+NOT_ALIVE_DISPOSED_INSTANCE_STATE = _fastdds_python.NOT_ALIVE_DISPOSED_INSTANCE_STATE
+NOT_ALIVE_NO_WRITERS_INSTANCE_STATE = _fastdds_python.NOT_ALIVE_NO_WRITERS_INSTANCE_STATE
 class SampleInfo(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -5850,11 +5208,9 @@ class SampleInfo(object):
     reception_timestamp = property(_fastdds_python.SampleInfo_reception_timestamp_get, _fastdds_python.SampleInfo_reception_timestamp_set)
     instance_handle = property(_fastdds_python.SampleInfo_instance_handle_get, _fastdds_python.SampleInfo_instance_handle_set)
     publication_handle = property(_fastdds_python.SampleInfo_publication_handle_get, _fastdds_python.SampleInfo_publication_handle_set)
-    original_writer_info = property(_fastdds_python.SampleInfo_original_writer_info_get, _fastdds_python.SampleInfo_original_writer_info_set)
     valid_data = property(_fastdds_python.SampleInfo_valid_data_get, _fastdds_python.SampleInfo_valid_data_set)
     sample_identity = property(_fastdds_python.SampleInfo_sample_identity_get, _fastdds_python.SampleInfo_sample_identity_set)
     related_sample_identity = property(_fastdds_python.SampleInfo_related_sample_identity_get, _fastdds_python.SampleInfo_related_sample_identity_set)
-    has_more_replies = property(_fastdds_python.SampleInfo_has_more_replies_get, _fastdds_python.SampleInfo_has_more_replies_set)
 
     def __init__(self):
         _fastdds_python.SampleInfo_swiginit(self, _fastdds_python.new_SampleInfo())
@@ -5862,6 +5218,9 @@ class SampleInfo(object):
 
 # Register SampleInfo in _fastdds_python:
 _fastdds_python.SampleInfo_swigregister(SampleInfo)
+NOT_ALIVE_INSTANCE_STATE = cvar.NOT_ALIVE_INSTANCE_STATE
+ANY_INSTANCE_STATE = cvar.ANY_INSTANCE_STATE
+
 class DataReaderVector(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -6003,8 +5362,8 @@ class DataReader(DomainEntity):
     def read(self, *args):
         return _fastdds_python.DataReader_read(self, *args)
 
-    def read_w_condition(self, data_values, sample_infos, max_samples, a_condition):
-        return _fastdds_python.DataReader_read_w_condition(self, data_values, sample_infos, max_samples, a_condition)
+    def read_w_condition(self, *args):
+        return _fastdds_python.DataReader_read_w_condition(self, *args)
 
     def read_instance(self, *args):
         return _fastdds_python.DataReader_read_instance(self, *args)
@@ -6012,8 +5371,8 @@ class DataReader(DomainEntity):
     def read_next_instance(self, *args):
         return _fastdds_python.DataReader_read_next_instance(self, *args)
 
-    def read_next_instance_w_condition(self, data_values, sample_infos, max_samples, previous_handle, a_condition):
-        return _fastdds_python.DataReader_read_next_instance_w_condition(self, data_values, sample_infos, max_samples, previous_handle, a_condition)
+    def read_next_instance_w_condition(self, *args):
+        return _fastdds_python.DataReader_read_next_instance_w_condition(self, *args)
 
     def read_next_sample(self, data, info):
         return _fastdds_python.DataReader_read_next_sample(self, data, info)
@@ -6021,8 +5380,8 @@ class DataReader(DomainEntity):
     def take(self, *args):
         return _fastdds_python.DataReader_take(self, *args)
 
-    def take_w_condition(self, data_values, sample_infos, max_samples, a_condition):
-        return _fastdds_python.DataReader_take_w_condition(self, data_values, sample_infos, max_samples, a_condition)
+    def take_w_condition(self, *args):
+        return _fastdds_python.DataReader_take_w_condition(self, *args)
 
     def take_instance(self, *args):
         return _fastdds_python.DataReader_take_instance(self, *args)
@@ -6030,8 +5389,8 @@ class DataReader(DomainEntity):
     def take_next_instance(self, *args):
         return _fastdds_python.DataReader_take_next_instance(self, *args)
 
-    def take_next_instance_w_condition(self, data_values, sample_infos, max_samples, previous_handle, a_condition):
-        return _fastdds_python.DataReader_take_next_instance_w_condition(self, data_values, sample_infos, max_samples, previous_handle, a_condition)
+    def take_next_instance_w_condition(self, *args):
+        return _fastdds_python.DataReader_take_next_instance_w_condition(self, *args)
 
     def take_next_sample(self, data, info):
         return _fastdds_python.DataReader_take_next_sample(self, data, info)
@@ -6117,15 +5476,6 @@ class DataReader(DomainEntity):
     def get_listening_locators(self, locators):
         return _fastdds_python.DataReader_get_listening_locators(self, locators)
 
-    def get_subscription_builtin_topic_data(self, subscription_data):
-        return _fastdds_python.DataReader_get_subscription_builtin_topic_data(self, subscription_data)
-
-    def set_related_datawriter(self, related_writer):
-        return _fastdds_python.DataReader_set_related_datawriter(self, related_writer)
-
-    def set_type_support_context(self, context):
-        return _fastdds_python.DataReader_set_type_support_context(self, context)
-
     def set_listener(self, *args):
         return _fastdds_python.DataReader_set_listener(self, *args)
 
@@ -6177,14 +5527,8 @@ class Subscriber(DomainEntity):
     def get_default_datareader_qos(self, *args):
         return _fastdds_python.Subscriber_get_default_datareader_qos(self, *args)
 
-    def get_datareader_qos_from_profile(self, *args):
-        return _fastdds_python.Subscriber_get_datareader_qos_from_profile(self, *args)
-
-    def get_datareader_qos_from_xml(self, *args):
-        return _fastdds_python.Subscriber_get_datareader_qos_from_xml(self, *args)
-
-    def get_default_datareader_qos_from_xml(self, *args):
-        return _fastdds_python.Subscriber_get_default_datareader_qos_from_xml(self, *args)
+    def get_datareader_qos_from_profile(self, profile_name, qos):
+        return _fastdds_python.Subscriber_get_datareader_qos_from_profile(self, profile_name, qos)
 
     @staticmethod
     def copy_from_topic_qos(reader_qos, topic_qos):
@@ -6261,7 +5605,6 @@ class WriterQos(object):
     m_partition = property(_fastdds_python.WriterQos_m_partition_get, _fastdds_python.WriterQos_m_partition_set)
     m_topicData = property(_fastdds_python.WriterQos_m_topicData_get, _fastdds_python.WriterQos_m_topicData_set)
     m_groupData = property(_fastdds_python.WriterQos_m_groupData_get, _fastdds_python.WriterQos_m_groupData_set)
-    transport_priority = property(_fastdds_python.WriterQos_transport_priority_get, _fastdds_python.WriterQos_transport_priority_set)
     m_publishMode = property(_fastdds_python.WriterQos_m_publishMode_get, _fastdds_python.WriterQos_m_publishMode_set)
     representation = property(_fastdds_python.WriterQos_representation_get, _fastdds_python.WriterQos_representation_set)
     m_disablePositiveACKs = property(_fastdds_python.WriterQos_m_disablePositiveACKs_get, _fastdds_python.WriterQos_m_disablePositiveACKs_set)
@@ -6281,6 +5624,22 @@ class WriterQos(object):
 _fastdds_python.WriterQos_swigregister(WriterQos)
 PUBLISHER_QOS_DEFAULT = cvar.PUBLISHER_QOS_DEFAULT
 
+class RTPSReliableWriterQos(object):
+    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
+    __repr__ = _swig_repr
+
+    def __init__(self):
+        _fastdds_python.RTPSReliableWriterQos_swiginit(self, _fastdds_python.new_RTPSReliableWriterQos())
+    __swig_destroy__ = _fastdds_python.delete_RTPSReliableWriterQos
+
+    def __eq__(self, b):
+        return _fastdds_python.RTPSReliableWriterQos___eq__(self, b)
+    times = property(_fastdds_python.RTPSReliableWriterQos_times_get, _fastdds_python.RTPSReliableWriterQos_times_set)
+    disable_positive_acks = property(_fastdds_python.RTPSReliableWriterQos_disable_positive_acks_get, _fastdds_python.RTPSReliableWriterQos_disable_positive_acks_set)
+    disable_heartbeat_piggyback = property(_fastdds_python.RTPSReliableWriterQos_disable_heartbeat_piggyback_get, _fastdds_python.RTPSReliableWriterQos_disable_heartbeat_piggyback_set)
+
+# Register RTPSReliableWriterQos in _fastdds_python:
+_fastdds_python.RTPSReliableWriterQos_swigregister(RTPSReliableWriterQos)
 class DataWriterQos(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -6383,9 +5742,6 @@ class DataWriterListener(object):
 
     def on_liveliness_lost(self, writer, status):
         return _fastdds_python.DataWriterListener_on_liveliness_lost(self, writer, status)
-
-    def on_unacknowledged_sample_removed(self, writer, instance):
-        return _fastdds_python.DataWriterListener_on_unacknowledged_sample_removed(self, writer, instance)
     def __disown__(self):
         self.this.disown()
         _fastdds_python.disown_DataWriterListener(self)
@@ -6394,7 +5750,6 @@ class DataWriterListener(object):
 # Register DataWriterListener in _fastdds_python:
 _fastdds_python.DataWriterListener_swigregister(DataWriterListener)
 DATAWRITER_QOS_DEFAULT = cvar.DATAWRITER_QOS_DEFAULT
-DATAWRITER_QOS_USE_TOPIC_QOS = cvar.DATAWRITER_QOS_USE_TOPIC_QOS
 
 class PublisherListener(DataWriterListener):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
@@ -6617,18 +5972,6 @@ class DataWriter(DomainEntity):
     def wait_for_acknowledgments(self, *args):
         return _fastdds_python.DataWriter_wait_for_acknowledgments(self, *args)
 
-    def get_publication_builtin_topic_data(self, publication_data):
-        return _fastdds_python.DataWriter_get_publication_builtin_topic_data(self, publication_data)
-
-    def set_sample_prefilter(self, prefilter):
-        return _fastdds_python.DataWriter_set_sample_prefilter(self, prefilter)
-
-    def set_related_datareader(self, related_reader):
-        return _fastdds_python.DataWriter_set_related_datareader(self, related_reader)
-
-    def set_type_support_context(self, context):
-        return _fastdds_python.DataWriter_set_type_support_context(self, context)
-
     def clear_history(self):
         return _fastdds_python.DataWriter_clear_history(self)
 
@@ -6686,18 +6029,11 @@ class Publisher(DomainEntity):
     def get_default_datawriter_qos(self, *args):
         return _fastdds_python.Publisher_get_default_datawriter_qos(self, *args)
 
-    @staticmethod
-    def copy_from_topic_qos(writer_qos, topic_qos):
-        return _fastdds_python.Publisher_copy_from_topic_qos(writer_qos, topic_qos)
+    def copy_from_topic_qos(self, writer_qos, topic_qos):
+        return _fastdds_python.Publisher_copy_from_topic_qos(self, writer_qos, topic_qos)
 
-    def get_datawriter_qos_from_profile(self, *args):
-        return _fastdds_python.Publisher_get_datawriter_qos_from_profile(self, *args)
-
-    def get_datawriter_qos_from_xml(self, *args):
-        return _fastdds_python.Publisher_get_datawriter_qos_from_xml(self, *args)
-
-    def get_default_datawriter_qos_from_xml(self, *args):
-        return _fastdds_python.Publisher_get_default_datawriter_qos_from_xml(self, *args)
+    def get_datawriter_qos_from_profile(self, profile_name, qos):
+        return _fastdds_python.Publisher_get_datawriter_qos_from_profile(self, profile_name, qos)
 
     def get_instance_handle(self):
         return _fastdds_python.Publisher_get_instance_handle(self)
@@ -6734,17 +6070,23 @@ class DomainParticipantListener(PublisherListener, SubscriberListener, TopicList
         _fastdds_python.DomainParticipantListener_swiginit(self, _fastdds_python.new_DomainParticipantListener(_self, ))
     __swig_destroy__ = _fastdds_python.delete_DomainParticipantListener
 
-    def on_participant_discovery(self, participant, reason, info, should_be_ignored):
-        return _fastdds_python.DomainParticipantListener_on_participant_discovery(self, participant, reason, info, should_be_ignored)
+    def on_participant_discovery(self, participant, info):
+        return _fastdds_python.DomainParticipantListener_on_participant_discovery(self, participant, info)
 
-    def on_data_reader_discovery(self, participant, reason, info, should_be_ignored):
-        return _fastdds_python.DomainParticipantListener_on_data_reader_discovery(self, participant, reason, info, should_be_ignored)
+    def on_subscriber_discovery(self, participant, info):
+        return _fastdds_python.DomainParticipantListener_on_subscriber_discovery(self, participant, info)
 
-    def on_data_writer_discovery(self, participant, reason, info, should_be_ignored):
-        return _fastdds_python.DomainParticipantListener_on_data_writer_discovery(self, participant, reason, info, should_be_ignored)
+    def on_publisher_discovery(self, participant, info):
+        return _fastdds_python.DomainParticipantListener_on_publisher_discovery(self, participant, info)
 
-    def should_endpoints_match(self, participant, reader_info, writer_info):
-        return _fastdds_python.DomainParticipantListener_should_endpoints_match(self, participant, reader_info, writer_info)
+    def on_type_discovery(self, participant, request_sample_id, topic, identifier, object, dyn_type):
+        return _fastdds_python.DomainParticipantListener_on_type_discovery(self, participant, request_sample_id, topic, identifier, object, dyn_type)
+
+    def on_type_dependencies_reply(self, participant, request_sample_id, dependencies):
+        return _fastdds_python.DomainParticipantListener_on_type_dependencies_reply(self, participant, request_sample_id, dependencies)
+
+    def on_type_information_received(self, participant, topic_name, type_name, type_information):
+        return _fastdds_python.DomainParticipantListener_on_type_information_received(self, participant, topic_name, type_name, type_information)
     def __disown__(self):
         self.this.disown()
         _fastdds_python.disown_DomainParticipantListener(self)
@@ -6765,12 +6107,6 @@ class DomainParticipantFactoryQos(object):
 
     def entity_factory(self, *args):
         return _fastdds_python.DomainParticipantFactoryQos_entity_factory(self, *args)
-
-    def shm_watchdog_thread(self, *args):
-        return _fastdds_python.DomainParticipantFactoryQos_shm_watchdog_thread(self, *args)
-
-    def file_watch_threads(self, *args):
-        return _fastdds_python.DomainParticipantFactoryQos_file_watch_threads(self, *args)
 
 # Register DomainParticipantFactoryQos in _fastdds_python:
 _fastdds_python.DomainParticipantFactoryQos_swigregister(DomainParticipantFactoryQos)
@@ -6879,8 +6215,6 @@ class FlowControllerDescriptorList(object):
 
 # Register FlowControllerDescriptorList in _fastdds_python:
 _fastdds_python.FlowControllerDescriptorList_swigregister(FlowControllerDescriptorList)
-PARTICIPANT_FACTORY_QOS_DEFAULT = cvar.PARTICIPANT_FACTORY_QOS_DEFAULT
-
 class DomainParticipantQos(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
     __repr__ = _swig_repr
@@ -6910,195 +6244,17 @@ class DomainParticipantQos(object):
     def transport(self, *args):
         return _fastdds_python.DomainParticipantQos_transport(self, *args)
 
-    def compare_flow_controllers(self, qos):
-        return _fastdds_python.DomainParticipantQos_compare_flow_controllers(self, qos)
-
     def flow_controllers(self, *args):
         return _fastdds_python.DomainParticipantQos_flow_controllers(self, *args)
 
-    def setup_transports(self, *args):
-        return _fastdds_python.DomainParticipantQos_setup_transports(self, *args)
-
-    def builtin_controllers_sender_thread(self, *args):
-        return _fastdds_python.DomainParticipantQos_builtin_controllers_sender_thread(self, *args)
-
-    def timed_events_thread(self, *args):
-        return _fastdds_python.DomainParticipantQos_timed_events_thread(self, *args)
-
-    def discovery_server_thread(self, *args):
-        return _fastdds_python.DomainParticipantQos_discovery_server_thread(self, *args)
-
-    def typelookup_service_thread(self, *args):
-        return _fastdds_python.DomainParticipantQos_typelookup_service_thread(self, *args)
+    def setup_transports(self, transports):
+        return _fastdds_python.DomainParticipantQos_setup_transports(self, transports)
 
     def name(self, *args):
         return _fastdds_python.DomainParticipantQos_name(self, *args)
 
 # Register DomainParticipantQos in _fastdds_python:
 _fastdds_python.DomainParticipantQos_swigregister(DomainParticipantQos)
-class DomainParticipantExtendedQos(DomainParticipantQos):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def __init__(self):
-        _fastdds_python.DomainParticipantExtendedQos_swiginit(self, _fastdds_python.new_DomainParticipantExtendedQos())
-    __swig_destroy__ = _fastdds_python.delete_DomainParticipantExtendedQos
-
-    def __eq__(self, *args):
-        return _fastdds_python.DomainParticipantExtendedQos___eq__(self, *args)
-
-    def domainId(self, *args):
-        return _fastdds_python.DomainParticipantExtendedQos_domainId(self, *args)
-
-# Register DomainParticipantExtendedQos in _fastdds_python:
-_fastdds_python.DomainParticipantExtendedQos_swigregister(DomainParticipantExtendedQos)
-PARTICIPANT_QOS_DEFAULT = cvar.PARTICIPANT_QOS_DEFAULT
-
-class ReplierQos(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def __init__(self):
-        _fastdds_python.ReplierQos_swiginit(self, _fastdds_python.new_ReplierQos())
-
-    def __eq__(self, b):
-        return _fastdds_python.ReplierQos___eq__(self, b)
-    service_name = property(_fastdds_python.ReplierQos_service_name_get, _fastdds_python.ReplierQos_service_name_set)
-    request_type = property(_fastdds_python.ReplierQos_request_type_get, _fastdds_python.ReplierQos_request_type_set)
-    reply_type = property(_fastdds_python.ReplierQos_reply_type_get, _fastdds_python.ReplierQos_reply_type_set)
-    request_topic_name = property(_fastdds_python.ReplierQos_request_topic_name_get, _fastdds_python.ReplierQos_request_topic_name_set)
-    reply_topic_name = property(_fastdds_python.ReplierQos_reply_topic_name_get, _fastdds_python.ReplierQos_reply_topic_name_set)
-    writer_qos = property(_fastdds_python.ReplierQos_writer_qos_get, _fastdds_python.ReplierQos_writer_qos_set)
-    reader_qos = property(_fastdds_python.ReplierQos_reader_qos_get, _fastdds_python.ReplierQos_reader_qos_set)
-    __swig_destroy__ = _fastdds_python.delete_ReplierQos
-
-# Register ReplierQos in _fastdds_python:
-_fastdds_python.ReplierQos_swigregister(ReplierQos)
-class RequesterQos(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def __init__(self):
-        _fastdds_python.RequesterQos_swiginit(self, _fastdds_python.new_RequesterQos())
-
-    def __eq__(self, b):
-        return _fastdds_python.RequesterQos___eq__(self, b)
-    service_name = property(_fastdds_python.RequesterQos_service_name_get, _fastdds_python.RequesterQos_service_name_set)
-    request_type = property(_fastdds_python.RequesterQos_request_type_get, _fastdds_python.RequesterQos_request_type_set)
-    reply_type = property(_fastdds_python.RequesterQos_reply_type_get, _fastdds_python.RequesterQos_reply_type_set)
-    request_topic_name = property(_fastdds_python.RequesterQos_request_topic_name_get, _fastdds_python.RequesterQos_request_topic_name_set)
-    reply_topic_name = property(_fastdds_python.RequesterQos_reply_topic_name_get, _fastdds_python.RequesterQos_reply_topic_name_set)
-    writer_qos = property(_fastdds_python.RequesterQos_writer_qos_get, _fastdds_python.RequesterQos_writer_qos_set)
-    reader_qos = property(_fastdds_python.RequesterQos_reader_qos_get, _fastdds_python.RequesterQos_reader_qos_set)
-    __swig_destroy__ = _fastdds_python.delete_RequesterQos
-
-# Register RequesterQos in _fastdds_python:
-_fastdds_python.RequesterQos_swigregister(RequesterQos)
-class DomainParticipantVector(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-
-    def iterator(self):
-        return _fastdds_python.DomainParticipantVector_iterator(self)
-    def __iter__(self):
-        return self.iterator()
-
-    def __nonzero__(self):
-        return _fastdds_python.DomainParticipantVector___nonzero__(self)
-
-    def __bool__(self):
-        return _fastdds_python.DomainParticipantVector___bool__(self)
-
-    def __len__(self):
-        return _fastdds_python.DomainParticipantVector___len__(self)
-
-    def __getslice__(self, i, j):
-        return _fastdds_python.DomainParticipantVector___getslice__(self, i, j)
-
-    def __setslice__(self, *args):
-        return _fastdds_python.DomainParticipantVector___setslice__(self, *args)
-
-    def __delslice__(self, i, j):
-        return _fastdds_python.DomainParticipantVector___delslice__(self, i, j)
-
-    def __delitem__(self, *args):
-        return _fastdds_python.DomainParticipantVector___delitem__(self, *args)
-
-    def __getitem__(self, *args):
-        return _fastdds_python.DomainParticipantVector___getitem__(self, *args)
-
-    def __setitem__(self, *args):
-        return _fastdds_python.DomainParticipantVector___setitem__(self, *args)
-
-    def pop(self):
-        return _fastdds_python.DomainParticipantVector_pop(self)
-
-    def append(self, x):
-        return _fastdds_python.DomainParticipantVector_append(self, x)
-
-    def empty(self):
-        return _fastdds_python.DomainParticipantVector_empty(self)
-
-    def size(self):
-        return _fastdds_python.DomainParticipantVector_size(self)
-
-    def swap(self, v):
-        return _fastdds_python.DomainParticipantVector_swap(self, v)
-
-    def begin(self):
-        return _fastdds_python.DomainParticipantVector_begin(self)
-
-    def end(self):
-        return _fastdds_python.DomainParticipantVector_end(self)
-
-    def rbegin(self):
-        return _fastdds_python.DomainParticipantVector_rbegin(self)
-
-    def rend(self):
-        return _fastdds_python.DomainParticipantVector_rend(self)
-
-    def clear(self):
-        return _fastdds_python.DomainParticipantVector_clear(self)
-
-    def get_allocator(self):
-        return _fastdds_python.DomainParticipantVector_get_allocator(self)
-
-    def pop_back(self):
-        return _fastdds_python.DomainParticipantVector_pop_back(self)
-
-    def erase(self, *args):
-        return _fastdds_python.DomainParticipantVector_erase(self, *args)
-
-    def __init__(self, *args):
-        _fastdds_python.DomainParticipantVector_swiginit(self, _fastdds_python.new_DomainParticipantVector(*args))
-
-    def push_back(self, x):
-        return _fastdds_python.DomainParticipantVector_push_back(self, x)
-
-    def front(self):
-        return _fastdds_python.DomainParticipantVector_front(self)
-
-    def back(self):
-        return _fastdds_python.DomainParticipantVector_back(self)
-
-    def assign(self, n, x):
-        return _fastdds_python.DomainParticipantVector_assign(self, n, x)
-
-    def resize(self, *args):
-        return _fastdds_python.DomainParticipantVector_resize(self, *args)
-
-    def insert(self, *args):
-        return _fastdds_python.DomainParticipantVector_insert(self, *args)
-
-    def reserve(self, n):
-        return _fastdds_python.DomainParticipantVector_reserve(self, n)
-
-    def capacity(self):
-        return _fastdds_python.DomainParticipantVector_capacity(self)
-    __swig_destroy__ = _fastdds_python.delete_DomainParticipantVector
-
-# Register DomainParticipantVector in _fastdds_python:
-_fastdds_python.DomainParticipantVector_swigregister(DomainParticipantVector)
 class DomainParticipant(Entity):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
 
@@ -7133,35 +6289,14 @@ class DomainParticipant(Entity):
     def delete_contentfilteredtopic(self, a_contentfilteredtopic):
         return _fastdds_python.DomainParticipant_delete_contentfilteredtopic(self, a_contentfilteredtopic)
 
-    def create_multitopic(self, *args):
-        return _fastdds_python.DomainParticipant_create_multitopic(self, *args)
+    def create_multitopic(self, name, type_name, subscription_expression, expression_parameters):
+        return _fastdds_python.DomainParticipant_create_multitopic(self, name, type_name, subscription_expression, expression_parameters)
 
     def delete_multitopic(self, a_multitopic):
         return _fastdds_python.DomainParticipant_delete_multitopic(self, a_multitopic)
 
     def find_topic(self, topic_name, timeout):
         return _fastdds_python.DomainParticipant_find_topic(self, topic_name, timeout)
-
-    def create_service(self, *args):
-        return _fastdds_python.DomainParticipant_create_service(self, *args)
-
-    def find_service(self, service_name):
-        return _fastdds_python.DomainParticipant_find_service(self, service_name)
-
-    def delete_service(self, service):
-        return _fastdds_python.DomainParticipant_delete_service(self, service)
-
-    def create_service_requester(self, *args):
-        return _fastdds_python.DomainParticipant_create_service_requester(self, *args)
-
-    def delete_service_requester(self, service_name, requester):
-        return _fastdds_python.DomainParticipant_delete_service_requester(self, service_name, requester)
-
-    def create_service_replier(self, *args):
-        return _fastdds_python.DomainParticipant_create_service_replier(self, *args)
-
-    def delete_service_replier(self, service_name, replier):
-        return _fastdds_python.DomainParticipant_delete_service_replier(self, service_name, replier)
 
     def lookup_topicdescription(self, topic_name):
         return _fastdds_python.DomainParticipant_lookup_topicdescription(self, topic_name)
@@ -7199,12 +6334,6 @@ class DomainParticipant(Entity):
     def get_publisher_qos_from_profile(self, profile_name, qos):
         return _fastdds_python.DomainParticipant_get_publisher_qos_from_profile(self, profile_name, qos)
 
-    def get_publisher_qos_from_xml(self, *args):
-        return _fastdds_python.DomainParticipant_get_publisher_qos_from_xml(self, *args)
-
-    def get_default_publisher_qos_from_xml(self, xml, qos):
-        return _fastdds_python.DomainParticipant_get_default_publisher_qos_from_xml(self, xml, qos)
-
     def set_default_subscriber_qos(self, qos):
         return _fastdds_python.DomainParticipant_set_default_subscriber_qos(self, qos)
 
@@ -7214,44 +6343,14 @@ class DomainParticipant(Entity):
     def get_subscriber_qos_from_profile(self, profile_name, qos):
         return _fastdds_python.DomainParticipant_get_subscriber_qos_from_profile(self, profile_name, qos)
 
-    def get_subscriber_qos_from_xml(self, *args):
-        return _fastdds_python.DomainParticipant_get_subscriber_qos_from_xml(self, *args)
-
-    def get_default_subscriber_qos_from_xml(self, xml, qos):
-        return _fastdds_python.DomainParticipant_get_default_subscriber_qos_from_xml(self, xml, qos)
-
     def set_default_topic_qos(self, qos):
         return _fastdds_python.DomainParticipant_set_default_topic_qos(self, qos)
 
     def get_default_topic_qos(self, *args):
         return _fastdds_python.DomainParticipant_get_default_topic_qos(self, *args)
 
-    def get_topic_qos_from_profile(self, *args):
-        return _fastdds_python.DomainParticipant_get_topic_qos_from_profile(self, *args)
-
-    def get_topic_qos_from_xml(self, *args):
-        return _fastdds_python.DomainParticipant_get_topic_qos_from_xml(self, *args)
-
-    def get_default_topic_qos_from_xml(self, *args):
-        return _fastdds_python.DomainParticipant_get_default_topic_qos_from_xml(self, *args)
-
-    def get_replier_qos_from_profile(self, profile_name, qos):
-        return _fastdds_python.DomainParticipant_get_replier_qos_from_profile(self, profile_name, qos)
-
-    def get_replier_qos_from_xml(self, *args):
-        return _fastdds_python.DomainParticipant_get_replier_qos_from_xml(self, *args)
-
-    def get_default_replier_qos_from_xml(self, xml, qos):
-        return _fastdds_python.DomainParticipant_get_default_replier_qos_from_xml(self, xml, qos)
-
-    def get_requester_qos_from_profile(self, profile_name, qos):
-        return _fastdds_python.DomainParticipant_get_requester_qos_from_profile(self, profile_name, qos)
-
-    def get_requester_qos_from_xml(self, *args):
-        return _fastdds_python.DomainParticipant_get_requester_qos_from_xml(self, *args)
-
-    def get_default_requester_qos_from_xml(self, xml, qos):
-        return _fastdds_python.DomainParticipant_get_default_requester_qos_from_xml(self, xml, qos)
+    def get_topic_qos_from_profile(self, profile_name, qos):
+        return _fastdds_python.DomainParticipant_get_topic_qos_from_profile(self, profile_name, qos)
 
     def get_discovered_participants(self, participant_handles):
         return _fastdds_python.DomainParticipant_get_discovered_participants(self, participant_handles)
@@ -7280,15 +6379,6 @@ class DomainParticipant(Entity):
     def find_type(self, type_name):
         return _fastdds_python.DomainParticipant_find_type(self, type_name)
 
-    def register_service_type(self, service_type, service_type_name):
-        return _fastdds_python.DomainParticipant_register_service_type(self, service_type, service_type_name)
-
-    def unregister_service_type(self, service_type_name):
-        return _fastdds_python.DomainParticipant_unregister_service_type(self, service_type_name)
-
-    def find_service_type(self, service_type_name):
-        return _fastdds_python.DomainParticipant_find_service_type(self, service_type_name)
-
     def get_instance_handle(self):
         return _fastdds_python.DomainParticipant_get_instance_handle(self)
 
@@ -7300,6 +6390,18 @@ class DomainParticipant(Entity):
 
     def new_remote_endpoint_discovered(self, partguid, userId, kind):
         return _fastdds_python.DomainParticipant_new_remote_endpoint_discovered(self, partguid, userId, kind)
+
+    def get_resource_event(self):
+        return _fastdds_python.DomainParticipant_get_resource_event(self)
+
+    def get_type_dependencies(self, _in):
+        return _fastdds_python.DomainParticipant_get_type_dependencies(self, _in)
+
+    def get_types(self, _in):
+        return _fastdds_python.DomainParticipant_get_types(self, _in)
+
+    def register_remote_type(self, type_information, type_name, callback):
+        return _fastdds_python.DomainParticipant_register_remote_type(self, type_information, type_name, callback)
 
     def register_content_filter_factory(self, filter_class_name, filter_factory):
         return _fastdds_python.DomainParticipant_register_content_filter_factory(self, filter_class_name, filter_factory)
@@ -7333,6 +6435,8 @@ class DomainParticipant(Entity):
 
 # Register DomainParticipant in _fastdds_python:
 _fastdds_python.DomainParticipant_swigregister(DomainParticipant)
+PARTICIPANT_QOS_DEFAULT = cvar.PARTICIPANT_QOS_DEFAULT
+
 class DomainParticipantFactory(object):
     thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
 
@@ -7343,19 +6447,6 @@ class DomainParticipantFactory(object):
     @staticmethod
     def get_instance():
         return _fastdds_python.DomainParticipantFactory_get_instance()
-
-    @staticmethod
-    def get_shared_instance():
-        return _fastdds_python.DomainParticipantFactory_get_shared_instance()
-
-    def create_participant(self, *args):
-        return _fastdds_python.DomainParticipantFactory_create_participant(self, *args)
-
-    def create_participant_with_default_profile(self, *args):
-        return _fastdds_python.DomainParticipantFactory_create_participant_with_default_profile(self, *args)
-
-    def create_participant_with_profile(self, *args):
-        return _fastdds_python.DomainParticipantFactory_create_participant_with_profile(self, *args)
 
     def lookup_participant(self, domain_id):
         return _fastdds_python.DomainParticipantFactory_lookup_participant(self, domain_id)
@@ -7372,24 +6463,6 @@ class DomainParticipantFactory(object):
     def get_participant_qos_from_profile(self, profile_name, qos):
         return _fastdds_python.DomainParticipantFactory_get_participant_qos_from_profile(self, profile_name, qos)
 
-    def get_participant_qos_from_xml(self, *args):
-        return _fastdds_python.DomainParticipantFactory_get_participant_qos_from_xml(self, *args)
-
-    def get_default_participant_qos_from_xml(self, xml, qos):
-        return _fastdds_python.DomainParticipantFactory_get_default_participant_qos_from_xml(self, xml, qos)
-
-    def get_participant_extended_qos_from_profile(self, profile_name, extended_qos):
-        return _fastdds_python.DomainParticipantFactory_get_participant_extended_qos_from_profile(self, profile_name, extended_qos)
-
-    def get_participant_extended_qos_from_xml(self, *args):
-        return _fastdds_python.DomainParticipantFactory_get_participant_extended_qos_from_xml(self, *args)
-
-    def get_default_participant_extended_qos_from_xml(self, xml, extended_qos):
-        return _fastdds_python.DomainParticipantFactory_get_default_participant_extended_qos_from_xml(self, xml, extended_qos)
-
-    def get_participant_extended_qos_from_default_profile(self, extended_qos):
-        return _fastdds_python.DomainParticipantFactory_get_participant_extended_qos_from_default_profile(self, extended_qos)
-
     def load_profiles(self):
         return _fastdds_python.DomainParticipantFactory_load_profiles(self)
 
@@ -7399,123 +6472,21 @@ class DomainParticipantFactory(object):
     def load_XML_profiles_string(self, data, length):
         return _fastdds_python.DomainParticipantFactory_load_XML_profiles_string(self, data, length)
 
-    def check_xml_static_discovery(self, xml_file):
-        return _fastdds_python.DomainParticipantFactory_check_xml_static_discovery(self, xml_file)
-
     def get_qos(self, qos):
         return _fastdds_python.DomainParticipantFactory_get_qos(self, qos)
 
     def set_qos(self, qos):
         return _fastdds_python.DomainParticipantFactory_set_qos(self, qos)
 
-    def get_library_settings(self, library_settings):
-        return _fastdds_python.DomainParticipantFactory_get_library_settings(self, library_settings)
+    def create_participant(self, *args):
+        return _fastdds_python.DomainParticipantFactory_create_participant(self, *args)
 
-    def set_library_settings(self, library_settings):
-        return _fastdds_python.DomainParticipantFactory_set_library_settings(self, library_settings)
-
-    def type_object_registry(self):
-        return _fastdds_python.DomainParticipantFactory_type_object_registry(self)
+    def create_participant_with_profile(self, *args):
+        return _fastdds_python.DomainParticipantFactory_create_participant_with_profile(self, *args)
 
     def delete_participant(self, part):
         return _fastdds_python.DomainParticipantFactory_delete_participant(self, part)
 
 # Register DomainParticipantFactory in _fastdds_python:
 _fastdds_python.DomainParticipantFactory_swigregister(DomainParticipantFactory)
-TRY_CONSTRUCT1 = _fastdds_python.TRY_CONSTRUCT1
-TRY_CONSTRUCT2 = _fastdds_python.TRY_CONSTRUCT2
-IS_EXTERNAL = _fastdds_python.IS_EXTERNAL
-IS_OPTIONAL = _fastdds_python.IS_OPTIONAL
-IS_MUST_UNDERSTAND = _fastdds_python.IS_MUST_UNDERSTAND
-IS_KEY = _fastdds_python.IS_KEY
-IS_DEFAULT = _fastdds_python.IS_DEFAULT
-IS_FINAL = _fastdds_python.IS_FINAL
-IS_APPENDABLE = _fastdds_python.IS_APPENDABLE
-IS_MUTABLE = _fastdds_python.IS_MUTABLE
-IS_NESTED = _fastdds_python.IS_NESTED
-IS_AUTOID_HASH = _fastdds_python.IS_AUTOID_HASH
-class Dummy(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-    __swig_destroy__ = _fastdds_python.delete_Dummy
-
-    def __init__(self, *args):
-        _fastdds_python.Dummy_swiginit(self, _fastdds_python.new_Dummy(*args))
-
-    def __eq__(self, x):
-        return _fastdds_python.Dummy___eq__(self, x)
-
-    def __ne__(self, x):
-        return _fastdds_python.Dummy___ne__(self, x)
-
-# Register Dummy in _fastdds_python:
-_fastdds_python.Dummy_swigregister(Dummy)
-EK_MINIMAL = cvar.EK_MINIMAL
-EK_COMPLETE = cvar.EK_COMPLETE
-EK_BOTH = cvar.EK_BOTH
-TK_NONE = cvar.TK_NONE
-TK_BOOLEAN = cvar.TK_BOOLEAN
-TK_BYTE = cvar.TK_BYTE
-TK_INT16 = cvar.TK_INT16
-TK_INT32 = cvar.TK_INT32
-TK_INT64 = cvar.TK_INT64
-TK_UINT16 = cvar.TK_UINT16
-TK_UINT32 = cvar.TK_UINT32
-TK_UINT64 = cvar.TK_UINT64
-TK_FLOAT32 = cvar.TK_FLOAT32
-TK_FLOAT64 = cvar.TK_FLOAT64
-TK_FLOAT128 = cvar.TK_FLOAT128
-TK_INT8 = cvar.TK_INT8
-TK_UINT8 = cvar.TK_UINT8
-TK_CHAR8 = cvar.TK_CHAR8
-TK_CHAR16 = cvar.TK_CHAR16
-TK_STRING8 = cvar.TK_STRING8
-TK_STRING16 = cvar.TK_STRING16
-TK_ALIAS = cvar.TK_ALIAS
-TK_ENUM = cvar.TK_ENUM
-TK_BITMASK = cvar.TK_BITMASK
-TK_ANNOTATION = cvar.TK_ANNOTATION
-TK_STRUCTURE = cvar.TK_STRUCTURE
-TK_UNION = cvar.TK_UNION
-TK_BITSET = cvar.TK_BITSET
-TK_SEQUENCE = cvar.TK_SEQUENCE
-TK_ARRAY = cvar.TK_ARRAY
-TK_MAP = cvar.TK_MAP
-TI_STRING8_SMALL = cvar.TI_STRING8_SMALL
-TI_STRING8_LARGE = cvar.TI_STRING8_LARGE
-TI_STRING16_SMALL = cvar.TI_STRING16_SMALL
-TI_STRING16_LARGE = cvar.TI_STRING16_LARGE
-TI_PLAIN_SEQUENCE_SMALL = cvar.TI_PLAIN_SEQUENCE_SMALL
-TI_PLAIN_SEQUENCE_LARGE = cvar.TI_PLAIN_SEQUENCE_LARGE
-TI_PLAIN_ARRAY_SMALL = cvar.TI_PLAIN_ARRAY_SMALL
-TI_PLAIN_ARRAY_LARGE = cvar.TI_PLAIN_ARRAY_LARGE
-TI_PLAIN_MAP_SMALL = cvar.TI_PLAIN_MAP_SMALL
-TI_PLAIN_MAP_LARGE = cvar.TI_PLAIN_MAP_LARGE
-TI_STRONGLY_CONNECTED_COMPONENT = cvar.TI_STRONGLY_CONNECTED_COMPONENT
-MEMBER_NAME_MAX_LENGTH = cvar.MEMBER_NAME_MAX_LENGTH
-TYPE_NAME_MAX_LENGTH = cvar.TYPE_NAME_MAX_LENGTH
-INVALID_LBOUND = cvar.INVALID_LBOUND
-INVALID_SBOUND = cvar.INVALID_SBOUND
-MemberFlagMinimalMask = cvar.MemberFlagMinimalMask
-TypeFlagMinimalMask = cvar.TypeFlagMinimalMask
-
-class TypeInformation(object):
-    thisown = property(lambda x: x.this.own(), lambda x, v: x.this.own(v), doc="The membership flag")
-    __repr__ = _swig_repr
-    __swig_destroy__ = _fastdds_python.delete_TypeInformation
-
-    def __init__(self, *args):
-        _fastdds_python.TypeInformation_swiginit(self, _fastdds_python.new_TypeInformation(*args))
-
-    def __eq__(self, x):
-        return _fastdds_python.TypeInformation___eq__(self, x)
-
-    def __ne__(self, x):
-        return _fastdds_python.TypeInformation___ne__(self, x)
-
-# Register TypeInformation in _fastdds_python:
-_fastdds_python.TypeInformation_swigregister(TypeInformation)
-ANNOTATION_STR_VALUE_MAX_LEN = cvar.ANNOTATION_STR_VALUE_MAX_LEN
-ANNOTATION_OCTETSEC_VALUE_MAX_LEN = cvar.ANNOTATION_OCTETSEC_VALUE_MAX_LEN
-
 

@@ -73,15 +73,28 @@ _bootstrap_bundled_at_import()
 def _preload_bundled_libs() -> None:
     """ctypes 预加载 bundled shared libs (RTLD_GLOBAL)。
 
-    _fastdds_python.so 启动时会 dlopen libfastdds.so.3.6, 而后者又依赖
-    libfastcdr.so.2 —— SONAME 必须满足。系统 apt 上的 libfastcdr 是
-    .so.1.x, SONAME 不匹配;不显式预加载 bundled 的版本 import 直接
-    失败 (libfastdds.so.3.6 => not found).
+    wdndds 两种 FastDDS 大版本都支持:
+
+    * 3.x (``libfastdds.so.3.6`` + ``libfastcdr.so.2`` —— 大版本名 ``fastdds``)
+    * 2.x (``libfastrtps.so.2.6`` + ``libfastcdr.so.1`` —— 大版本名 ``fastrtps``)
+
+    _fastdds_python.so 启动时 dlopen 自己的 SONAME,后者再依赖 fastcdr;
+    SONAME 必须满足。系统 apt 的 ``libfastcdr`` 是 ``.so.1.x``,与 3.x 的
+    ``.so.2`` 不兼容;与 2.x 的 ``.so.1`` 兼容,但 bundled 的 ``.so.1.0.24``
+    是我们 build 时生成的,符号表更全。不显式预加载 bundled 的版本,
+    import 阶段就会因 SONAME 不满足而失败。
     """
     import ctypes
 
-    # libfastcdr 必须先于 libfastdds,后者对它有依赖
-    for soname in ("libfastcdr.so.2", "libfastdds.so.3.6"):
+    # libfastcdr 必须先于 libfastdds/fastrtps,后者对它有依赖
+    for soname in (
+        # 3.x (master)
+        "libfastcdr.so.2",
+        "libfastdds.so.3.6",
+        # 2.x (legacy FastRTPS naming)
+        "libfastcdr.so.1",
+        "libfastrtps.so.2.6",
+    ):
         path = os.path.join(_BUNDLED_LIB_DIR, soname)
         if not os.path.isfile(path):
             continue
@@ -105,14 +118,25 @@ def _ensure_bundled_on_path() -> None:
 
 
 def _bundled_available() -> bool:
-    """内置 fastdds 包是否齐:目录 + _fastdds_python.so + __init__.py。"""
-    pkg = os.path.join(_BUNDLED_NATIVE_DIR, "fastdds")
-    return (
-        os.path.isdir(pkg)
-        and os.path.isfile(os.path.join(pkg, "__init__.py"))
-        and os.path.isfile(
-            os.path.join(pkg, "_fastdds_python.so")
+    """内置 fastdds 是否齐。
+
+    支持两种 layout:
+
+    * 2.x/3.x 包形式: ``_native/fastdds/__init__.py`` + ``_fastdds_python.so``
+    * 1.x flat 形式:    ``_native/fastdds.py``             + ``_fastdds_python.so``
+
+    Fast-DDS-Python 1.x (FastDDS 2.6.x 配套版本) 输出 flat ``fastdds.py``;
+    2.x 之后切到 ``fastdds/__init__.py`` 包形式。
+    """
+    pkg_dir = os.path.join(_BUNDLED_NATIVE_DIR, "fastdds")
+    if os.path.isdir(pkg_dir):
+        return (
+            os.path.isfile(os.path.join(pkg_dir, "__init__.py"))
+            and os.path.isfile(os.path.join(pkg_dir, "_fastdds_python.so"))
         )
+    return (
+        os.path.isfile(os.path.join(_BUNDLED_NATIVE_DIR, "fastdds.py"))
+        and os.path.isfile(os.path.join(_BUNDLED_NATIVE_DIR, "_fastdds_python.so"))
     )
 
 
@@ -189,6 +213,16 @@ def get() -> Any:
     # (= 0) 一致。
     if not hasattr(_mod, "STATUS_MASK_NONE"):
         _mod.STATUS_MASK_NONE = _mod.StatusMask.none()
+
+    # Fast-DDS-Python 1.x 把 ``RETCODE_OK`` 放在 ``fastdds.ReturnCode_t``
+    # 类属性里(没在模块级暴露);2.x 之后切到模块级 ``fastdds.RETCODE_OK``。
+    # wdndds SDK 内部 ``check(rc, ..., get().RETCODE_OK)`` 当模块属性读,
+    # 1.x 下会 AttributeError —— 这里做一次兜底,值仍是 0。
+    if not hasattr(_mod, "RETCODE_OK"):
+        try:
+            _mod.RETCODE_OK = int(_mod.ReturnCode_t.RETCODE_OK)
+        except AttributeError:
+            pass
 
     # Bring the bundled wdndds_string C++ helper module into
     # ``sys.modules`` so ``wdndds.dds.types`` can ``import wdndds_string``

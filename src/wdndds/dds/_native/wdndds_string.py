@@ -66,32 +66,23 @@ class WdnddsStringTopicDataType(object):
         _wdndds_string.WdnddsStringTopicDataType_swiginit(self, _wdndds_string.new_WdnddsStringTopicDataType())
     __swig_destroy__ = _wdndds_string.delete_WdnddsStringTopicDataType
 
-    def serialize(self, data, payload, data_representation):
-        return _wdndds_string.WdnddsStringTopicDataType_serialize(self, data, payload, data_representation)
+    def serialize(self, data, payload):
+        return _wdndds_string.WdnddsStringTopicDataType_serialize(self, data, payload)
 
     def deserialize(self, payload, data):
         return _wdndds_string.WdnddsStringTopicDataType_deserialize(self, payload, data)
 
-    def calculate_serialized_size(self, data, data_representation):
-        return _wdndds_string.WdnddsStringTopicDataType_calculate_serialized_size(self, data, data_representation)
+    def getSerializedSizeProvider(self, data):
+        return _wdndds_string.WdnddsStringTopicDataType_getSerializedSizeProvider(self, data)
 
-    def create_data(self):
-        return _wdndds_string.WdnddsStringTopicDataType_create_data(self)
+    def createData(self):
+        return _wdndds_string.WdnddsStringTopicDataType_createData(self)
 
-    def delete_data(self, data):
-        return _wdndds_string.WdnddsStringTopicDataType_delete_data(self, data)
+    def deleteData(self, data):
+        return _wdndds_string.WdnddsStringTopicDataType_deleteData(self, data)
 
-    def compute_key(self, *args):
-        return _wdndds_string.WdnddsStringTopicDataType_compute_key(self, *args)
-
-    def register_type_object_representation(self):
-        return _wdndds_string.WdnddsStringTopicDataType_register_type_object_representation(self)
-
-    def set_name(self, name):
-        return _wdndds_string.WdnddsStringTopicDataType_set_name(self, name)
-
-    def get_name(self):
-        return _wdndds_string.WdnddsStringTopicDataType_get_name(self)
+    def getKey(self, data, ihandle, force_md5=False):
+        return _wdndds_string.WdnddsStringTopicDataType_getKey(self, data, ihandle, force_md5)
 
 # Register WdnddsStringTopicDataType in _wdndds_string:
 _wdndds_string.WdnddsStringTopicDataType_swigregister(WdnddsStringTopicDataType)
@@ -110,6 +101,9 @@ def wdndds_register_string_type(participant, alias):
 
 def wdndds_create_string_data():
     return _wdndds_string.wdndds_create_string_data()
+
+def wdndds_create_string_data_with(value):
+    return _wdndds_string.wdndds_create_string_data_with(value)
 
 def wdndds_delete_string_data(data):
     return _wdndds_string.wdndds_delete_string_data(data)
