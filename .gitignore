@@ -104,3 +104,7 @@ coverage.xml
 #   native/share/    FastDDS XML type defs + fastddsgen.jar
 #   native/tools/    fasddsgen etcbuild/
 src/wdndds/dds/_native/_build_tmp/
+
+# v0.4 backup of cshim_src/ — superseded by the single-file
+# v0.5 cshim_src/wdndds_cshim.cpp; never tracked.
+cshim_src_v0.4_backup/
