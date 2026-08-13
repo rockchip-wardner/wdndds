@@ -89,6 +89,8 @@ coverage.xml
 !native/lib/cmake/fastcdr/
 !native/include/fastdds/                                  # C++ headers (cmake needs them)
 !native/include/fastcdr/
+!native/bin/fastddsgen                                    # IDL→C++ generator (Java wrapper)
+!native/share/fastddsgen/java/fastddsgen.jar              # the actual jar
 
 # Re-ignore wdndds source-compiled .so files (built from cshim_src/
 # and idl/ at pip install time; NEVER in git). After the directory
@@ -101,17 +103,20 @@ coverage.xml
 
 # Everything else under native/ stays gitignored — those are
 # dev-only / debug / not-needed artifacts:
-#   native/bin/               fastddsgen / discovery-server / wrappers
-#                             (fastddsgen is a Java tool for re-running
-#                              IDL gen when editing idl/compute.idl —
-#                              not needed at install time since the
-#                              generated .cxx files are committed)
+#   native/bin/fast-discovery-server* / fastdds / ros-discovery
+#                             debug CLI tools (not used by build or runtime)
 #   native/include/wdndds/    idl-generated headers (cmake uses the
 #                              committed idl/ source dir instead)
-#   native/share/             FastDDS XML schemas + fastddsgen.jar
+#   native/share/             FastDDS XML schemas (debug static discovery)
+#                             + FastDDS-Python packaging helpers
 #   native/tools/             fasddsgen etcbuild/
 src/wdndds/dds/_native/_build_tmp/
 
 # v0.4 backup of cshim_src/ — superseded by the single-file
 # v0.5 cshim_src/wdndds_cshim.cpp; never tracked.
 cshim_src_v0.4_backup/
+
+# fastddsgen artifact guard — if you accidentally run
+# `fastddsgen -d idl idl/compute.idl` you get a stray `idl/idl/`
+# subdir from the input's relative path under -d.
+idl/idl/

@@ -116,6 +116,31 @@ sudo apt install -y libasio-dev libtinyxml2-dev libfastrtps-dev swig cmake g++ p
 The full build takes ~6 minutes on a small board. Required disk
 space: 5-10 GB (colcon build intermediates).
 
+## Modifying `idl/compute.idl`
+
+The IDL-generated ``computePubSubTypes.cxx`` + ``computeTypeObjectSupport.cxx``
+(and the matching ``.hpp`` / ``.ipp`` headers) are committed alongside
+``idl/compute.idl`` so the wheel build never needs ``fastddsgen``.
+
+When you change ``idl/compute.idl``, regenerate them with the vendored
+fastddsgen (a Java wrapper that invokes the bundled ``fastddsgen.jar``):
+
+```bash
+# -replace: overwrite existing files
+# -d .:    output into the current dir, i.e. alongside compute.idl
+#          (use -d idl  by mistake and you get idl/idl/compute.* — wrong)
+native/bin/fastddsgen -replace -d . idl/compute.idl
+
+git add idl/compute*.{cxx,hpp,ipp}
+git commit -m 'feat: regenerate IDL after compute.idl change'
+```
+
+Requires JDK 17+ on PATH (any recent OpenJDK works). The vendored
+``native/share/fastddsgen/java/fastddsgen.jar`` (18 MB) is eProsima's
+official FastDDS-Gen 4.3.0 build — do NOT replace it with a different
+version without also re-generating the committed ``idl/*.cxx`` files
+(those are pinned to that generator version).
+
 ## Network requirements
 
 DDS discovery uses **UDP multicast** (`239.255.0.1`, port range starting
