@@ -87,6 +87,8 @@ coverage.xml
 !native/lib/libfastcdr.so.2.3.6
 !native/lib/cmake/fastdds/                                # cmake config for find_package
 !native/lib/cmake/fastcdr/
+!native/include/fastdds/                                  # C++ headers (cmake needs them)
+!native/include/fastcdr/
 
 # Re-ignore wdndds source-compiled .so files (built from cshim_src/
 # and idl/ at pip install time; NEVER in git). After the directory
@@ -98,11 +100,16 @@ coverage.xml
 /native/lib/libwdndds_idl.so
 
 # Everything else under native/ stays gitignored — those are
-# dev-only build outputs we don't ship:
-#   native/bin/      fastdds / fastddsgen / discovery-server
-#   native/include/  FastDDS C++ headers (build-time only)
-#   native/share/    FastDDS XML type defs + fastddsgen.jar
-#   native/tools/    fasddsgen etcbuild/
+# dev-only / debug / not-needed artifacts:
+#   native/bin/               fastddsgen / discovery-server / wrappers
+#                             (fastddsgen is a Java tool for re-running
+#                              IDL gen when editing idl/compute.idl —
+#                              not needed at install time since the
+#                              generated .cxx files are committed)
+#   native/include/wdndds/    idl-generated headers (cmake uses the
+#                              committed idl/ source dir instead)
+#   native/share/             FastDDS XML schemas + fastddsgen.jar
+#   native/tools/             fasddsgen etcbuild/
 src/wdndds/dds/_native/_build_tmp/
 
 # v0.4 backup of cshim_src/ — superseded by the single-file

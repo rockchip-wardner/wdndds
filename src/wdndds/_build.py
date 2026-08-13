@@ -3,7 +3,12 @@
 Pip-installs wdndds from source: ``libwdndds_idl.so`` + ``libwdndds_cshim.so``
 are NOT committed to git. They get built fresh on every install from:
 
-* ``idl/compute.idl`` (and its CMakeLists.txt) → ``libwdndds_idl.so``
+* ``idl/compute.idl`` (committed IDL + its already-generated
+  ``computePubSubTypes.cxx`` / ``computeTypeObjectSupport.cxx`` etc.)
+  → ``libwdndds_idl.so``. ``fastddsgen`` is NOT called here — the
+  generated files are committed alongside ``compute.idl`` so the
+  install-time build doesn't need a Java toolchain. Re-run
+  ``fastddsgen`` manually only when editing ``compute.idl``.
 * ``cshim_src/wdndds_cshim.cpp`` (and its CMakeLists.txt) →
   ``libwdndds_cshim.so``, linking against ``libwdndds_idl`` + FastDDS 3.6
 
@@ -11,12 +16,13 @@ Both ``.so`` files land in ``src/wdndds/dds/_native/`` where the
 ``package_data`` rule picks them up for the wheel.
 
 Build-time requirement: FastDDS 3.6 dev install (headers +
-``libfastdds.so.3.6`` + libfastcdr + fastddsgen binary).
-Resolution order:
+``libfastdds.so.3.6`` + libfastcdr). Resolution order:
   1. ``$WDNDDS_FASTDDS_PREFIX`` env var, if set and contains
      ``include/fastdds/`` (cross-build / out-of-tree install)
   2. ``<project_root>/native/`` (dev workflow — produced by
-     ``build_native.sh``; gitignored)
+     ``build_native.sh``; partially gitignored — only ``lib/`` +
+     ``include/{fastdds,fastcdr}/`` are committed, ``bin/`` /
+     ``share/`` / ``tools/`` are dev-only debug artefacts)
 
 If neither is available the build aborts with a clear message
 telling the user to run ``bash build_native.sh`` first. We don't
@@ -104,21 +110,6 @@ def _resolve_fastdds_prefix() -> Path:
     )
 
 
-def _fastddsgen_bin(prefix: Path) -> Path:
-    """Locate the ``fastddsgen`` binary."""
-    candidates = [
-        prefix / "bin" / "fastddsgen",
-        Path("/usr/local/bin/fastddsgen"),
-        Path("/usr/bin/fastddsgen"),
-    ]
-    for c in candidates:
-        if c.is_file() and os.access(c, os.X_OK):
-            return c
-    raise RuntimeError(
-        f"wdndds: fastddsgen binary not found under {prefix}/bin/ or in PATH."
-    )
-
-
 def _run(cmd: list[str], cwd: Path, timeout: int = 600) -> None:
     """subprocess.run wrapper with clear error surface."""
     print(f"[wdndds] {' '.join(cmd)}  (cwd={cwd})", file=sys.stderr)
@@ -137,27 +128,22 @@ def _run(cmd: list[str], cwd: Path, timeout: int = 600) -> None:
 def _build_idl_and_cshim(prefix: Path) -> tuple[Path, Path]:
     """Source-compile libwdndds_idl + libwdndds_cshim into ``_NATIVE_DIR``.
 
+    The IDL-generated ``.hpp`` / ``.cxx`` files (``computePubSubTypes.cxx``
+    + ``computeTypeObjectSupport.cxx`` + friends) are **committed** to
+    ``idl/`` in the repo — generated once by ``fastddsgen`` and pinned to
+    a specific version. So the build flow does NOT call ``fastddsgen``
+    again at install time (that tool is only needed when an ``idl/``
+    maintainer edits ``compute.idl`` and re-runs it manually).
+
     Single cmake invocation: a temporary top-level project that uses
     ``add_subdirectory(idl)`` + ``add_subdirectory(cshim_src)`` so the
     cshim target can link against the idl target directly (no manual
     copy of ``libwdndds_idl.so`` between two separate cmake projects).
-
-    The idl/ and cshim_src/ CMakeLists.txt we ship don't declare
-    install(EXPORT) targets, so after ``cmake --build`` we copy the
-    produced ``.so`` files into ``_NATIVE_DIR/`` (the wheel-install
-    location ``_cshim.py`` reads at import time).
     """
     _NATIVE_DIR.mkdir(parents=True, exist_ok=True)
     _BUILD_TMP.mkdir(parents=True, exist_ok=True)
 
-    # 1. fastddsgen — generates the .hpp / .cxx the idl CMakeLists.txt
-    #    expects. Output lands in _BUILD_TMP/, which we add to
-    #    CMAKE_PREFIX_PATH so the idl CMakeLists can find it.
-    gen = _fastddsgen_bin(prefix)
-    _run([str(gen), "-replace", "-d", str(_BUILD_TMP),
-           str(_IDL_DIR / "compute.idl")], cwd=_BUILD_TMP)
-
-    # 2. Write a tiny top-level CMakeLists.txt that glues both
+    # 1. Write a tiny top-level CMakeLists.txt that glues both
     #    subprojects together. add_subdirectory uses the existing
     #    CMakeLists.txt in each dir, so we re-use the canonical
     #    build recipes.
@@ -169,18 +155,18 @@ def _build_idl_and_cshim(prefix: Path) -> tuple[Path, Path]:
         f"add_subdirectory({_CSHIM_SRC_DIR} cshim)\n"
     )
 
-    # 3. cmake configure + build both targets.
+    # 2. cmake configure + build both targets.
     cmake_build_dir = _BUILD_TMP / "build"
     cmake_build_dir.mkdir(exist_ok=True)
     _run(["cmake", "-S", str(_BUILD_TMP), "-B", str(cmake_build_dir),
-           "-DCMAKE_PREFIX_PATH=" + str(prefix) + ";" + str(_BUILD_TMP),
+           "-DCMAKE_PREFIX_PATH=" + str(prefix),
            "-DCMAKE_BUILD_TYPE=Release"],
           cwd=cmake_build_dir)
     _run(["cmake", "--build", str(cmake_build_dir),
            "--target", "wdndds_idl", "wdndds_cshim",
            "-j", str(os.cpu_count() or 1)], cwd=cmake_build_dir)
 
-    # 4. Locate the built .so files (cmake build dir layout varies:
+    # 3. Locate the built .so files (cmake build dir layout varies:
     #    CMakeFiles/<target>.dir/ or src/cpp/).
     def _find_so(target: str) -> Path:
         cands = list(cmake_build_dir.rglob(f"lib{target}.so"))
@@ -195,7 +181,7 @@ def _build_idl_and_cshim(prefix: Path) -> tuple[Path, Path]:
     shutil.copy2(str(built_idl), str(_OUTPUT_IDL_SO))
     shutil.copy2(str(built_cshim), str(_OUTPUT_CSHIM_SO))
 
-    # 5. Stamp RUNPATH on cshim so it finds libfastdds / libfastcdr /
+    # 4. Stamp RUNPATH on cshim so it finds libfastdds / libfastcdr /
     #    libwdndds_idl at load time. Prefer $ORIGIN/lib (the wheel
     #    installs the official FastDDS libs alongside); fall back to
     #    the prefix lib dir for in-place runs.
