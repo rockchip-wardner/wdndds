@@ -1,0 +1,73 @@
+// compute.idl — wdndds RPC-DDS interface for compute_worker
+//
+// One service per model. Worker registers the service; main process sends
+// requests. The 5 actions are: info, load, infer, reset, shutdown.
+
+const string WDNDDS_SERVICE_TYPE_NAME = "wdndds::rpc::ComputeService";
+
+const long WDNDDS_REQUEST_ACTION_INFO = 0;
+const long WDNDDS_REQUEST_ACTION_LOAD = 1;
+const long WDNDDS_REQUEST_ACTION_INFER = 2;
+const long WDNDDS_REQUEST_ACTION_RESET = 3;
+const long WDNDDS_REQUEST_ACTION_SHUTDOWN = 4;
+
+const long WDNDDS_ATTACHMENT_KIND_TEXT = 0;
+const long WDNDDS_ATTACHMENT_KIND_IMAGE = 1;
+const long WDNDDS_ATTACHMENT_KIND_NDARRAY = 2;
+
+const long WDNDDS_IMAGE_ENCODING_RAW = 0;     // local SHM transport
+const long WDNDDS_IMAGE_ENCODING_JPEG = 1;    // over the wire (remote / lossy)
+const long WDNDDS_IMAGE_ENCODING_PNG = 2;     // over the wire (lossless)
+
+// One attached payload (image / text / ndarray blob).
+// `kind` is one of WDNDDS_ATTACHMENT_KIND_*. `encoding` is only meaningful
+// for IMAGE (RAW / JPEG / PNG). `bytes` carries the actual content.
+struct ComputeAttachment {
+    long kind;
+    string mime_type;     // "image/jpeg" / "image/png" / "text/plain" / ...
+    long encoding;        // one of WDNDDS_IMAGE_ENCODING_*
+    long width;           // for IMAGE: pixel width (0 if unknown)
+    long height;          // for IMAGE: pixel height (0 if unknown)
+    long channels;        // for IMAGE: 3 / 4
+    long row_stride;      // for IMAGE NDARRAY: bytes per row
+    sequence<octet> bytes;
+};
+
+// Compute request — one action + generic payload.
+struct ComputeRequest {
+    long long request_id;            // matches request <-> reply
+    long action;                     // WDNDDS_REQUEST_ACTION_*
+    long long every_n;               // for INFER: sample-every-N frames
+    string prompt;                   // for INFER: LLM prompt
+    string model_id;                 // for INFO: reported by server
+    long long npu_index;             // for INFO: reported by server
+    sequence<ComputeAttachment> attachments;
+};
+
+// Compute reply — generic result envelope.
+struct ComputeReply {
+    long long request_id;            // echoes the request's id
+    boolean ok;                      // true on success
+    string error;                    // when ok == false, the message
+
+    long status;                     // not_loaded / loading / running / error
+    string status_text;              // "running" / "error" / "shutting_down" / ...
+
+    // INFER-only fields
+    string text;
+    string level;
+    string tool_call;
+    string bbox_json;                // [x1, y1, x2, y2] or empty
+    string crop_b64;                 // JPEG-cropped ROI from TargetDoc
+
+    // LOAD-only fields
+    double load_time_sec;
+    long long loaded_at_unix;
+
+    // INFO-only fields
+    string model;
+    string model_dir;
+    long long npu_index_info;
+    string init_error;
+    boolean rkai_available;
+};

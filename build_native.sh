@@ -1,219 +1,241 @@
 #!/usr/bin/env bash
-# Build the bundled FastDDS Python bindings + WdnddsStringTopicDataType helper.
+# Build the wdndds 0.5 native stack from source:
+#   - FastCDR 2.3.6
+#   - foonathan_memory_vendor 1.4.1
+#   - FastDDS 3.6.2
+#   - FastDDS-Gen 4.3.0 (Java)
+#   - wdndds IDL library (libwdndds_idl.so)
+#   - wdndds cshim (libwdndds_cshim.so)
 #
-# This produces the wheel-payload files under wdndds/dds/_native/:
-#
-#   _fastdds_python.so + fastdds.py   # SWIG-generated, 1.x flat layout
-#       (or fastdds/__init__.py + fastdds/_fastdds_python.so  # 2.x+ package)
-#   lib/libfast{rtps,dds}.so* + libfastcdr.so*
-#   _wdndds_string.so                 # our custom C++ TopicDataType
-#   wdndds_string.py                  # its Python wrapper
+# Output: everything installs to wdndds/native/.
+#          libfast{cdr,dds}.so.3.6.2.0, libwdndds_idl.so, libwdndds_cshim.so
+#          bin/fastdds, bin/fastddsgen
+#          share/fastddsgen/java/fastddsgen.jar
+#          include/wdndds/idl/{compute,computePubSubTypes,...}.hpp
 #
 # Usage:
-#   ./build_native.sh [PLATFORM_TAG]
-#   FASTDDDS_BRANCH=origin/2.14.x ./build_native.sh   # build a specific tag
-#
-# PLATFORM_TAG defaults to ``aarch64-bookworm-py3.11``. The current
-# shipped artifacts match this tag; rebuilding for a different
-# platform (e.g. ``x86_64-jammy-py3.10``) requires apt-installing the
-# matching ``libfastrtps-dev`` and running the colcon build under
-# that OS.
+#   ./build_native.sh
 #
 # Requirements on the build host:
-#   - apt: libasio-dev libtinyxml2-dev libfastrtps-dev swig cmake g++ python3-dev
-#   - pip: colcon-common-extensions vcstool
-#   - git (for the Fast-DDS-Python repos)
-#   - 5-10 GB free disk (colcon build artifacts)
-#   - 20-30 minutes wall time
+#   - apt: openjdk-17-jdk-headless cmake g++ patchelf
+#   - 5-10 GB free disk
+#   - 20-30 minutes wall time (FastDDS is big)
+#
+# The build artifacts go to:
+#   WDNDDS_NATIVE (default wdndds/native) — install prefix
+#   /userdata/src/deps + /userdata/src/Fast-DDS — sources (NOT /tmp!)
 
 set -euo pipefail
 
-PLATFORM_TAG="${1:-aarch64-bookworm-py3.11}"
 WDNDDS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WS_DIR="${FASTDDDS_WS:-/tmp/fastdds_ws}"
-WDNDDS_CXX_DIR="${WDNDDS_DIR}/../wdndds_cxx"
-NATIVE_DIR="${WDNDDS_DIR}/src/wdndds/dds/_native"
+NATIVE_DIR="${WDNDDS_NATIVE:-${WDNDDS_DIR}/native}"
+SRC_DIR="${WDNDDS_SRC:-/userdata/src}"
+DEPS_DIR="${SRC_DIR}/deps"
 
 log() { printf "\033[1;34m[build_native]\033[0m %s\n" "$*" >&2; }
 die() { printf "\033[1;31m[build_native]\033[0m %s\n" "$*" >&2; exit 1; }
 
-log "platform tag: ${PLATFORM_TAG}"
-log "build workspace: ${WS_DIR}"
-log "wdndds_cxx dir: ${WDNDDS_CXX_DIR}"
-log "wdndds native dir: ${NATIVE_DIR}"
+log "wdndds dir:    ${WDNDDS_DIR}"
+log "install prefix: ${NATIVE_DIR}"
+log "source dir:    ${SRC_DIR}"
 
 # --------------------------------------------------------------------------- #
 # Sanity: tools available
 # --------------------------------------------------------------------------- #
-for cmd in g++ cmake swig git python3; do
+for cmd in g++ cmake make git wget tar unzip java; do
     command -v "$cmd" >/dev/null || die "missing required command: $cmd"
 done
-python3 -c "import colcon_core" 2>/dev/null \
-    || die "missing python module: colcon-core (pip install colcon-common-extensions)"
-python3 -c "import vcstool" 2>/dev/null \
-    || die "missing python module: vcstool (pip install vcstool)"
-
-dpkg -l libasio-dev libtinyxml2-dev libfastrtps-dev patchelf >/dev/null 2>&1 \
-    || die "missing apt deps; run: sudo apt install libasio-dev libtinyxml2-dev libfastrtps-dev patchelf"
 
 # --------------------------------------------------------------------------- #
-# Step 1: clone Fast-DDS-Python repos via vcs (or use the FASTDDDS_WS that
-# the user pre-populated with a specific branch).
+# Step 1: Download sources (skip if already present)
 # --------------------------------------------------------------------------- #
-if [ ! -d "${WS_DIR}/src/fastdds_python" ]; then
-    log "cloning Fast-DDS-Python repos into ${WS_DIR} ..."
-    mkdir -p "${WS_DIR}/src"
-    wget -q -O "${WS_DIR}/fastdds_python.repos" \
-        https://raw.githubusercontent.com/eProsima/Fast-DDS-Python/main/fastdds_python.repos
-    ( cd "${WS_DIR}" && python3 -m vcstool import --recursive src < fastdds_python.repos )
-else
-    log "fastdds_python repos already present at ${WS_DIR}/src"
+mkdir -p "${SRC_DIR}" "${DEPS_DIR}" "${NATIVE_DIR}"
+
+# FastDDS 3.6.2
+if [ ! -d "${SRC_DIR}/Fast-DDS" ]; then
+    log "downloading Fast-DDS 3.6.2 ..."
+    wget -q --timeout=120 \
+        "https://codeload.github.com/eProsima/Fast-DDS/tar.gz/refs/tags/v3.6.2" \
+        -O "${SRC_DIR}/Fast-DDS.tar.gz"
+    mkdir -p "${SRC_DIR}/Fast-DDS"
+    tar -xzf "${SRC_DIR}/Fast-DDS.tar.gz" -C "${SRC_DIR}/Fast-DDS" \
+        --strip-components=1
 fi
 
-# Optional: switch the source trees to a specific FastDDS / Fast-DDS-Python
-# branch. The wdndds SDK bootstraps both 1.x (flat fastdds.py) and 2.x+
-# (package fastdds/__init__.py) layouts from this build directory, so the
-# pinned branch decides which API the bundled .so + .py target.
-if [ -n "${FASTDDDS_BRANCH:-}" ]; then
-    log "switching fastdds source to ${FASTDDDS_BRANCH}"
-    ( cd "${WS_DIR}/src/fastdds" && git fetch --all >/dev/null 2>&1 || true )
-    ( cd "${WS_DIR}/src/fastdds" && git checkout "${FASTDDDS_BRANCH}" )
-    ( cd "${WS_DIR}/src/fastdds" && git submodule update --init --recursive )
+# FastCDR 2.3.6
+if [ ! -d "${DEPS_DIR}/fastcdr" ]; then
+    log "downloading FastCDR 2.3.6 ..."
+    wget -q --timeout=120 \
+        "https://codeload.github.com/eProsima/Fast-CDR/tar.gz/refs/tags/v2.3.6" \
+        -O "${DEPS_DIR}/fastcdr.tar.gz"
+    mkdir -p "${DEPS_DIR}/fastcdr"
+    tar -xzf "${DEPS_DIR}/fastcdr.tar.gz" -C "${DEPS_DIR}/fastcdr" \
+        --strip-components=1
 fi
 
-# --------------------------------------------------------------------------- #
-# Step 2: build the fastdds Python module via colcon
-# --------------------------------------------------------------------------- #
-log "running colcon build --packages-up-to fastdds_python (this takes ~6 minutes)..."
-# Always start from a clean build dir if FASTDDDS_BRANCH was set — the
-# CMake cache from a previous branch pollutes include paths and breaks the
-# 3.x → 2.x ABI transition.
-if [ -n "${FASTDDDS_BRANCH:-}" ]; then
-    rm -rf "${WS_DIR}/build" "${WS_DIR}/install" "${WS_DIR}/log"
-fi
-if [ ! -d "${WS_DIR}/build" ] || [ ! -f "${WS_DIR}/install/setup.bash" ]; then
-    ( cd "${WS_DIR}" && colcon build --merge-install --symlink-install \
-        --packages-up-to fastdds_python \
-        --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release )
-else
-    log "colcon install/ already present; rebuilding fastdds_python only"
-    ( cd "${WS_DIR}" && colcon build --merge-install --symlink-install \
-        --packages-select fastdds_python \
-        --cmake-args -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release )
+# foonathan_memory_vendor 1.4.1
+if [ ! -d "${DEPS_DIR}/foonathan_memory_vendor" ]; then
+    log "downloading foonathan_memory_vendor 1.4.1 ..."
+    wget -q --timeout=120 \
+        "https://codeload.github.com/eProsima/foonathan_memory_vendor/tar.gz/refs/tags/v1.4.1" \
+        -O "${DEPS_DIR}/foonathan_memory_vendor.tar.gz"
+    mkdir -p "${DEPS_DIR}/foonathan_memory_vendor"
+    tar -xzf "${DEPS_DIR}/foonathan_memory_vendor.tar.gz" \
+        -C "${DEPS_DIR}/foonathan_memory_vendor" --strip-components=1
 fi
 
-# Detect the built layout. Fast-DDS-Python 1.x ships flat
-# ``fastdds.py`` + ``_fastdds_python.so`` in site-packages; 2.x+ ships a
-# ``fastdds/`` package directory with __init__.py and the .so inside.
-PY_SITE="${WS_DIR}/install/lib/python3.11/site-packages"
-if [ -f "${PY_SITE}/fastdds.py" ]; then
-    LAYOUT="1.x-flat"
-elif [ -f "${PY_SITE}/fastdds/__init__.py" ]; then
-    LAYOUT="2.x+package"
-else
-    die "colcon build produced neither ${PY_SITE}/fastdds.py nor ${PY_SITE}/fastdds/__init__.py"
-fi
-log "detected bindings layout: ${LAYOUT}"
-
-# --------------------------------------------------------------------------- #
-# Step 3: build the bundled C++ helper (WdnddsStringTopicDataType + SWIG)
-# --------------------------------------------------------------------------- #
-if [ ! -d "${WDNDDS_CXX_DIR}" ]; then
-    die "wdndds_cxx dir not found: ${WDNDDS_CXX_DIR}"
-fi
-log "building WdnddsStringTopicDataType SWIG helper..."
-rm -rf "${WDNDDS_CXX_DIR}/build/generated" "${WDNDDS_CXX_DIR}/generated"
-mkdir -p "${WDNDDS_CXX_DIR}/build"
-( cd "${WDNDDS_CXX_DIR}/build" && cmake .. )
-( cd "${WDNDDS_CXX_DIR}/build" && cmake --build . -j"$(nproc)" )
-
-[ -f "${WDNDDS_CXX_DIR}/generated/_wdndds_string.so" ] \
-    || die "wdndds_cxx build did not produce _wdndds_string.so"
-[ -f "${WDNDDS_CXX_DIR}/generated/wdndds_string.py" ] \
-    || die "wdndds_cxx build did not produce wdndds_string.py"
-
-log "WdnddsStringTopicDataType OK"
-
-# --------------------------------------------------------------------------- #
-# Step 4: drop everything into wdndds/dds/_native/
-# --------------------------------------------------------------------------- #
-log "populating ${NATIVE_DIR} ..."
-mkdir -p "${NATIVE_DIR}/lib"
-
-# Reset the previous fastdds payload (either flat fastdds.py or
-# fastdds/ package dir).
-rm -rf "${NATIVE_DIR}/fastdds.py" "${NATIVE_DIR}/fastdds"
-case "${LAYOUT}" in
-    1.x-flat)
-        cp "${PY_SITE}/fastdds.py" "${NATIVE_DIR}/fastdds.py"
-        cp "${PY_SITE}/_fastdds_python.so" "${NATIVE_DIR}/_fastdds_python.so"
-        ;;
-    2.x+package)
-        cp -r "${PY_SITE}/fastdds" "${NATIVE_DIR}/fastdds"
-        cp "${PY_SITE}/fastdds/_fastdds_python.so" "${NATIVE_DIR}/fastdds/_fastdds_python.so"
-        ;;
-esac
-
-# Reset _native/lib with the colcon build's shared libs (preserve symlinks).
-rm -rf "${NATIVE_DIR}/lib"
-mkdir -p "${NATIVE_DIR}/lib"
-cp -P "${WS_DIR}/install/lib/libfastdds.so"* "${NATIVE_DIR}/lib/" 2>/dev/null || true
-cp -P "${WS_DIR}/install/lib/libfastrtps.so"* "${NATIVE_DIR}/lib/" 2>/dev/null || true
-cp -P "${WS_DIR}/install/lib/libfastcdr.so"* "${NATIVE_DIR}/lib/" 2>/dev/null || true
-
-# Copy the WdnddsStringTopicDataType helper.
-cp "${WDNDDS_CXX_DIR}/generated/_wdndds_string.so" "${NATIVE_DIR}/"
-cp "${WDNDDS_CXX_DIR}/generated/wdndds_string.py" "${NATIVE_DIR}/"
-
-# --------------------------------------------------------------------------- #
-# Stamp bundled .so RPATHs so the dynamic linker can find libfastcdr/libfastrtps
-# WITHOUT relying on ctypes.CDLL(RTLD_GLOBAL) preload.
-#
-# Why: _fastdds_python.so has DT_NEEDED libfastrtps.so.2.6 — the loader needs
-# to resolve it at dlopen() time. RTLD_GLOBAL preload from Python *should*
-# make it visible, but doesn't always propagate on every libc version /
-# dlopen call order — customers then hit "libfastrtps.so.2.6: cannot open
-# shared object file" with no useful diagnostic.
-#
-# The fix: embed a DT_RUNPATH of ``$ORIGIN/lib`` (or ``$ORIGIN/../lib`` for
-# the 2.x package layout where the .so lives at _native/fastdds/) so the
-# loader searches the bundled lib dir FIRST, before any system path. This
-# makes preload redundant and survives across libc versions.
-#
-# Requires the ``patchelf`` apt package (added to the dep check at the top
-# of the script).
-# --------------------------------------------------------------------------- #
-if command -v patchelf >/dev/null 2>&1; then
-    case "${LAYOUT}" in
-        1.x-flat)
-            # _fastdds_python.so and _wdndds_string.so live at _native/
-            # libfast*.so live at _native/lib/ → $ORIGIN/lib
-            patchelf --set-rpath '$ORIGIN/lib' "${NATIVE_DIR}/_fastdds_python.so"
-            patchelf --set-rpath '$ORIGIN/lib' "${NATIVE_DIR}/_wdndds_string.so"
-            log "stamped RUNPATH=\$ORIGIN/lib on _fastdds_python.so + _wdndds_string.so"
-            ;;
-        2.x+package)
-            # .so live at _native/fastdds/, lib at _native/lib/ → $ORIGIN/../lib
-            patchelf --set-rpath '$ORIGIN/../lib' "${NATIVE_DIR}/fastdds/_fastdds_python.so"
-            log "stamped RUNPATH=\$ORIGIN/../lib on fastdds/_fastdds_python.so"
-            ;;
-    esac
-else
-    log "WARNING: patchelf not installed — bundled .so will rely on ctypes"
-    log "         RTLD_GLOBAL preload only. Install with: sudo apt install patchelf"
+# FastDDS-Gen 4.3.0 (Java)
+if [ ! -d "${DEPS_DIR}/fastddsgen" ]; then
+    log "downloading Fast-DDS-Gen 4.3.0 ..."
+    wget -q --timeout=120 \
+        "https://codeload.github.com/eProsima/Fast-DDS-Gen/tar.gz/refs/tags/v4.3.0" \
+        -O "${DEPS_DIR}/fastddsgen.tar.gz"
+    mkdir -p "${DEPS_DIR}/fastddsgen"
+    tar -xzf "${DEPS_DIR}/fastddsgen.tar.gz" -C "${DEPS_DIR}/fastddsgen" \
+        --strip-components=1
 fi
 
-# Strip __pycache__ if it slipped in.
-find "${NATIVE_DIR}" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+# IDL parser submodule (for fastddsgen)
+if [ ! -d "${DEPS_DIR}/fastddsgen/thirdparty/idl-parser/src" ]; then
+    log "downloading IDL-Parser master ..."
+    wget -q --timeout=120 \
+        "https://codeload.github.com/eProsima/idl-parser/tar.gz/refs/heads/master" \
+        -O "${DEPS_DIR}/idl-parser.tar.gz"
+    mkdir -p "${DEPS_DIR}/fastddsgen/thirdparty/idl-parser"
+    tar -xzf "${DEPS_DIR}/idl-parser.tar.gz" \
+        -C "${DEPS_DIR}/fastddsgen/thirdparty/idl-parser" --strip-components=1
+    # Patch build.gradle so submodule update step is a no-op (we already have
+    # the source tree, no need to call git submodule).
+    sed -i "s|commandLine = \['git', 'submodule', 'update', '--init'\]|commandLine = ['/bin/echo', 'skip']|" \
+        "${DEPS_DIR}/fastddsgen/build.gradle"
+fi
+
+# Gradle 9.2.1
+if [ ! -d "${SRC_DIR}/gradle-9.2.1" ]; then
+    log "downloading Gradle 9.2.1 ..."
+    wget -q --timeout=120 \
+        "https://services.gradle.org/distributions/gradle-9.2.1-bin.zip" \
+        -O "${SRC_DIR}/gradle-9.2.1-bin.zip"
+    unzip -q "${SRC_DIR}/gradle-9.2.1-bin.zip" -d "${SRC_DIR}"
+fi
+export PATH="${SRC_DIR}/gradle-9.2.1/bin:${PATH}"
 
 # --------------------------------------------------------------------------- #
-# Step 5: print summary + size
+# Step 2: Build FastCDR (small, 30s)
 # --------------------------------------------------------------------------- #
-log "build done. _native contents:"
-find "${NATIVE_DIR}" -maxdepth 2 -type f -o -type l | sort | while read -r f; do
-    sz=$(stat -c '%s' "$f")
-    printf "  %10d  %s\n" "$sz" "${f#${NATIVE_DIR}/}"
-done
-printf "  total: "
-du -sh "${NATIVE_DIR}" | cut -f1
-log "now: pip install -e ${WDNDDS_DIR}"
+log "building FastCDR ..."
+mkdir -p "${DEPS_DIR}/fastcdr/build"
+cd "${DEPS_DIR}/fastcdr/build"
+cmake -DCMAKE_INSTALL_PREFIX="${NATIVE_DIR}" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DBUILD_TESTING=OFF \
+      .. > /dev/null
+make -j"$(nproc)" > /dev/null
+make install > /dev/null
+
+# --------------------------------------------------------------------------- #
+# Step 3: Build foonathan_memory_vendor (header-only, 5s)
+# --------------------------------------------------------------------------- #
+log "building foonathan_memory_vendor ..."
+mkdir -p "${DEPS_DIR}/foonathan_memory_vendor/build"
+cd "${DEPS_DIR}/foonathan_memory_vendor/build"
+cmake -DCMAKE_INSTALL_PREFIX="${NATIVE_DIR}" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DFOONATHAN_MEMORY_BUILD_EXAMPLES=OFF \
+      -DFOONATHAN_MEMORY_BUILD_TESTS=OFF \
+      .. > /dev/null
+make -j"$(nproc)" > /dev/null
+make install > /dev/null
+
+# --------------------------------------------------------------------------- #
+# Step 4: Build FastDDS (~10 min)
+# --------------------------------------------------------------------------- #
+log "building FastDDS 3.6.2 (this takes ~10 min) ..."
+mkdir -p "${SRC_DIR}/Fast-DDS/build"
+cd "${SRC_DIR}/Fast-DDS/build"
+cmake -DCMAKE_INSTALL_PREFIX="${NATIVE_DIR}" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_PREFIX_PATH="${NATIVE_DIR}" \
+      -DBUILD_SHARED_LIBS=ON \
+      -DTHIRDPARTY=ON \
+      -DBUILD_TESTING=OFF \
+      .. > /dev/null
+make -j"$(nproc)" > /dev/null
+make install > /dev/null
+
+# --------------------------------------------------------------------------- #
+# Step 5: Build FastDDS-Gen (Java, 30s)
+# --------------------------------------------------------------------------- #
+log "building FastDDS-Gen 4.3.0 ..."
+cd "${DEPS_DIR}/fastddsgen"
+# First build the idl-parser submodule jar
+log "  building idl-parser submodule ..."
+cd "${DEPS_DIR}/fastddsgen/thirdparty/idl-parser"
+gradle clean jar -x test > /dev/null
+# Copy to expected location
+cp build/libs/idlparser-*.jar build/libs/idlparser-4.3.0.jar 2>/dev/null || true
+
+cd "${DEPS_DIR}/fastddsgen"
+# Make sure buildIDLParser doesn't clobber the jar
+sed -i 's|tasks = \['"'"'clean'"'"', '"'"'build'"'"'\]|tasks = ["jar"]|' build.gradle
+gradle install --install_path "${NATIVE_DIR}" -x test > /dev/null
+
+# --------------------------------------------------------------------------- #
+# Step 6: Build wdndds IDL library
+# --------------------------------------------------------------------------- #
+log "building wdndds_idl ..."
+NATIVE_BIN="${NATIVE_DIR}/bin/fastddsgen"
+mkdir -p "${WDNDDS_DIR}/idl/build"
+cd "${WDNDDS_DIR}/idl/build"
+cmake -DCMAKE_PREFIX_PATH="${NATIVE_DIR}" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCOMPUTE_SOURCE=ON \
+      .. > /dev/null
+make -j"$(nproc)" > /dev/null
+# Copy artifacts to native (no install target in our CMakeLists)
+mkdir -p "${NATIVE_DIR}/include/wdndds/idl"
+cp "${WDNDDS_DIR}/idl"/compute*.hpp "${WDNDDS_DIR}/idl"/compute*.ipp \
+    "${WDNDDS_DIR}/idl"/compute*.cxx "${WDNDDS_DIR}/idl/build"/libwdndds_idl.so \
+    "${NATIVE_DIR}/include/wdndds/idl/"
+cp "${WDNDDS_DIR}/idl/build/libwdndds_idl.so" "${NATIVE_DIR}/lib/"
+
+# CMake config for finding wdndds_idl
+mkdir -p "${NATIVE_DIR}/share/wdndds/cmake"
+cat > "${NATIVE_DIR}/share/wdndds/cmake/wdndds_idl-config.cmake" <<'CMK'
+include(CMakeFindDependencyMacro)
+find_dependency(fastdds REQUIRED)
+add_library(wdndds_idl SHARED IMPORTED)
+set_target_properties(wdndds_idl PROPERTIES
+    IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/../../lib/libwdndds_idl.so"
+    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/../../include/wdndds/idl"
+)
+CMK
+
+# --------------------------------------------------------------------------- #
+# Step 7: Build wdndds cshim
+# --------------------------------------------------------------------------- #
+log "building wdndds_cshim ..."
+mkdir -p "${WDNDDS_DIR}/cshim_src/build"
+cd "${WDNDDS_DIR}/cshim_src/build"
+cmake -DCMAKE_PREFIX_PATH="${NATIVE_DIR}" \
+      -DCMAKE_INSTALL_PREFIX="${NATIVE_DIR}" \
+      -DCMAKE_BUILD_TYPE=Release \
+      .. > /dev/null
+make -j"$(nproc)" > /dev/null
+cp libwdndds_cshim.so "${NATIVE_DIR}/lib/"
+
+# --------------------------------------------------------------------------- #
+# Done.
+# --------------------------------------------------------------------------- #
+log "all native libraries installed to: ${NATIVE_DIR}"
+log ""
+log "lib/ contains:"
+ls -la "${NATIVE_DIR}/lib" | sed 's/^/  /' >&2
+log ""
+log "bin/ contains:"
+ls -la "${NATIVE_DIR}/bin" | sed 's/^/  /' >&2
+log ""
+log "To use from pyrkaiweb:"
+log "  export LD_LIBRARY_PATH=${NATIVE_DIR}/lib"
+log "  python -c 'from wdndds.dds._cshim import check_runtime; print(check_runtime())'"

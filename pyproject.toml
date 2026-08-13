@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wdndds"
-version = "0.2.1"
-description = "Pythonic wrapper around eProsima FastDDS Python bindings."
+version = "0.3.0"
+description = "RPC-DDS cshim + Python wrappers for per-model compute isolation on Rockchip RK3588."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.9"
@@ -13,14 +13,13 @@ authors = [{ name = "wdndds contributors" }]
 dependencies = [
     "wechatbot-sdk>=0.3.0,<1.0",
 ]
-keywords = ["fastdds", "dds", "iot", "ros2", "wdndds"]
+keywords = ["fastdds", "dds", "iot", "ros2", "wdndds", "rpc"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: POSIX :: Linux",
-    "Operating System :: POSIX :: Linux :: aarch64",
-    "Operating System :: OS Independent",
+    "Operating System :: POSIX :: Linux :: AArch64",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -30,16 +29,19 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
-# wheel 现在带着 built eProsima FastDDS Python bindings + 自写的
-# WdnddsStringTopicDataType helper (aarch64 / Debian 12 / Python 3.11 /
-# libfastdds 2.6.12)。换平台要 rebuild —— 跑 ``build_native.sh`` (README
-# + ``.venv/src/wdndds/src/wdndds/dds/_fastdds.py`` 里有详细流程)。
+# wdndds 0.3 ships a **cshim** (libwdndds_cshim.so) compiled at pip-install
+# time via the custom build_py hook in ``_build_wdndds.py``. The hook
+# compiles the C++ source under ``src/wdndds/cshim_src/`` against the
+# system libfastrtps-dev / libfastcdr-dev (Debian: apt install both),
+# and emits ``src/wdndds/dds/_native/libwdndds_cshim.so`` which the
+# wheel packages via setuptools package_data.
 #
-# 支持两种 layout (setuptools 自动按文件存在与否 pick):
-#   * 1.x flat:     ``_native/fastdds.py`` + ``_native/_fastdds_python.so``
-#                   (Fast-DDS-Python 1.1.x, FastDDS 2.6.x 配套)
-#   * 2.x/3.x pkg:  ``_native/fastdds/__init__.py`` + ``_native/fastdds/_fastdds_python.so``
-#                   (Fast-DDS-Python 2.x/3.x, FastDDS 2.x/3.x 配套)
+# FastDDS' native rrpc (Request-Reply) requires >= 2.10; we target the
+# system 2.9 with standard RELIABLE Pub-Sub + reply topics. The Python
+# API surface stays RPC-style (client.call(payload) -> reply).
+#
+# The previous ``WdnddsStringTopicDataType`` SWIG helper + bundled
+# python-fastdds is removed in 0.3 — cshim handles everything.
 
 [project.optional-dependencies]
 dev = [
@@ -61,17 +63,17 @@ include-package-data = true
 [tool.setuptools.package-data]
 "wdndds" = [
     "py.typed",
-    "dds/_native/lib/*.so*",
-    "dds/_native/fastdds.py",       # 1.x flat layout
-    "dds/_native/_fastdds_python.so",  # 1.x flat layout
 ]
 "wdndds.dds._native" = [
-    "_wdndds_string.so",
-    "wdndds_string.py",
+    "libwdndds_cshim.so",
+    # Bundled .so files from previous wdndds 0.2.x are NOT shipped
+    # anymore — the cshim links dynamically against the system
+    # libfastrtps / libfastcdr (apt install libfastrtps-dev libfastcdr-dev
+    # at build time, runtime uses whatever the system loader finds).
 ]
-# 2.x/3.x pkg layout（可选）：用 glob 列举，有就装、没有就当没这个包
-# setuptools 不支持自动检测空 package，但我们的 _native/fastdds/__init__.py
-# 可以保留空 stub，方便 _bundled_available() 在两种 layout 之间正确判断。
+
+[tool.setuptools.cmdclass]
+build_py = "wdndds._build.build_py"
 
 [tool.ruff]
 line-length = 100
