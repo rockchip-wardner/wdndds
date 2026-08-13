@@ -2,9 +2,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 # Default: ignore .so. We override this for the bundled native payloads
-# under src/wdndds/dds/_native/ via the explicit `!` rules at the bottom
-# — setuptools doesn't auto-pick up compiled extensions, and the wheel
-# needs them to ship.
+# under src/wdndds/dds/_native/ and native/lib/ via the explicit `!`
+# rules at the bottom — setuptools doesn't auto-pick up compiled
+# extensions, and the wheel needs them to ship.
 *.so
 .Python
 build/
@@ -13,7 +13,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+lib/                                                    # Python build artifacts (build/lib/, egg-info/lib/, …)
 lib64/
 parts/
 sdist/
@@ -43,11 +43,64 @@ coverage.xml
 *.swp
 .DS_Store
 
-# Re-include the bundled native binaries + Python wrapper we ship in
-# the wheel. setuptools' MANIFEST would otherwise drop them because
-# of the broad `*.so` rule above. These MUST come AFTER `*.so` and
-# AFTER `lib/` — git's last-match rule means later patterns win.
+# ---------------------------------------------------------------------------
+# Re-included paths. Git's gitignore matcher is "last match wins" but a
+# parent-directory ignore (the `lib/` rule above) suppresses everything
+# underneath it — including later file-level `!` rules. So we MUST
+# un-ignore `native/lib/` BEFORE any other rules are evaluated against
+# it, by placing `!native/lib/` right after the `lib/` rule.
+# ---------------------------------------------------------------------------
+
+# Un-ignore the vendored FastDDS directory (parent-dir `lib/` above would
+# otherwise swallow the whole subtree; the `!` here re-includes the
+# directory itself so subsequent file-level `!` rules can take effect).
+!native/lib/
+
+# v0.4 wheel (legacy): bundles FastDDS 2.6 + WDnddsString SWIG via _native/.
 !src/wdndds/dds/_native/fastdds/_fastdds_python.so
 !src/wdndds/dds/_native/_fastdds_python.so
 !src/wdndds/dds/_native/_wdndds_string.so
 !src/wdndds/dds/_native/lib/
+
+# v0.5 wheel: cshim + IDL output land in _native/ at pip install time
+# (source-compiled by _build.py from cshim_src/wdndds_cshim.cpp +
+# idl/compute.idl). Whitelist here so MANIFEST includes them in the
+# wheel; the .so files themselves are NEVER in git — built fresh per
+# install from our source.
+!src/wdndds/dds/_native/libwdndds_cshim.so
+!src/wdndds/dds/_native/libwdndds_idl.so
+
+# FastDDS 3.6 official pre-built artifacts — vendored as-is (NOT our
+# source code, just the published binaries from /userdata/src/Fast-DDS
+# + /userdata/src/deps/fastcdr). These are the third-party libs that
+# wdndds cshim links against. Vendoring them saves every fresh
+# checkout from doing the 5-10 minute colcon FastDDS build
+# (`build_native.sh` only needed when changing platform or upgrading
+# FastDDS). Our own build products (libwdndds_cshim.so /
+# libwdndds_idl.so) are NOT vendored — those are compiled from
+# cshim_src/ and idl/ at pip install time.
+!native/lib/libfastdds.so                                 # vendored official
+!native/lib/libfastdds.so.3.6
+!native/lib/libfastdds.so.3.6.2.0
+!native/lib/libfastcdr.so                                 # vendored official
+!native/lib/libfastcdr.so.2
+!native/lib/libfastcdr.so.2.3.6
+!native/lib/cmake/fastdds/                                # cmake config for find_package
+!native/lib/cmake/fastcdr/
+
+# Re-ignore wdndds source-compiled .so files (built from cshim_src/
+# and idl/ at pip install time; NEVER in git). After the directory
+# un-ignore above, these explicit ignores re-suppress just the
+# wdndds-owned .so files while keeping the FastDDS ones tracked.
+# These paths are absolute- (leading `/`) so they match only these
+# exact files, never anything user-built.
+/native/lib/libwdndds_cshim.so
+/native/lib/libwdndds_idl.so
+
+# Everything else under native/ stays gitignored — those are
+# dev-only build outputs we don't ship:
+#   native/bin/      fastdds / fastddsgen / discovery-server
+#   native/include/  FastDDS C++ headers (build-time only)
+#   native/share/    FastDDS XML type defs + fastddsgen.jar
+#   native/tools/    fasddsgen etcbuild/
+src/wdndds/dds/_native/_build_tmp/

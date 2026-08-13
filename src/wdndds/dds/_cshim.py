@@ -20,33 +20,66 @@ from typing import Optional
 
 _LOG = logging.getLogger("wdndds.cshim")
 
-# The native libraries shipped inside the wdndds source tree.
+# The native libraries shipped inside the wdndds wheel (or, in a dev
+# tree where the wheel hasn't been built, the dev build output).
+#
+# Resolution order (first hit wins):
+#   1. ``<wdndds>/dds/_native/libwdndds_cshim.so`` — the canonical
+#      wheel-install location. ``_build.py`` populates this on
+#      ``pip install wdndds`` by source-compiling
+#      ``cshim_src/wdndds_cshim.cpp`` → ``libwdndds_cshim.so``.
+#   2. ``<wdndds>/../../../native/lib/libwdndds_cshim.so`` — dev tree
+#      where ``build_native.sh`` has produced native/. Useful for
+#      running ``wdndds.dds`` from a fresh git checkout without
+#      running pip install (the wheel's _build.py hook has to
+#      succeed before import works in the venv).
 _HERE = Path(__file__).resolve()
-# .venv/src/wdndds/src/wdndds/dds/_cshim.py -> ../../../native
-_NATIVE = _HERE.parent.parent.parent.parent / "native"
-_LIB_PATH = _NATIVE / "lib" / "libwdndds_cshim.so"
+_NATIVE_WHEEL = _HERE.parent / "_native" / "libwdndds_cshim.so"
+_NATIVE_DEV   = _HERE.parent.parent.parent.parent / "native" / "lib" / "libwdndds_cshim.so"
+
+_LIB_PATH = _NATIVE_WHEEL if _NATIVE_WHEEL.is_file() else _NATIVE_DEV
 
 
 def _preload_dependencies():
-    """RTLD_GLOBAL load the FastDDS libs so that libwdndds_cshim.so can
-    resolve its symbols at ctypes.CDLL() time.
+    """RTLD_GLOBAL load the FastDDS libs + our own idl/cshim so that
+    libwdndds_cshim.so can resolve its symbols at ctypes.CDLL() time.
 
     The order matters — libwdndds_cshim.so depends on libwdndds_idl.so
     which depends on libfastdds.so which depends on libfastcdr.so +
     libfoonathan_memory.
+
+    Libs come from two places:
+      * FastDDS 3.6 official (libfastdds / libfastcdr / foonathan) —
+        vendored at ``native/lib/`` (gitignored source build output);
+        in installed wheels the wheel installer puts them at
+        ``$ORIGIN/lib/`` next to libwdndds_cshim.so via
+        RUNPATH=$ORIGIN/lib.
+      * Our own wdndds .so (libwdndds_idl.so) — also in the same
+        wheel-install directory as the cshim.
+
+    We preload by absolute path (not SONAME) because the wheel's
+    lib dir is not on the system loader's search path; relying on
+    SONAME lookup would fail for installed wheels.
     """
-    deps = [
-        "libfoonathan_memory.so.0.7.2",
-        "libfastcdr.so.2",
-        "libfastdds.so.3.6",
-        "libwdndds_idl.so",
-    ]
-    for dep in deps:
+    # 1. FastDDS 3.6 — system loader picks up libfoonathan /
+    #    libssl / libcrypto automatically. libfastdds / libfastcdr are
+    #    either on the system path (apt install of the 3.x package,
+    #    rare) or vendored under native/lib/ (our default).
+    for soname in ("libfoonathan_memory.so.0.7.2",
+                   "libfastcdr.so.2",
+                   "libfastdds.so.3.6"):
         try:
-            ctypes.CDLL(dep, mode=ctypes.RTLD_GLOBAL)
+            ctypes.CDLL(soname, mode=ctypes.RTLD_GLOBAL)
         except OSError:
-            # System lib may already be loaded; ignore.
             pass
+
+    # 2. libwdndds_idl.so — absolute path from the wheel-install dir.
+    idl_so = _HERE.parent / "_native" / "libwdndds_idl.so"
+    if idl_so.is_file():
+        try:
+            ctypes.CDLL(str(idl_so), mode=ctypes.RTLD_GLOBAL)
+        except OSError as e:
+            _LOG.warning("preload libwdndds_idl.so failed: %s", e)
 
 
 def _bootstrap_at_import():
