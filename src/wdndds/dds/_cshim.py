@@ -104,7 +104,7 @@ def get() -> ctypes.CDLL:
     if not _LIB_PATH.exists():
         _LIB_LOAD_ERROR = FileNotFoundError(
             f"wdndds: {str(_LIB_PATH)} not found. The wdndds native "
-            f"libraries must be installed under {_NATIVE}/lib.")
+            f"libraries must be installed under {_LIB_PATH.parent}.")
         raise _LIB_LOAD_ERROR
     try:
         _lib = ctypes.CDLL(str(_LIB_PATH))
