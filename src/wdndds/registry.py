@@ -57,7 +57,7 @@ class Hub:
         with self._lock:
             if self._hub is None:
                 self._hub = _RpcHub(
-                    participant_name="pyrkaiweb-discovery",
+                    participant_name="wdnwebui-discovery",
                     domain_id=self._domain_id)
                 self._hub.start()
             return self._hub

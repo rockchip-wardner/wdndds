@@ -236,6 +236,6 @@ log ""
 log "bin/ contains:"
 ls -la "${NATIVE_DIR}/bin" | sed 's/^/  /' >&2
 log ""
-log "To use from pyrkaiweb:"
+log "To use from wdnwebui:"
 log "  export LD_LIBRARY_PATH=${NATIVE_DIR}/lib"
 log "  python -c 'from wdndds.dds._cshim import check_runtime; print(check_runtime())'"

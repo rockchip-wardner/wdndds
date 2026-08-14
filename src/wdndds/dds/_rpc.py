@@ -81,7 +81,7 @@ class Hub:
     """
 
     def __init__(self,
-                 participant_name: str = "pyrkaiweb",
+                 participant_name: str = "wdnwebui",
                  domain_id: int = 0,
                  *,
                  services: Optional[list[str]] = None,

@@ -21,7 +21,7 @@
  *   - With discovery_servers_csv + is_discovery_server=1: SERVER
  *     protocol on the daemon (used by wdndds_daemon).
  *   - With discovery_servers_csv + is_discovery_server=0: SUPER_CLIENT
- *     protocol pointing to the daemon (used by every pyrkaiweb
+ *     protocol pointing to the daemon (used by every wdnwebui
  *     process — main / compute_worker / im-bridge).
  */
 #ifndef WDNDDS_CSHIM_H

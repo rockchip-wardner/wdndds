@@ -22,7 +22,7 @@
  *   - With discovery_servers_csv + is_discovery_server=1: SERVER
  *     protocol on the daemon (used by wdndds_daemon).
  *   - With discovery_servers_csv + is_discovery_server=0: CLIENT
- *     protocol pointing to the daemon (used by every pyrkaiweb
+ *     protocol pointing to the daemon (used by every wdnwebui
  *     process — main / compute_worker / im-bridge).
  */
 #include "wdndds_cshim.h"
@@ -242,7 +242,7 @@ wdndds_participant_t *wdndds_participant_create(
         if (!factory) return nullptr;
 
         eprosima::fastdds::dds::DomainParticipantQos qos;
-        qos.name() = participant_name ? participant_name : "pyrkaiweb";
+        qos.name() = participant_name ? participant_name : "wdnwebui";
 
         /* Transport selection:
          *   - Daemon (is_discovery_server=true): UDPv4 only. The daemon
