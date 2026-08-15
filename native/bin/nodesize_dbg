@@ -1,0 +1,8 @@
+#!/bin/sh
+# Stub: foonathan_memory_node_size_debugger. The actual node-size
+# profiler is not needed for the wdndds cshim build (foonathan is
+# statically linked into libfastdds.so and never read at runtime).
+# This script exists only to satisfy the IMPORTED target's file
+# existence check in native/lib/foonathan_memory/cmake/
+# foonathan_memory-config.cmake.
+exec /bin/true
