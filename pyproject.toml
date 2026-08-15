@@ -65,7 +65,15 @@ include-package-data = true
     "py.typed",
 ]
 "wdndds.dds._native" = [
+    # Both _build.py build_py hook outputs. _build.py source-compiles
+    # them from idl/ + cshim_src/ into src/wdndds/dds/_native/ at
+    # pip install time; both MUST be listed here so MANIFEST.in +
+    # wheel packaging include them. (Without libwdndds_idl.so in
+    # this list, the wheel installs the cshim but loses the idl
+    # library it links against — every import then fails with
+    # "cannot open shared object file: libwdndds_idl.so".)
     "libwdndds_cshim.so",
+    "libwdndds_idl.so",
     # Bundled .so files from previous wdndds 0.2.x are NOT shipped
     # anymore — the cshim links dynamically against the system
     # libfastrtps / libfastcdr (apt install libfastrtps-dev libfastcdr-dev
