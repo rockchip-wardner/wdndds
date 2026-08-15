@@ -92,6 +92,17 @@ coverage.xml
 !native/bin/fastddsgen                                    # IDL→C++ generator (Java wrapper)
 !native/share/fastddsgen/java/fastddsgen.jar              # the actual jar
 
+# foonathan_memory 0.7.4 (eProsima memory.git vendor-1.4.1) —
+# built from source, then statically linked into libfastdds.so
+# so there's no runtime .so dep on libfoonathan_memory. Vendored
+# here so libfastdds.so can be re-linked (e.g. via _build.py)
+# without rebuilding foonathan first.
+!native/lib/libfoonathan_memory-0.7.4.a                   # static archive (linker input)
+!native/lib/foonathan_memory/                             # cmake configs (find_package entry)
+!native/include/foonathan/                                # C++ headers (needed by libfastdds relink)
+!native/share/foonathan_memory/                           # LICENSE + README
+!native/share/foonathan_memory_vendor/                    # vendor cmake config (used by _build.py)
+
 # Re-ignore wdndds source-compiled .so files (built from cshim_src/
 # and idl/ at pip install time; NEVER in git). After the directory
 # un-ignore above, these explicit ignores re-suppress just the
