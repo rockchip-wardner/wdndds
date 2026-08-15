@@ -144,6 +144,7 @@ cmake -DCMAKE_INSTALL_PREFIX="${NATIVE_DIR}" \
       -DCMAKE_BUILD_TYPE=Release \
       -DFOONATHAN_MEMORY_BUILD_EXAMPLES=OFF \
       -DFOONATHAN_MEMORY_BUILD_TESTS=OFF \
+      -DBUILD_SHARED_LIBS=OFF \
       .. > /dev/null
 make -j"$(nproc)" > /dev/null
 make install > /dev/null
