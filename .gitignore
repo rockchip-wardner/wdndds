@@ -131,3 +131,6 @@ cshim_src_v0.4_backup/
 # `fastddsgen -d idl idl/compute.idl` you get a stray `idl/idl/`
 # subdir from the input's relative path under -d.
 idl/idl/
+
+src/wdndds/dds/_native/libwdndds_cshim.so
+src/wdndds/dds/_native/libwdndds_idl.so
