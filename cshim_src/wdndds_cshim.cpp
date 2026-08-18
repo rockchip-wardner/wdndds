@@ -100,6 +100,16 @@ struct wdndds_requester_s
     eprosima::fastdds::dds::DataWriter* req_writer = nullptr;
     eprosima::fastdds::dds::DataReader* rep_reader = nullptr;
     std::mutex               mutex;
+    /* Track how many rep_writer endpoints are currently matched to our
+     * rep_reader.  Used by ``wdndds_requester_call`` to detect the
+     * "first-call discovery race" — when the requester is brand new
+     * the SEDP endpoint announcement hasn't propagated yet, so the
+     * first ``take_next_sample`` would block until the absolute timeout.
+     * A short grace-period wait here collapses the race into a
+     * sub-second delay; if matching really doesn't happen we fail
+     * fast with a "discovery_pending" error the caller can react to
+     * (recreate the requester). */
+    std::atomic<int>          rep_reader_matched_count{0};
     /* Keep the listener shared_ptrs alive for the lifetime of the
      * requester — see wdndds_replier_s for the segfault rationale. */
     std::shared_ptr<void> req_writer_listener;
@@ -163,9 +173,9 @@ public:
             eprosima::fastdds::dds::DataWriter*,
             const eprosima::fastdds::dds::PublicationMatchedStatus& info) override
     {
-        fprintf(stderr, "[wdndds_cshim] %s writer matched (+%d, -%d) total=%d\n",
-                svc_.c_str(), info.current_count_change, info.current_count_change,
-                info.current_count);
+        // fprintf(stderr, "[wdndds_cshim] %s writer matched (+%d, -%d) total=%d\n",
+        //         svc_.c_str(), info.current_count_change, info.current_count_change,
+        //         info.current_count);
     }
 private:
     std::string svc_;
@@ -173,17 +183,25 @@ private:
 class _ReaderMatchListener : public eprosima::fastdds::dds::DataReaderListener
 {
 public:
-    _ReaderMatchListener(const std::string& svc) : svc_(svc) {}
+    /* Optional counter: if non-null, FastDDS-matched publisher count for this
+     * reader is mirrored here atomically so callers (``wdndds_requester_call``)
+     * can probe whether endpoint discovery has completed without doing a
+     * blocking wait themselves. */
+    _ReaderMatchListener(const std::string& svc,
+                         std::atomic<int>* counter = nullptr)
+        : svc_(svc), counter_(counter) {}
     void on_subscription_matched(
             eprosima::fastdds::dds::DataReader*,
             const eprosima::fastdds::dds::SubscriptionMatchedStatus& info) override
     {
-        fprintf(stderr, "[wdndds_cshim] %s reader matched (+%d, -%d) total=%d\n",
-                svc_.c_str(), info.current_count_change, info.current_count_change,
-                info.current_count);
+        if (counter_) counter_->store(info.current_count);
+        // fprintf(stderr, "[wdndds_cshim] %s reader matched (+%d, -%d) total=%d\n",
+        //         svc_.c_str(), info.current_count_change, info.current_count_change,
+        //         info.current_count);
     }
 private:
     std::string svc_;
+    std::atomic<int>* counter_;
 };
 extern "C" {
 
@@ -249,25 +267,28 @@ wdndds_participant_t *wdndds_participant_create(
          *     doesn't carry data, only discovery metadata, so SHM
          *     would be unused overhead. One descriptor matches the
          *     official FastDDS ServerApp pattern.
-         *   - Client: SHM + UDPv4 + TCPv4. SHM for same-host data,
-         *     UDPv4 for cross-host LAN, TCPv4 as cross-subnet fallback. */
-        qos.transport().use_builtin_transports = false;
+        /* Transport selection:
+         *   - Daemon (is_discovery_server=true): UDPv4 only. The daemon
+         *     doesn't carry data, only discovery metadata, so SHM
+         *     would be unused overhead. One descriptor matches the
+         *     official FastDDS ServerApp pattern.
+         *   - Client: use FastDDS built-in transports (SHM + UDPv4 +
+         *     TCPv4). The built-in configuration is well-tested for
+         *     small/medium messages; the manual SHM+UDPv4 setup we
+         *     used previously wedges the DDS layer's ``write()`` call
+         *     on payloads above ~500 KiB (the embed_video frame
+         *     buffer wedges the whole RPC). Letting FastDDS pick its
+         *     own transports gives us the TCPv4 fallback path for
+         *     large messages, which the manual config lacked. */
         if (is_discovery_server)
         {
+            qos.transport().use_builtin_transports = false;
             auto udpv4 = std::make_shared<eprosima::fastdds::rtps::UDPv4TransportDescriptor>();
             qos.transport().user_transports.push_back(udpv4);
         }
         else
         {
-            /* Same-host data flows via SHM, cross-host data via
-             * UDPv4. FastDDS 3.6 picks the right transport based on
-             * the matched endpoint locators, so combining both is
-             * safe. (Removing SHM completely broke same-host data
-             * flow even via UDPv4 loopback — likely a FastDDS bug.) */
-            qos.transport().user_transports.push_back(
-                std::make_shared<eprosima::fastdds::rtps::SharedMemTransportDescriptor>());
-            qos.transport().user_transports.push_back(
-                std::make_shared<eprosima::fastdds::rtps::UDPv4TransportDescriptor>());
+            qos.transport().use_builtin_transports = true;
         }
 
         /* Discovery protocol selection. With discovery_servers_csv:
@@ -501,6 +522,9 @@ wdndds_replier_t *wdndds_replier_create(
         auto *reader = pin->subscriber->create_datareader(
             req_topic, reader_qos, reader_listener.get());
         if (!reader) return nullptr;
+        /* FastDDS DataReaders are created in DISABLED state. The pump
+         * thread calls take_next_sample() which is a no-op until enable(). */
+        reader->enable();
 
         eprosima::fastdds::dds::DataWriterQos writer_qos;
         writer_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
@@ -514,6 +538,11 @@ wdndds_replier_t *wdndds_replier_create(
             pin->subscriber->delete_datareader(reader);
             return nullptr;
         }
+        /* FastDDS DataWriters are created in DISABLED state. The replier
+         * pump calls writer->write(&reply) which segfaults when called
+         * on a disabled writer (pointer to internal writer history pool
+         * is null until enable()). enable() is idempotent and safe. */
+        writer->enable();
 
         auto *r = new wdndds_internal::wdndds_replier_s();
         r->part = p;
@@ -537,8 +566,9 @@ wdndds_replier_t *wdndds_replier_create(
                 ComputeRequest req;
                 eprosima::fastdds::dds::SampleInfo info;
                 auto rc = r->req_reader->take_next_sample(&req, &info);
-if (rc == eprosima::fastdds::dds::RETCODE_OK)
-                    fprintf(stderr, "[wdndds_cshim] req_reader got sample action=%d\n", req.action());
+if (rc == eprosima::fastdds::dds::RETCODE_OK) {
+                    // fprintf(stderr, "[wdndds_cshim] req_reader got sample action=%d\n", req.action());
+                }
                 if (rc == eprosima::fastdds::dds::RETCODE_OK)
                 {
                     std::string action_str;
@@ -560,7 +590,7 @@ if (rc == eprosima::fastdds::dds::RETCODE_OK)
                      * json.loads the rebuilt payload without choking on
                      * embedded quotes / backslashes from base64 image
                      * data. */
-                    std::string esc_prompt;
+                     std::string esc_prompt;
                     esc_prompt.reserve(req.prompt().size() + 16);
                     for (char c : req.prompt())
                     {
@@ -681,23 +711,28 @@ wdndds_requester_t *wdndds_requester_create(
         auto *writer = pin->publisher->create_datawriter(
             req_topic, writer_qos, writer_listener.get());
         if (!writer) return nullptr;
+        writer->enable();
 
         eprosima::fastdds::dds::DataReaderQos reader_qos;
         reader_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
         reader_qos.history().kind = eprosima::fastdds::dds::KEEP_LAST_HISTORY_QOS;
         reader_qos.history().depth = 16;
 
-        auto reader_listener = std::make_shared<_ReaderMatchListener>(svc + "/rep");
+        auto *r = new wdndds_internal::wdndds_requester_s();
+        r->part = p;
+        r->service_name = svc;
+
+        auto reader_listener = std::make_shared<_ReaderMatchListener>(
+            svc + "/rep", &r->rep_reader_matched_count);
         auto *reader = pin->subscriber->create_datareader(
             rep_topic, reader_qos, reader_listener.get());
         if (!reader) {
             pin->publisher->delete_datawriter(writer);
+            delete r;
             return nullptr;
         }
+        reader->enable();
 
-        auto *r = new wdndds_internal::wdndds_requester_s();
-        r->part = p;
-        r->service_name = svc;
         r->req_writer = writer;
         r->rep_reader = reader;
         /* See wdndds_replier_s for rationale. */
@@ -844,6 +879,31 @@ find_str("action", action);
             return -1;
         }
 
+        /* Discovery wait: a fresh requester hasn't finished its SEDP
+         * handshake yet, so ``take_next_sample`` would block until the
+         * absolute deadline. Wait briefly for the rep_reader to discover
+         * at least one matching rep_writer before starting the polling
+         * loop; if matching doesn't happen in the grace period, fail
+         * fast with "discovery_pending" so the caller can recreate +
+         * retry instead of waiting 5 minutes. */
+        {
+            const int discovery_grace_ms = std::min(timeout_ms > 0 ? timeout_ms : 10000, 5000);
+            const auto disc_deadline = std::chrono::steady_clock::now() +
+                std::chrono::milliseconds(discovery_grace_ms);
+            while (std::chrono::steady_clock::now() < disc_deadline)
+            {
+                if (internal->rep_reader_matched_count.load() > 0) break;
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+            if (internal->rep_reader_matched_count.load() == 0)
+            {
+                std::string err = "{\"ok\":false,\"error\":\"discovery_pending\"}";
+                *out_reply = wdndds_internal::copy_str(err);
+                *out_reply_len = (uint32_t)err.size();
+                return 1;
+            }
+        }
+
         auto deadline = std::chrono::steady_clock::now() +
             std::chrono::milliseconds(timeout_ms > 0 ? timeout_ms : 10000);
 
@@ -917,8 +977,9 @@ find_str("action", action);
 
 int32_t wdndds_requester_matched_count(wdndds_requester_t *r)
 {
-    (void)r;
-    return 0;
+    if (!r) return 0;
+    return reinterpret_cast<wdndds_internal::wdndds_requester_s *>(r)
+        ->rep_reader_matched_count.load();
 }
 
 
