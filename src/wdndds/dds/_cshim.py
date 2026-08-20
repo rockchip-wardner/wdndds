@@ -215,16 +215,50 @@ def check_runtime() -> tuple[bool, Optional[str]]:
 
 
 # Auto-install the FastDDS profile for cross-process discovery on
-# the local host (127.0.0.1:7410 unicast loopback, no multicast).
+# the local host (127.0.0.1:7410 unicast loopback + SIMPLE multicast).
+# v0.6: replaced wdndds_daemon SERVER/CLIENT with FastDDS SIMPLE.
 def _install_default_dds_profile():
     """Drop a default FastDDS profile into $XDG_RUNTIME_DIR (or /tmp)
-    so processes that join the same domain can find each other via
-    UDPv4 loopback without depending on the host's multicast routing.
+    so processes that join the same domain can find each other.
 
-    Idempotent. Skipped if FASTRTPS_DEFAULT_PROFILES_FILE is already set.
+    The default profile uses SIMPLE discovery (multicast
+    239.255.0.1:7400) + a 127.0.0.1:7410 unicast loopback initial
+    peer so processes on the same host find each other even when
+    multicast is broken locally. The ``WDNDDS_INITIAL_PEERS`` env var
+    can be set to a comma-separated list of LAN IPs to inject as
+    additional unicast initial peers (escape hatch when LAN multicast
+    is blocked). Initial-announcement burst is bumped (10×100ms) and
+    lease announcement period is shortened to 1s so peers converge
+    in seconds rather than the FastDDS defaults (5×100ms, 3s).
+
+    Idempotent. Skipped if FASTRTPS_DEFAULT_PROFILES_FILE is already
+    set (caller-supplied profile wins).
     """
     if os.environ.get("FASTRTPS_DEFAULT_PROFILES_FILE"):
         return
+
+    initial_peer_locators = [
+        '                    <locator>\n'
+        '                        <udpv4>\n'
+        '                            <address>127.0.0.1</address>\n'
+        '                            <port>7410</port>\n'
+        '                        </udpv4>\n'
+        '                    </locator>'
+    ]
+    wdndds_peers_env = os.environ.get("WDNDDS_INITIAL_PEERS", "").strip()
+    if wdndds_peers_env:
+        for raw in wdndds_peers_env.split(","):
+            ip = raw.strip()
+            if not ip:
+                continue
+            initial_peer_locators.append(
+                '                    <locator>\n'
+                '                        <udpv4>\n'
+                f'                            <address>{ip}</address>\n'
+                '                            <port>7410</port>\n'
+                '                        </udpv4>\n'
+                '                    </locator>'
+            )
 
     candidates = [
         os.environ.get("XDG_RUNTIME_DIR"),
@@ -247,13 +281,19 @@ def _install_default_dds_profile():
                 'is_default_profile="true">\n'
                 '        <rtps>\n'
                 '            <builtin>\n'
+                '                <discovery_config>\n'
+                '                    <discoveryProtocol>SIMPLE</discoveryProtocol>\n'
+                '                    <initialAnnouncements>\n'
+                '                        <count>10</count>\n'
+                '                        <period>100ms</period>\n'
+                '                    </initialAnnouncements>\n'
+                '                    <leaseDuration_announcementperiod>\n'
+                '                        <sec>1</sec>\n'
+                '                        <nanosec>0</nanosec>\n'
+                '                    </leaseDuration_announcementperiod>\n'
+                '                </discovery_config>\n'
                 '                <initialPeersList>\n'
-                '                    <locator>\n'
-                '                        <udpv4>\n'
-                '                            <address>127.0.0.1</address>\n'
-                '                            <port>7410</port>\n'
-                '                        </udpv4>\n'
-                '                    </locator>\n'
+                + "\n".join(initial_peer_locators) + "\n"
                 '                </initialPeersList>\n'
                 '            </builtin>\n'
                 '        </rtps>\n'
@@ -261,9 +301,12 @@ def _install_default_dds_profile():
                 '</profiles>\n'
             )
         os.environ["FASTRTPS_DEFAULT_PROFILES_FILE"] = path
+        _LOG.debug("wdndds: installed default DDS profile at %s "
+                   "(WDNDDS_INITIAL_PEERS=%s)",
+                   path, wdndds_peers_env or "<unset>")
     except OSError as e:
         _LOG.debug("wdndds: failed to install default DDS profile at %s: %s",
-                   path, e)
+                    path, e)
 
 
 _install_default_dds_profile()
