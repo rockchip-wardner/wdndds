@@ -34,7 +34,7 @@ _peer_cb = ctypes.CFUNCTYPE(
     None, ctypes.c_char_p, ctypes.c_int32, ctypes.c_void_p,
 )
 _peer_event_cb = ctypes.CFUNCTYPE(
-    None, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int32, ctypes.c_void_p,
+    None, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int32, ctypes.c_void_p,
 )
 
 
@@ -173,13 +173,12 @@ class Hub:
         return buf.value.decode("utf-8", errors="replace")
 
     def set_peer_listener(self,
-                          on_event: Optional[Callable[[str, str, bool], None]]):
+                          on_event: Optional[Callable[[str, str, str, bool], None]]):
         """Install a peer-discovery callback.
 
-        on_event(guid, name, discovered=True/False) is invoked from
+        on_event(guid, name, ip, discovered=True/False) is invoked from
         FastDDS' DomainParticipantListener thread on every peer
-        add/remove. The daemon uses this to populate its /peers
-        endpoint. Pass None to remove the listener.
+        add/remove. Pass None to remove the listener.
         """
         if self._participant is None:
             return -1
@@ -188,11 +187,12 @@ class Hub:
                 self._participant, _peer_event_cb(None), None)
             return 0
         # Wrap the user's Python callback in a CFUNCTYPE so ctypes can call it.
-        def _cb(guid_ptr, name_ptr, discovered, user):
+        def _cb(guid_ptr, name_ptr, ip_ptr, discovered, user):
             guid = guid_ptr.decode("utf-8", errors="replace") if guid_ptr else ""
             name = name_ptr.decode("utf-8", errors="replace") if name_ptr else ""
+            ip = ip_ptr.decode("utf-8", errors="replace") if ip_ptr else ""
             try:
-                on_event(guid, name, bool(discovered))
+                on_event(guid, name, ip, bool(discovered))
             except Exception as e:  # noqa: BLE001
                 _LOG.warning("peer_listener raised: %s", e)
         c_cb = _peer_event_cb(_cb)

@@ -64,12 +64,17 @@ typedef void (*wdndds_peer_change_cb_t)(
     void       *user
 );
 
-/* Peer discovery callback (optional, on the daemon). The cshim invokes
- * this when FastDDS notifies the DomainParticipant about a discovered
- * or lost remote participant. The daemon uses it to populate /peers. */
+/* Peer discovery callback. The cshim invokes this on every discovered
+ * or lost remote participant.
+ *
+ * `ip` is the announcing participant's first UDPv4 unicast locator
+ * (from ParticipantBuiltinTopicData.default_locators.unicast[0]),
+ * formatted "a.b.c.d"; empty when the peer advertised no UDPv4 locator
+ * (SHM-only or IPv6-only deployments). */
 typedef void (*wdndds_peer_event_cb_t)(
     const char *guid_prefix,
     const char *participant_name,
+    const char *ip,
     int32_t     discovered,   /* 1 = discovered, 0 = dropped */
     void       *user
 );

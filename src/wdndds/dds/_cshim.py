@@ -317,7 +317,7 @@ _install_default_dds_profile()
 # Peer event listener binding (added later — appended to existing types)
 
 _peer_event_cb = ctypes.CFUNCTYPE(
-    None, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int32, ctypes.c_void_p,
+    None, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int32, ctypes.c_void_p,
 )
 
 # Note: bind is done in _bind() inside _cshim.py after _lib is loaded.

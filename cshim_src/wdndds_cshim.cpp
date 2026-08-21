@@ -1015,7 +1015,29 @@ public:
         int32_t discovered = 0;
         if (status == eprosima::fastdds::rtps::ParticipantDiscoveryStatus::DISCOVERED_PARTICIPANT)
             discovered = 1;
-        cb_(guid_hex, info.participant_name.c_str(), discovered, user_);
+
+        // First UDPv4 unicast IP from default_locators; fall back to
+        // metatraffic_locators. IPv4 sits in bytes 12..15 of Locator_t.address
+        // (16-byte field shared with IPv6).
+        char ip_str[16] = {0};
+        const auto fill_ip = [&ip_str](const auto& list) {
+            for (const auto& loc : list) {
+                if (loc.kind == LOCATOR_KIND_UDPv4) {
+                    std::snprintf(ip_str, sizeof(ip_str), "%u.%u.%u.%u",
+                                  static_cast<unsigned>(loc.address[12]),
+                                  static_cast<unsigned>(loc.address[13]),
+                                  static_cast<unsigned>(loc.address[14]),
+                                  static_cast<unsigned>(loc.address[15]));
+                    return true;
+                }
+            }
+            return false;
+        };
+        if (!fill_ip(info.default_locators.unicast)) {
+            fill_ip(info.metatraffic_locators.unicast);
+        }
+
+        cb_(guid_hex, info.participant_name.c_str(), ip_str, discovered, user_);
     }
 
 private:
