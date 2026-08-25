@@ -215,6 +215,60 @@ def check_runtime() -> tuple[bool, Optional[str]]:
 
 
 # Auto-install the FastDDS profile for cross-process discovery on
+def _detect_primary_nics() -> list:
+    """Return ``[(nic_name, ipv4), ...]`` for every non-loopback NIC
+    that has an IPv4 address, ordered by kernel ``if_nameindex()``.
+
+    Linux-only: uses ``ioctl(SIOCGIFADDR)`` (no extra deps, stdlib
+    ``socket + fcntl + struct``). Returns ``[]`` on platforms without
+    ``fcntl`` (Windows) or when no suitable NIC is found.
+
+    Why this exists: FastDDS' default transport auto-picks a NIC by
+    scanning ``getifaddrs()``. On multi-NIC RK3588 boards this is
+    occasionally racy — the wrong NIC gets chosen (sometimes ``lo``,
+    sometimes a stale state mid-udev-rename), SPDP joins multicast
+    group on the wrong interface, SIMPLE discovery silently breaks
+    (peer_count stays 0 even when LAN peers exist). Fix is to pin the
+    transport to a deterministic NIC list via
+    ``<interfaceWhiteList>`` in the XML profile. We list **all**
+    qualifying NICs so multi-homed boards (eth + 4G USB stick, etc.)
+    all keep working.
+    """
+    import socket
+    try:
+        import fcntl
+        import struct
+    except ImportError:
+        return []
+
+    SIOCGIFADDR = 0x8915
+    out: list = []
+    try:
+        # Python 3.8+: socket.if_nameindex() returns [(idx, name), ...]
+        ifaces = [name for _, name in socket.if_nameindex()]
+    except (AttributeError, OSError):
+        return []
+    for name in ifaces:
+        if name == "lo":
+            continue
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            try:
+                # struct ifreq { char ifr_name[IFNAMSIZ]; ... }; IFNAMSIZ=16
+                ifreq = struct.pack("16s16s",
+                                    name.encode()[:15].ljust(16, b"\0"),
+                                    b"\0" * 16)
+                res = fcntl.ioctl(s.fileno(), SIOCGIFADDR, ifreq)
+                ip = socket.inet_ntoa(res[20:24])
+                if ip and not ip.startswith("127."):
+                    out.append((name, ip))
+            finally:
+                s.close()
+        except (OSError, IOError):
+            continue
+    return out
+
+
 # the local host (127.0.0.1:7410 unicast loopback + SIMPLE multicast).
 # v0.6: replaced wdndds_daemon SERVER/CLIENT with FastDDS SIMPLE.
 def _install_default_dds_profile():
@@ -272,6 +326,30 @@ def _install_default_dds_profile():
         target_dir += "/"
     path = f"{target_dir}wdndds_default_profile.xml"
 
+    # Pin transport to a deterministic NIC list — see _detect_primary_nics
+    # docstring for the race this prevents (FastDDS' default NIC auto-pick
+    # is occasionally racy on multi-NIC boards; pinning kills the race).
+    # Fall back to no <transports> block if we can't detect any NIC
+    # (e.g. Windows w/o fcntl, or a CI container with no eth).
+    nics = _detect_primary_nics()
+    transports_xml = ""
+    if nics:
+        nic_list = "\n".join(
+            f"                        <address>{name}</address>"
+            for name, _ip in nics
+        )
+        transports_xml = (
+            '            <transports>\n'
+            '                <transport>\n'
+            '                    <transport_id>wdndds_udp4</transport_id>\n'
+            '                    <type>UDPv4</type>\n'
+            '                    <interfaceWhiteList>\n'
+            f'{nic_list}\n'
+            '                    </interfaceWhiteList>\n'
+            '                </transport>\n'
+            '            </transports>\n'
+        )
+
     try:
         with open(path, "w") as f:
             f.write(
@@ -296,14 +374,16 @@ def _install_default_dds_profile():
                 + "\n".join(initial_peer_locators) + "\n"
                 '                </initialPeersList>\n'
                 '            </builtin>\n'
-                '        </rtps>\n'
+                + transports_xml
+                + '        </rtps>\n'
                 '    </participant>\n'
                 '</profiles>\n'
             )
         os.environ["FASTRTPS_DEFAULT_PROFILES_FILE"] = path
+        nic_dbg = ",".join(f"{n}={ip}" for n, ip in nics) or "<none>"
         _LOG.debug("wdndds: installed default DDS profile at %s "
-                   "(WDNDDS_INITIAL_PEERS=%s)",
-                   path, wdndds_peers_env or "<unset>")
+                   "(WDNDDS_INITIAL_PEERS=%s, pinned NICs=%s)",
+                   path, wdndds_peers_env or "<unset>", nic_dbg)
     except OSError as e:
         _LOG.debug("wdndds: failed to install default DDS profile at %s: %s",
                     path, e)
