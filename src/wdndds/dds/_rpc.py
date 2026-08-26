@@ -227,9 +227,9 @@ class Hub:
         finally:
             if ptr:
                 try:
-                    self._lib.wdndds_free(ptr)
-                except Exception:
-                    pass
+                    self._lib.wdndds_free(ctypes.c_char_p(ptr))
+                except Exception as e:
+                    _LOG.warning("wdndds_free failed (peer buffer leaked): %s", e)
 
     def wait_forever(self) -> None:
         try:
@@ -427,9 +427,9 @@ class Requester:
         finally:
             if ptr:
                 try:
-                    self._service._hub._lib.wdndds_free(ptr)
-                except Exception:
-                    pass
+                    self._service._hub._lib.wdndds_free(ctypes.c_char_p(ptr))
+                except Exception as e:
+                    _LOG.warning("wdndds_free failed (reply buffer leaked): %s", e)
 
     def destroy(self) -> None:
         if self._native is not None:

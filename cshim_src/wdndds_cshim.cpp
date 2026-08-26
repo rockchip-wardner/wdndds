@@ -460,6 +460,11 @@ wdndds_service_t *wdndds_service_create(
             new ComputeRequestPubSubType());
         eprosima::fastdds::dds::TypeSupport rep_type(
             new ComputeReplyPubSubType());
+        /* 这里把 Request/Reply 都调到256KB（262144 bytes），
+	 * 避免推理进程的request或reply数据量过大被截断的风险。
+         */
+        req_type->max_serialized_type_size = 262144;
+        rep_type->max_serialized_type_size = 262144;
 
         std::string svc(service_name);
         auto *req_topic = wdndds_internal::get_or_create_topic(
