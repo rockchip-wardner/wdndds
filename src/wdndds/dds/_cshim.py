@@ -423,7 +423,7 @@ _peer_event_cb = ctypes.CFUNCTYPE(
 )
 
 _chunk_cb = ctypes.CFUNCTYPE(
-    None, ctypes.c_char_p, ctypes.c_uint32, ctypes.c_void_p,
+    None, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_void_p,
 )
 
 # Note: bind is done in _bind() inside _cshim.py after _lib is loaded.
