@@ -187,6 +187,28 @@ def _bind(lib: ctypes.CDLL) -> None:
     lib.wdndds_requester_matched_count.argtypes = [ctypes.c_void_p]
     lib.wdndds_requester_matched_count.restype = ctypes.c_int32
 
+    lib.wdndds_topic_writer_create.argtypes = [
+        ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int32,
+    ]
+    lib.wdndds_topic_writer_create.restype = ctypes.c_void_p
+
+    lib.wdndds_topic_writer_write.argtypes = [
+        ctypes.c_void_p, ctypes.c_char_p, ctypes.c_uint32,
+    ]
+    lib.wdndds_topic_writer_write.restype = ctypes.c_int32
+
+    lib.wdndds_topic_writer_destroy.argtypes = [ctypes.c_void_p]
+    lib.wdndds_topic_writer_destroy.restype = None
+
+    lib.wdndds_topic_reader_create.argtypes = [
+        ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int32,
+        _chunk_cb, ctypes.c_void_p,
+    ]
+    lib.wdndds_topic_reader_create.restype = ctypes.c_void_p
+
+    lib.wdndds_topic_reader_destroy.argtypes = [ctypes.c_void_p]
+    lib.wdndds_topic_reader_destroy.restype = None
+
 
 def check_runtime() -> tuple[bool, Optional[str]]:
     """Lightweight runtime check.
@@ -398,6 +420,10 @@ _install_default_dds_profile()
 
 _peer_event_cb = ctypes.CFUNCTYPE(
     None, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p, ctypes.c_int32, ctypes.c_void_p,
+)
+
+_chunk_cb = ctypes.CFUNCTYPE(
+    None, ctypes.c_char_p, ctypes.c_uint32, ctypes.c_void_p,
 )
 
 # Note: bind is done in _bind() inside _cshim.py after _lib is loaded.

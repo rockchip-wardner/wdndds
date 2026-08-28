@@ -35,10 +35,12 @@ extern "C" {
 #endif
 
 /* Opaque handles ------------------------------------------------------- */
-typedef struct wdndds_participant_s wdndds_participant_t;
-typedef struct wdndds_service_s     wdndds_service_t;
-typedef struct wdndds_replier_s     wdndds_replier_t;
-typedef struct wdndds_requester_s   wdndds_requester_t;
+typedef struct wdndds_participant_s    wdndds_participant_t;
+typedef struct wdndds_service_s        wdndds_service_t;
+typedef struct wdndds_replier_s        wdndds_replier_t;
+typedef struct wdndds_requester_s      wdndds_requester_t;
+typedef struct wdndds_topic_writer_s   wdndds_topic_writer_t;
+typedef struct wdndds_topic_reader_s   wdndds_topic_reader_t;
 
 /* Callbacks ------------------------------------------------------------ */
 
@@ -167,6 +169,42 @@ int32_t wdndds_requester_call(
 );
 
 int32_t wdndds_requester_matched_count(wdndds_requester_t *r);
+
+/* Topic (raw-bytes stream) --------------------------------------------- */
+
+/* QoS preset selector for wdndds_topic_writer/reader_create:
+ *   0 — BEST_EFFORT, history depth 4, volatile durability
+ *   1 — RELIABLE,    history depth 16, volatile durability */
+#define WDNDDS_TOPIC_QOS_BEST_EFFORT 0
+#define WDNDDS_TOPIC_QOS_RELIABLE    1
+
+/* Wire format: each chunk is a ComputeRequest carrying one ComputeAttachment
+ * whose `bytes` field holds the raw payload. Topic name is used verbatim;
+ * callers pick their own prefix (e.g. "wdndds/audio/tts_chunk/<model>"). */
+
+/* Returns nullptr on failure. */
+wdndds_topic_writer_t *wdndds_topic_writer_create(
+    wdndds_participant_t *p,
+    const char           *topic_name,
+    int32_t               qos_kind);
+
+/* Returns 0 on RETCODE_OK, non-zero otherwise. */
+int32_t wdndds_topic_writer_write(
+    wdndds_topic_writer_t *w,
+    const char            *payload,
+    uint32_t               payload_len);
+
+void wdndds_topic_writer_destroy(wdndds_topic_writer_t *w);
+
+/* Spawns a daemon pump thread; callback runs once per received chunk. */
+wdndds_topic_reader_t *wdndds_topic_reader_create(
+    wdndds_participant_t *p,
+    const char           *topic_name,
+    int32_t               qos_kind,
+    void                (*callback)(const char *payload, uint32_t payload_len, void *user),
+    void                 *user);
+
+void wdndds_topic_reader_destroy(wdndds_topic_reader_t *r);
 
 #ifdef __cplusplus
 }

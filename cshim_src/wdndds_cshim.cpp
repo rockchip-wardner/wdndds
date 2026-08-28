@@ -73,6 +73,7 @@ struct wdndds_participant_s
     eprosima::fastdds::dds::Subscriber*         subscriber = nullptr;
     std::unordered_map<std::string, eprosima::fastdds::dds::Topic*> req_topics;
     std::unordered_map<std::string, eprosima::fastdds::dds::Topic*> rep_topics;
+    std::unordered_map<std::string, eprosima::fastdds::dds::Topic*> chunk_topics;
 };
 
 struct wdndds_replier_s
@@ -114,6 +115,28 @@ struct wdndds_requester_s
      * requester — see wdndds_replier_s for the segfault rationale. */
     std::shared_ptr<void> req_writer_listener;
     std::shared_ptr<void> rep_reader_listener;
+};
+
+struct wdndds_topic_writer_s
+{
+    wdndds_participant_t*                       part = nullptr;
+    std::string                                  topic_name;
+    eprosima::fastdds::dds::Topic*              topic = nullptr;
+    eprosima::fastdds::dds::DataWriter*         writer = nullptr;
+    std::shared_ptr<void>                       writer_listener;
+};
+
+struct wdndds_topic_reader_s
+{
+    wdndds_participant_t*                       part = nullptr;
+    std::string                                  topic_name;
+    eprosima::fastdds::dds::Topic*              topic = nullptr;
+    eprosima::fastdds::dds::DataReader*         reader = nullptr;
+    std::shared_ptr<void>                       reader_listener;
+    void                                      (*cb)(const char*, uint32_t, void*) = nullptr;
+    void*                                       user = nullptr;
+    std::atomic<bool>                           stop{false};
+    std::thread                                 pump;
 };
 
 char *copy_str(const std::string &s)
@@ -392,6 +415,9 @@ void wdndds_participant_destroy(wdndds_participant_t *p)
         for (auto& kv : internal->rep_topics) {
             internal->impl->delete_topic(kv.second);
         }
+        for (auto& kv : internal->chunk_topics) {
+            internal->impl->delete_topic(kv.second);
+        }
         auto factory = eprosima::fastdds::dds::DomainParticipantFactory::get_shared_instance();
         factory->delete_participant(internal->impl);
         internal->impl = nullptr;
@@ -460,11 +486,13 @@ wdndds_service_t *wdndds_service_create(
             new ComputeRequestPubSubType());
         eprosima::fastdds::dds::TypeSupport rep_type(
             new ComputeReplyPubSubType());
-        /* 这里把 Request/Reply 都调到256KB（262144 bytes），
-	 * 避免推理进程的request或reply数据量过大被截断的风险。
-         */
-        req_type->max_serialized_type_size = 262144;
-        rep_type->max_serialized_type_size = 262144;
+        /* Bumped to 1 MiB (1048576) to also fit raw-bytes chunks
+         * carried via the same ComputeRequest envelope (see
+         * wdndds_topic_writer/reader below). First register_type()
+         * wins for the "ComputeRequest" type name; both RPC and chunk
+         * paths share this single cap. */
+        req_type->max_serialized_type_size = 1048576;
+        rep_type->max_serialized_type_size = 1048576;
 
         std::string svc(service_name);
         auto *req_topic = wdndds_internal::get_or_create_topic(
@@ -987,6 +1015,257 @@ int32_t wdndds_requester_matched_count(wdndds_requester_t *r)
         ->rep_reader_matched_count.load();
 }
 
+/* Topic (raw-bytes stream) ----------------------------------------------- */
+
+namespace wdndds_internal {
+
+/* Get or create a chunk-stream topic registered with the existing
+ * "ComputeRequest" TypeSupport. Cached on the participant so multiple
+ * writers/readers on the same topic name share one Topic instance
+ * (required for endpoint matching). Topic is deleted with the
+ * participant — chunk_*_destroy() does NOT delete it. */
+static eprosima::fastdds::dds::Topic* get_or_create_chunk_topic(
+    wdndds_internal::wdndds_participant_s* pin,
+    const std::string& topic_name,
+    eprosima::fastdds::dds::TypeSupport& ts)
+{
+    auto it = pin->chunk_topics.find(topic_name);
+    if (it != pin->chunk_topics.end()) return it->second;
+    if (!ts.empty())
+    {
+        ts.register_type(pin->impl, "ComputeRequest");
+    }
+    auto* topic = pin->impl->create_topic(
+        topic_name, "ComputeRequest",
+        eprosima::fastdds::dds::TOPIC_QOS_DEFAULT);
+    if (topic) pin->chunk_topics[topic_name] = topic;
+    return topic;
+}
+
+}  /* namespace wdndds_internal */
+
+wdndds_topic_writer_t *wdndds_topic_writer_create(
+    wdndds_participant_t *p,
+    const char           *topic_name,
+    int32_t               qos_kind)
+{
+    if (!p || !topic_name) return nullptr;
+    auto *pin = reinterpret_cast<wdndds_internal::wdndds_participant_s *>(p);
+
+    try
+    {
+        eprosima::fastdds::dds::TypeSupport req_type(
+            new ComputeRequestPubSubType());
+        req_type->max_serialized_type_size = 1048576;
+        std::string tn(topic_name);
+        auto* topic = wdndds_internal::get_or_create_chunk_topic(pin, tn, req_type);
+        if (!topic) {
+            fprintf(stderr, "[wdndds_cshim] topic_writer_create: "
+                    "failed to create topic '%s'\n", tn.c_str());
+            return nullptr;
+        }
+
+        eprosima::fastdds::dds::DataWriterQos wqos;
+        if (qos_kind == WDNDDS_TOPIC_QOS_RELIABLE)
+        {
+            wqos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
+            wqos.history().depth = 16;
+        }
+        else
+        {
+            wqos.reliability().kind = eprosima::fastdds::dds::BEST_EFFORT_RELIABILITY_QOS;
+            wqos.history().depth = 4;
+        }
+        wqos.durability().kind = eprosima::fastdds::dds::VOLATILE_DURABILITY_QOS;
+
+        auto writer_listener = std::make_shared<_WriterMatchListener>(tn);
+        auto* writer = pin->publisher->create_datawriter(
+            topic, wqos, writer_listener.get());
+        if (!writer) {
+            fprintf(stderr, "[wdndds_cshim] topic_writer_create: "
+                    "create_datawriter failed for '%s'\n", tn.c_str());
+            return nullptr;
+        }
+        writer->enable();
+
+        auto* w = new wdndds_internal::wdndds_topic_writer_s();
+        w->part = p;
+        w->topic_name = tn;
+        w->topic = topic;
+        w->writer = writer;
+        w->writer_listener = writer_listener;
+        return reinterpret_cast<wdndds_topic_writer_t *>(w);
+    }
+    catch (const std::exception& e)
+    {
+        fprintf(stderr, "[wdndds_cshim] topic_writer_create exception: %s\n", e.what());
+        return nullptr;
+    }
+}
+
+int32_t wdndds_topic_writer_write(
+    wdndds_topic_writer_t *w,
+    const char            *payload,
+    uint32_t               payload_len)
+{
+    if (!w || !payload) return -1;
+    auto* win = reinterpret_cast<wdndds_internal::wdndds_topic_writer_s *>(w);
+    if (!win->writer) return -1;
+
+    ComputeRequest req;
+    /* Stamp request_id with a monotonic counter so duplicate chunks
+     * (e.g. retransmits on RELIABLE QoS) don't collide. */
+    static std::atomic<uint64_t> counter{0};
+    req.request_id(static_cast<int64_t>(counter.fetch_add(1, std::memory_order_relaxed)));
+    req.action(WDNDDS_REQUEST_ACTION_INFO);
+    req.every_n(0);
+    req.prompt("");
+    req.model_id("");
+    req.npu_index(0);
+
+    ComputeAttachment att;
+    att.kind(WDNDDS_ATTACHMENT_KIND_NDARRAY);
+    att.mime_type("application/octet-stream");
+    att.encoding(WDNDDS_IMAGE_ENCODING_RAW);
+    att.width(0); att.height(0); att.channels(0); att.row_stride(0);
+    att.bytes().assign(
+        reinterpret_cast<const uint8_t*>(payload),
+        reinterpret_cast<const uint8_t*>(payload) + payload_len);
+
+    std::vector<ComputeAttachment> atts;
+    atts.push_back(att);
+    req.attachments(atts);
+
+    auto rc = win->writer->write(&req);
+    return rc == eprosima::fastdds::dds::RETCODE_OK ? 0 : (int32_t)rc;
+}
+
+void wdndds_topic_writer_destroy(wdndds_topic_writer_t *w)
+{
+    if (!w) return;
+    auto* win = reinterpret_cast<wdndds_internal::wdndds_topic_writer_s *>(w);
+    if (win->part)
+    {
+        auto* pin = reinterpret_cast<wdndds_internal::wdndds_participant_s *>(win->part);
+        if (win->writer && pin->publisher) {
+            pin->publisher->delete_datawriter(win->writer);
+        }
+    }
+    /* Topic stays cached on the participant — deleted by
+     * wdndds_participant_destroy(). */
+    win->writer = nullptr;
+    win->topic = nullptr;
+    win->writer_listener.reset();
+    delete win;
+}
+
+wdndds_topic_reader_t *wdndds_topic_reader_create(
+    wdndds_participant_t *p,
+    const char           *topic_name,
+    int32_t               qos_kind,
+    void                (*callback)(const char *payload, uint32_t payload_len, void *user),
+    void                 *user)
+{
+    if (!p || !topic_name || !callback) return nullptr;
+    auto* pin = reinterpret_cast<wdndds_internal::wdndds_participant_s *>(p);
+
+    try
+    {
+        eprosima::fastdds::dds::TypeSupport req_type(
+            new ComputeRequestPubSubType());
+        req_type->max_serialized_type_size = 1048576;
+        std::string tn(topic_name);
+        auto* topic = wdndds_internal::get_or_create_chunk_topic(pin, tn, req_type);
+        if (!topic) {
+            fprintf(stderr, "[wdndds_cshim] topic_reader_create: "
+                    "failed to create topic '%s'\n", tn.c_str());
+            return nullptr;
+        }
+
+        eprosima::fastdds::dds::DataReaderQos rqos;
+        if (qos_kind == WDNDDS_TOPIC_QOS_RELIABLE)
+        {
+            rqos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
+            rqos.history().depth = 16;
+        }
+        else
+        {
+            rqos.reliability().kind = eprosima::fastdds::dds::BEST_EFFORT_RELIABILITY_QOS;
+            rqos.history().depth = 4;
+        }
+        rqos.durability().kind = eprosima::fastdds::dds::VOLATILE_DURABILITY_QOS;
+
+        auto reader_listener = std::make_shared<_ReaderMatchListener>(tn + "/reader");
+        auto* reader = pin->subscriber->create_datareader(
+            topic, rqos, reader_listener.get());
+        if (!reader) {
+            fprintf(stderr, "[wdndds_cshim] topic_reader_create: "
+                    "create_datareader failed for '%s'\n", tn.c_str());
+            return nullptr;
+        }
+        reader->enable();
+
+        auto* r = new wdndds_internal::wdndds_topic_reader_s();
+        r->part = p;
+        r->topic_name = tn;
+        r->topic = topic;
+        r->reader = reader;
+        r->reader_listener = reader_listener;
+        r->cb = callback;
+        r->user = user;
+
+        r->pump = std::thread([r]() {
+            while (!r->stop.load())
+            {
+                ComputeRequest req;
+                eprosima::fastdds::dds::SampleInfo info;
+                auto rc = r->reader->take_next_sample(&req, &info);
+                if (rc == eprosima::fastdds::dds::RETCODE_OK && info.valid_data)
+                {
+                    const auto& atts = req.attachments();
+                    if (!atts.empty())
+                    {
+                        const auto& bytes = atts[0].bytes();
+                        r->cb(
+                            reinterpret_cast<const char*>(bytes.data()),
+                            static_cast<uint32_t>(bytes.size()),
+                            r->user);
+                    }
+                }
+                else
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(2));
+                }
+            }
+        });
+
+        return reinterpret_cast<wdndds_topic_reader_t *>(r);
+    }
+    catch (const std::exception& e)
+    {
+        fprintf(stderr, "[wdndds_cshim] topic_reader_create exception: %s\n", e.what());
+        return nullptr;
+    }
+}
+
+void wdndds_topic_reader_destroy(wdndds_topic_reader_t *r)
+{
+    if (!r) return;
+    auto* rin = reinterpret_cast<wdndds_internal::wdndds_topic_reader_s *>(r);
+    rin->stop.store(true);
+    if (rin->pump.joinable()) rin->pump.join();
+    if (rin->part)
+    {
+        auto* pin = reinterpret_cast<wdndds_internal::wdndds_participant_s *>(rin->part);
+        if (rin->reader && pin->subscriber) {
+            pin->subscriber->delete_datareader(rin->reader);
+        }
+    }
+    rin->reader = nullptr;
+    rin->topic = nullptr;
+    rin->reader_listener.reset();
+    delete rin;
+}
 
 }  /* extern "C" */
 
