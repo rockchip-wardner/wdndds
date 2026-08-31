@@ -220,9 +220,30 @@ def _cleanup_scratch() -> None:
 
 
 class build_py(_build_py):
-    """Build wdndds native artifacts before the wheel is packaged."""
+    """Build wdndds native artifacts before the wheel is packaged.
+
+    v0.6.1: unconditional rebuild — delete any pre-existing ``.so`` files
+    at the start of every ``pip install`` / ``pip install -e`` so a stale
+    ``libwdndds_cshim.so`` (e.g. built before the wrapper added new
+    ``wdndds_topic_*`` bindings) is guaranteed to be replaced. The cmake
+    scratch dir (``_BUILD_TMP``) is already wiped on every run via
+    ``_cleanup_scratch``, so cmake always configures from a clean slate;
+    the extra ``.so`` unlink is defence-in-depth against any future
+    incremental-copy / hardlink / reflink shortcut. Cost is bounded by
+    the cmake build itself (~20s on this dev box).
+    """
 
     def run(self) -> None:  # type: ignore[override]
+        # Stale ``.so`` removal runs unconditionally (no symlink / hash /
+        # mtime check). If FastDDS dev install isn't available the
+        # subsequent ``_resolve_fastdds_prefix()`` raises loudly and we
+        # leave the deletion as-is — the user gets a clear error rather
+        # than a working install with a stale .so.
+        for so in (_OUTPUT_IDL_SO, _OUTPUT_CSHIM_SO):
+            if so.exists() or so.is_symlink():
+                so.unlink()
+                print(f"[wdndds] removed pre-existing {so.name}",
+                      file=sys.stderr)
         try:
             prefix = _resolve_fastdds_prefix()
             _build_idl_and_cshim(prefix)
