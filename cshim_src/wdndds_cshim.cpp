@@ -1,29 +1,23 @@
 /* wdndds_cshim.cpp — extern "C" wrapper around FastDDS 3.6.
  *
- * Uses raw DataReader/DataWriter + IDL-generated ComputeRequest /
- * ComputeReply types. (FastDDS 3.6's rrpc Service API is declared in
- * the headers but stubbed out in the bodies — return RETCODE_UNSUPPORTED
- * in DomainParticipantImpl.cpp. We work around by using the lower-level
- * primitives directly.)
+ * Uses the rrpc API (eprosima::fastdds::dds::rpc::Service /
+ * Replier / Requester) on top of IDL-generated ComputeRequest /
+ * ComputeReply types. Topics are auto-named by FastDDS:
+ *   request topic = "<service_name>_Request"
+ *   reply   topic = "<service_name>_Reply"
+ * Correlation is handled end-to-end via FastDDS SampleIdentity; the
+ * IDL `request_id` field is kept for application-level correlation /
+ * logging only.
  *
- * Wire format: Pub-Sub on RELIABLE QoS, two topics per service
- * ("wdndds/rpc/req/<service>" + "wdndds/rpc/rep/<service>"). The
- * payload type is ComputeRequest (req) / ComputeReply (reply) — same
- * IDL, same types, just routed through DataReader/DataWriter instead
- * of Service/Replier/Requester.
- *
- * Transport: SHM (local) + UDPv4 (discovery) + TCPv4 (cross-host).
- *   - Local same-host: data goes via shared memory.
- *   - Cross-host: data via TCPv4 fallback (caller encodes image before send).
+ * Transport: SHM (local) + UDPv4 (LAN) + TCPv4 (cross-subnet), all
+ * configured by FastDDS built-in transports (`use_builtin_transports=true`).
  *
  * Discovery:
- *   - Default (no discovery_servers_csv): SIMPLE discovery + multicast
- *     + initialPeersList. Works in-process on the same host.
+ *   - Default (no discovery_servers_csv): SIMPLE multicast + initialPeers.
  *   - With discovery_servers_csv + is_discovery_server=1: SERVER
- *     protocol on the daemon (used by wdndds_daemon).
+ *     protocol on a FastDDS discovery daemon.
  *   - With discovery_servers_csv + is_discovery_server=0: CLIENT
- *     protocol pointing to the daemon (used by every wdnwebui
- *     process — main / compute_worker / im-bridge).
+ *     protocol pointing at the daemon.
  */
 #include "wdndds_cshim.h"
 
@@ -55,6 +49,11 @@
 #include <fastdds/dds/domain/DomainParticipantListener.hpp>
 #include <fastdds/dds/publisher/DataWriterListener.hpp>
 #include <fastdds/dds/subscriber/DataReaderListener.hpp>
+#include <fastdds/dds/rpc/Service.hpp>
+#include <fastdds/dds/rpc/Replier.hpp>
+#include <fastdds/dds/rpc/Requester.hpp>
+#include <fastdds/dds/rpc/ServiceTypeSupport.hpp>
+#include <fastdds/dds/rpc/RequestInfo.hpp>
 #include <fastdds/rtps/transport/shared_mem/SharedMemTransportDescriptor.hpp>
 #include <fastdds/rtps/transport/UDPv4TransportDescriptor.hpp>
 #include <fastdds/rtps/transport/TCPv4TransportDescriptor.hpp>
@@ -71,50 +70,53 @@ struct wdndds_participant_s
     eprosima::fastdds::dds::DomainParticipant* impl = nullptr;
     eprosima::fastdds::dds::Publisher*          publisher = nullptr;
     eprosima::fastdds::dds::Subscriber*         subscriber = nullptr;
-    std::unordered_map<std::string, eprosima::fastdds::dds::Topic*> req_topics;
-    std::unordered_map<std::string, eprosima::fastdds::dds::Topic*> rep_topics;
+    /* Owned Service handles per (service_name). Topics are auto-created
+     * and owned by the Service, so the participant only caches the
+     * Service* for find/delete. chunk_topics stays because the chunk
+     * stream reuses the ComputeRequest Pub-Sub type outside rrpc. */
+    std::unordered_map<std::string, eprosima::fastdds::dds::rpc::Service*> services;
     std::unordered_map<std::string, eprosima::fastdds::dds::Topic*> chunk_topics;
+    /* Each service_type_name registered exactly once per participant.
+     * First register_service_type wins; subsequent services that share
+     * the same type name reuse it. */
+    std::unordered_map<std::string, eprosima::fastdds::dds::rpc::ServiceTypeSupport> service_types;
 };
 
 struct wdndds_replier_s
 {
     wdndds_participant_t*    part = nullptr;
     std::string              service_name;
-    eprosima::fastdds::dds::DataReader* req_reader = nullptr;
-    eprosima::fastdds::dds::DataWriter* rep_writer = nullptr;
+    eprosima::fastdds::dds::rpc::Service* service = nullptr;
+    eprosima::fastdds::dds::rpc::Replier* replier = nullptr;
     wdndds_request_cb_t      cb = nullptr;
     wdndds_peer_change_cb_t  peer_cb = nullptr;
     void*                    user = nullptr;
     std::atomic<bool>        stop{false};
     std::thread              pump;
-    /* Keep the listener shared_ptrs alive for the lifetime of the
-     * replier — otherwise FastDDS holds dangling raw pointers to the
-     * freed listeners and segfaults on the first matching event. */
-    std::shared_ptr<void> req_reader_listener;
-    std::shared_ptr<void> rep_writer_listener;
 };
 
 struct wdndds_requester_s
 {
     wdndds_participant_t*    part = nullptr;
     std::string              service_name;
-    eprosima::fastdds::dds::DataWriter* req_writer = nullptr;
-    eprosima::fastdds::dds::DataReader* rep_reader = nullptr;
+    eprosima::fastdds::dds::rpc::Service* service = nullptr;
+    eprosima::fastdds::dds::rpc::Requester* requester = nullptr;
     std::mutex               mutex;
-    /* Track how many rep_writer endpoints are currently matched to our
-     * rep_reader.  Used by ``wdndds_requester_call`` to detect the
-     * "first-call discovery race" — when the requester is brand new
-     * the SEDP endpoint announcement hasn't propagated yet, so the
-     * first ``take_next_sample`` would block until the absolute timeout.
-     * A short grace-period wait here collapses the race into a
-     * sub-second delay; if matching really doesn't happen we fail
-     * fast with a "discovery_pending" error the caller can react to
-     * (recreate the requester). */
+    /* Track how many rep_reader endpoints are currently matched.
+     * Populated by a DataReaderListener attached to the underlying
+     * reply reader (``rpc::Requester::get_requester_reader()``); used
+     * by ``wdndds_requester_call`` to short-circuit the first-call
+     * discovery race — when the requester is brand new the SEDP
+     * endpoint announcement hasn't propagated yet, so ``take_reply``
+     * would block until the absolute timeout. A short grace-period
+     * wait collapses the race into a sub-second delay; if matching
+     * really doesn't happen we fail fast with "discovery_pending" so
+     * the caller can recreate + retry. */
     std::atomic<int>          rep_reader_matched_count{0};
-    /* Keep the listener shared_ptrs alive for the lifetime of the
-     * requester — see wdndds_replier_s for the segfault rationale. */
-    std::shared_ptr<void> req_writer_listener;
-    std::shared_ptr<void> rep_reader_listener;
+    /* Keep the listener shared_ptr alive for the lifetime of the
+     * requester — otherwise FastDDS holds a dangling raw pointer to
+     * the freed listener and segfaults on the first matching event. */
+    std::shared_ptr<eprosima::fastdds::dds::DataReaderListener> rep_reader_listener;
 };
 
 struct wdndds_topic_writer_s
@@ -159,31 +161,12 @@ char *copy_str(const char *s)
 }
 
 std::string req_topic_name(const std::string& svc) {
-    return "wdndds/rpc/req/" + svc;
+    /* Kept for diagnostic prints only — FastDDS rrpc actually uses
+    // ``<service_name>_Request`` / ``<service_name>_Reply``. */
+    return svc + "_Request";
 }
 std::string rep_topic_name(const std::string& svc) {
-    return "wdndds/rpc/rep/" + svc;
-}
-
-eprosima::fastdds::dds::Topic* get_or_create_topic(
-    eprosima::fastdds::dds::DomainParticipant* participant,
-    std::unordered_map<std::string, eprosima::fastdds::dds::Topic*>& cache,
-    const std::string& topic_name,
-    const std::string& type_name,
-    eprosima::fastdds::dds::TypeSupport& ts)
-{
-    auto it = cache.find(topic_name);
-    if (it != cache.end()) return it->second;
-
-    if (!ts.empty())
-    {
-        ts.register_type(participant, type_name);
-    }
-    auto *topic = participant->create_topic(
-        topic_name, type_name,
-        eprosima::fastdds::dds::TOPIC_QOS_DEFAULT);
-    if (topic) cache[topic_name] = topic;
-    return topic;
+    return svc + "_Reply";
 }
 
 }  /* namespace wdndds_internal */
@@ -401,6 +384,11 @@ void wdndds_participant_destroy(wdndds_participant_t *p)
     auto *internal = reinterpret_cast<wdndds_internal::wdndds_participant_s *>(p);
     if (internal->impl)
     {
+        /* Drop owned Services first — they hold the rrpc topics. */
+        for (auto& kv : internal->services) {
+            if (kv.second) internal->impl->delete_service(kv.second);
+        }
+        internal->services.clear();
         if (internal->subscriber) {
             internal->impl->delete_subscriber(internal->subscriber);
             internal->subscriber = nullptr;
@@ -408,12 +396,6 @@ void wdndds_participant_destroy(wdndds_participant_t *p)
         if (internal->publisher) {
             internal->impl->delete_publisher(internal->publisher);
             internal->publisher = nullptr;
-        }
-        for (auto& kv : internal->req_topics) {
-            internal->impl->delete_topic(kv.second);
-        }
-        for (auto& kv : internal->rep_topics) {
-            internal->impl->delete_topic(kv.second);
         }
         for (auto& kv : internal->chunk_topics) {
             internal->impl->delete_topic(kv.second);
@@ -471,7 +453,45 @@ int32_t wdndds_participant_list_peers(
     return 0;
 }
 
-/* Service (no rrpc — just caches topics for later use) -------------- */
+/* Service (real rrpc) ------------------------------------------------- */
+
+/* Service type name — single shared per participant. */
+static constexpr const char* kComputeServiceTypeName = "wdndds::rpc::ComputeService";
+
+/* Register the (req_type, rep_type) pair on the participant exactly
+ * once, returning a stable reference into the participant's
+ * service_types cache. Subsequent services that share the type name
+ * reuse the existing registration (FastDDS rejects a second
+ * register_service_type with the same name). */
+static eprosima::fastdds::dds::rpc::ServiceTypeSupport&
+get_or_register_compute_service_type(
+    wdndds_internal::wdndds_participant_s* pin)
+{
+    auto it = pin->service_types.find(kComputeServiceTypeName);
+    if (it != pin->service_types.end()) return it->second;
+
+    eprosima::fastdds::dds::TypeSupport req_type(
+        new ComputeRequestPubSubType());
+    eprosima::fastdds::dds::TypeSupport rep_type(
+        new ComputeReplyPubSubType());
+    /* Bumped to 1 MiB (1048576) to also fit raw-bytes chunks carried
+     * via the same ComputeRequest envelope (see wdndds_topic_writer/
+     * reader below). First register_type() wins for the
+     * "ComputeRequest" / "ComputeReply" type names; both RPC and
+     * chunk paths share this single cap. */
+    req_type->max_serialized_type_size = 1048576;
+    rep_type->max_serialized_type_size = 1048576;
+    /* Pre-register types on the participant so ServiceTypeSupport
+     * registration succeeds when the type name is shared. */
+    req_type.register_type(pin->impl, "ComputeRequest");
+    rep_type.register_type(pin->impl, "ComputeReply");
+
+    auto inserted = pin->service_types.emplace(
+        std::string(kComputeServiceTypeName),
+        eprosima::fastdds::dds::rpc::ServiceTypeSupport(
+            std::move(req_type), std::move(rep_type)));
+    return inserted.first->second;
+}
 
 wdndds_service_t *wdndds_service_create(
     wdndds_participant_t *p,
@@ -482,36 +502,41 @@ wdndds_service_t *wdndds_service_create(
 
     try
     {
-        eprosima::fastdds::dds::TypeSupport req_type(
-            new ComputeRequestPubSubType());
-        eprosima::fastdds::dds::TypeSupport rep_type(
-            new ComputeReplyPubSubType());
-        /* Bumped to 1 MiB (1048576) to also fit raw-bytes chunks
-         * carried via the same ComputeRequest envelope (see
-         * wdndds_topic_writer/reader below). First register_type()
-         * wins for the "ComputeRequest" type name; both RPC and chunk
-         * paths share this single cap. */
-        req_type->max_serialized_type_size = 1048576;
-        rep_type->max_serialized_type_size = 1048576;
-
         std::string svc(service_name);
-        auto *req_topic = wdndds_internal::get_or_create_topic(
-            pin->impl, pin->req_topics,
-            wdndds_internal::req_topic_name(svc),
-            "ComputeRequest", req_type);
-        auto *rep_topic = wdndds_internal::get_or_create_topic(
-            pin->impl, pin->rep_topics,
-            wdndds_internal::rep_topic_name(svc),
-            "ComputeReply", rep_type);
-        if (!req_topic || !rep_topic)
+
+        /* Register / fetch the shared ServiceTypeSupport. */
+        auto& svc_type = get_or_register_compute_service_type(pin);
+        eprosima::fastdds::dds::ReturnCode_t reg_rc =
+            svc_type.register_service_type(pin->impl, kComputeServiceTypeName);
+        if (reg_rc != eprosima::fastdds::dds::RETCODE_OK)
         {
-            fprintf(stderr, "[wdndds_cshim] failed to create topics for %s\n", svc.c_str());
+            /* RETCODE_PRECONDITION_NOT_MET = "another service with the
+             * same type name already registered" → fine, the existing
+             * registration wins and we still create the Service. */
+            if (reg_rc != eprosima::fastdds::dds::RETCODE_PRECONDITION_NOT_MET)
+            {
+                fprintf(stderr, "[wdndds_cshim] register_service_type failed for %s rc=%d\n",
+                        svc.c_str(), (int)reg_rc);
+                return nullptr;
+            }
+        }
+
+        /* create_service auto-creates <service_name>_Request +
+         * <service_name>_Reply topics and registers them on the
+         * participant; topics are owned by the Service and disposed
+         * with it. */
+        auto *service = pin->impl->create_service(svc, kComputeServiceTypeName);
+        if (!service)
+        {
+            fprintf(stderr, "[wdndds_cshim] create_service failed for %s\n", svc.c_str());
             return nullptr;
         }
+        pin->services[svc] = service;
 
         auto *s = new wdndds_internal::wdndds_replier_s();
         s->part = p;
         s->service_name = svc;
+        s->service = service;
         return reinterpret_cast<wdndds_service_t *>(s);
     }
     catch (const std::exception &e)
@@ -524,7 +549,15 @@ wdndds_service_t *wdndds_service_create(
 void wdndds_service_destroy(wdndds_service_t *s)
 {
     if (!s) return;
-    delete reinterpret_cast<wdndds_internal::wdndds_replier_s *>(s);
+    auto *internal = reinterpret_cast<wdndds_internal::wdndds_replier_s *>(s);
+    if (internal->service && internal->part)
+    {
+        auto *pin = reinterpret_cast<wdndds_internal::wdndds_participant_s *>(internal->part);
+        pin->impl->delete_service(internal->service);
+        auto it = pin->services.find(internal->service_name);
+        if (it != pin->services.end()) pin->services.erase(it);
+    }
+    delete internal;
 }
 
 /* Replier (server) -------------------------------------------------- */
@@ -543,52 +576,27 @@ wdndds_replier_t *wdndds_replier_create(
     try
     {
         std::string svc = sin->service_name;
-        auto *req_topic = pin->req_topics[wdndds_internal::req_topic_name(svc)];
-        auto *rep_topic = pin->rep_topics[wdndds_internal::rep_topic_name(svc)];
 
-        eprosima::fastdds::dds::DataReaderQos reader_qos;
-        reader_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
-        reader_qos.history().kind = eprosima::fastdds::dds::KEEP_LAST_HISTORY_QOS;
-        reader_qos.history().depth = 16;
+        eprosima::fastdds::dds::ReplierQos replier_qos;
+        /* ReplierQos defaults: RELIABLE, VOLATILE, KEEP_ALL — matches
+         * our previous manual DataReader/DataWriter QoS. No customisation
+         * required. */
+        (void)replier_qos;
 
-        auto reader_listener = std::make_shared<_ReaderMatchListener>(svc + "/req");
-        auto *reader = pin->subscriber->create_datareader(
-            req_topic, reader_qos, reader_listener.get());
-        if (!reader) return nullptr;
-        /* FastDDS DataReaders are created in DISABLED state. The pump
-         * thread calls take_next_sample() which is a no-op until enable(). */
-        reader->enable();
-
-        eprosima::fastdds::dds::DataWriterQos writer_qos;
-        writer_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
-        writer_qos.history().kind = eprosima::fastdds::dds::KEEP_LAST_HISTORY_QOS;
-        writer_qos.history().depth = 16;
-
-        auto writer_listener = std::make_shared<_WriterMatchListener>(svc + "/rep");
-        auto *writer = pin->publisher->create_datawriter(
-            rep_topic, writer_qos, writer_listener.get());
-        if (!writer) {
-            pin->subscriber->delete_datareader(reader);
+        eprosima::fastdds::dds::ReturnCode_t rc = eprosima::fastdds::dds::RETCODE_OK;
+        auto *replier = pin->impl->create_service_replier(sin->service, replier_qos, rc);
+        if (!replier || rc != eprosima::fastdds::dds::RETCODE_OK)
+        {
+            fprintf(stderr, "[wdndds_cshim] create_service_replier failed for %s rc=%d\n",
+                    svc.c_str(), (int)rc);
             return nullptr;
         }
-        /* FastDDS DataWriters are created in DISABLED state. The replier
-         * pump calls writer->write(&reply) which segfaults when called
-         * on a disabled writer (pointer to internal writer history pool
-         * is null until enable()). enable() is idempotent and safe. */
-        writer->enable();
 
         auto *r = new wdndds_internal::wdndds_replier_s();
         r->part = p;
         r->service_name = svc;
-        /* Keep the listener shared_ptrs alive for the lifetime of
-         * the replier — FastDDS holds raw pointers to the listeners
-         * and calls them on matching events; if we let the
-         * shared_ptrs go out of scope here, FastDDS has dangling
-         * pointers and segfaults on the first matching event. */
-        r->req_reader_listener = reader_listener;
-        r->rep_writer_listener = writer_listener;
-        r->req_reader = reader;
-        r->rep_writer = writer;
+        r->service = sin->service;
+        r->replier = replier;
         r->cb = cb;
         r->peer_cb = peer_cb;
         r->user = user;
@@ -597,12 +605,9 @@ wdndds_replier_t *wdndds_replier_create(
             while (!r->stop.load())
             {
                 ComputeRequest req;
-                eprosima::fastdds::dds::SampleInfo info;
-                auto rc = r->req_reader->take_next_sample(&req, &info);
-if (rc == eprosima::fastdds::dds::RETCODE_OK) {
-                    // fprintf(stderr, "[wdndds_cshim] req_reader got sample action=%d\n", req.action());
-                }
-                if (rc == eprosima::fastdds::dds::RETCODE_OK)
+                eprosima::fastdds::dds::rpc::RequestInfo info;
+                auto rc_take = r->replier->take_request(&req, info);
+                if (rc_take == eprosima::fastdds::dds::RETCODE_OK)
                 {
                     std::string action_str;
                     switch (req.action())
@@ -623,7 +628,7 @@ if (rc == eprosima::fastdds::dds::RETCODE_OK) {
                      * json.loads the rebuilt payload without choking on
                      * embedded quotes / backslashes from base64 image
                      * data. */
-                     std::string esc_prompt;
+                    std::string esc_prompt;
                     esc_prompt.reserve(req.prompt().size() + 16);
                     for (char c : req.prompt())
                     {
@@ -648,13 +653,22 @@ if (rc == eprosima::fastdds::dds::RETCODE_OK) {
                         std::string("\"request_id\":") + std::to_string(req.request_id()) +
                         "}";
 
+                    /* correlation_id slot — opaque int64 — pack the
+                     * writer sequence_number so the user callback sees a
+                     * stable, non-zero identifier. The high 32 bits of
+                     * the full int64_t sequence_number are dropped
+                     * (sufficient for per-replier traffic; the Python
+                     * wrapper currently ignores this field entirely). */
+                    int64_t correlation_id =
+                        static_cast<int64_t>(info.sample_identity.sequence_number().low);
+
                     char *out_reply = nullptr;
                     uint32_t out_len = 0;
                     int32_t cb_rc = r->cb(
                         r->service_name.c_str(),
                         payload_json.data(),
                         static_cast<uint32_t>(payload_json.size()),
-                        0,
+                        correlation_id,
                         r->user,
                         &out_reply, &out_len);
 
@@ -681,7 +695,27 @@ if (rc == eprosima::fastdds::dds::RETCODE_OK) {
                      * returns. */
                     (void)0;
 
-                    r->rep_writer->write(&reply);
+                    /* Standard DDS-RPC routing: pass the RequestInfo
+                     * straight through so FastDDS stamps the reply with
+                     * the matching SampleIdentity (writer GUID +
+                     * sequence_number) and the originating requester
+                     * correlates by it. */
+                    auto rc_send = r->replier->send_reply(&reply, info);
+                    if (rc_send == eprosima::fastdds::dds::RETCODE_NO_DATA)
+                    {
+                        /* The originating requester disconnected
+                         * between take_request and send_reply — drop
+                         * the reply silently, the spec allows it. */
+                    }
+                }
+                else if (rc_take == eprosima::fastdds::dds::RETCODE_NO_DATA)
+                {
+                    /* Spec-compliant spin-wait with short backoff; on
+                     * real builds take_request also takes a
+                     * Duration_t max_wait overload, but the no-arg
+                     * overload returns NO_DATA when nothing is queued,
+                     * which is the expected steady-state outcome. */
+                    std::this_thread::sleep_for(std::chrono::milliseconds(2));
                 }
                 else
                 {
@@ -705,15 +739,10 @@ void wdndds_replier_destroy(wdndds_replier_t *r)
     auto *internal = reinterpret_cast<wdndds_internal::wdndds_replier_s *>(r);
     internal->stop.store(true);
     if (internal->pump.joinable()) internal->pump.join();
-    if (internal->part)
+    if (internal->replier && internal->part)
     {
         auto *pin = reinterpret_cast<wdndds_internal::wdndds_participant_s *>(internal->part);
-        if (internal->rep_writer && pin->publisher) {
-            pin->publisher->delete_datawriter(internal->rep_writer);
-        }
-        if (internal->req_reader && pin->subscriber) {
-            pin->subscriber->delete_datareader(internal->req_reader);
-        }
+        pin->impl->delete_service_replier(internal->service_name, internal->replier);
     }
     delete internal;
 }
@@ -725,6 +754,7 @@ wdndds_requester_t *wdndds_requester_create(
     wdndds_service_t *s,
     int32_t timeout_ms)
 {
+    (void)timeout_ms;
     if (!p || !s) return nullptr;
     auto *pin = reinterpret_cast<wdndds_internal::wdndds_participant_s *>(p);
     auto *sin = reinterpret_cast<wdndds_internal::wdndds_replier_s *>(s);
@@ -732,45 +762,43 @@ wdndds_requester_t *wdndds_requester_create(
     try
     {
         std::string svc = sin->service_name;
-        auto *req_topic = pin->req_topics[wdndds_internal::req_topic_name(svc)];
-        auto *rep_topic = pin->rep_topics[wdndds_internal::rep_topic_name(svc)];
 
-        eprosima::fastdds::dds::DataWriterQos writer_qos;
-        writer_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
-        writer_qos.history().kind = eprosima::fastdds::dds::KEEP_LAST_HISTORY_QOS;
-        writer_qos.history().depth = 16;
+        eprosima::fastdds::dds::RequesterQos requester_qos;
+        /* RequesterQos defaults: RELIABLE, VOLATILE, KEEP_ALL — matches
+         * the previous manual plumbing. */
+        (void)requester_qos;
 
-        auto writer_listener = std::make_shared<_WriterMatchListener>(svc + "/req");
-        auto *writer = pin->publisher->create_datawriter(
-            req_topic, writer_qos, writer_listener.get());
-        if (!writer) return nullptr;
-        writer->enable();
-
-        eprosima::fastdds::dds::DataReaderQos reader_qos;
-        reader_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
-        reader_qos.history().kind = eprosima::fastdds::dds::KEEP_LAST_HISTORY_QOS;
-        reader_qos.history().depth = 16;
+        eprosima::fastdds::dds::ReturnCode_t rc = eprosima::fastdds::dds::RETCODE_OK;
+        auto *requester = pin->impl->create_service_requester(
+            sin->service, requester_qos, rc);
+        if (!requester || rc != eprosima::fastdds::dds::RETCODE_OK)
+        {
+            fprintf(stderr, "[wdndds_cshim] create_service_requester failed for %s rc=%d\n",
+                    svc.c_str(), (int)rc);
+            return nullptr;
+        }
 
         auto *r = new wdndds_internal::wdndds_requester_s();
         r->part = p;
         r->service_name = svc;
+        r->service = sin->service;
+        r->requester = requester;
 
-        auto reader_listener = std::make_shared<_ReaderMatchListener>(
+        /* Attach a DataReaderListener to the underlying reply reader
+         * so we can mirror its matched-publisher count. FastDDS holds
+         * a raw pointer to the listener; keeping the shared_ptr alive
+         * for the requester's lifetime avoids a use-after-free on
+         * matching events (segfault seen in v0.3 when the listener
+         * went out of scope here). */
+        auto listener = std::make_shared<_ReaderMatchListener>(
             svc + "/rep", &r->rep_reader_matched_count);
-        auto *reader = pin->subscriber->create_datareader(
-            rep_topic, reader_qos, reader_listener.get());
-        if (!reader) {
-            pin->publisher->delete_datawriter(writer);
-            delete r;
-            return nullptr;
+        auto *raw_reader = requester->get_requester_reader();
+        if (raw_reader)
+        {
+            raw_reader->set_listener(listener.get());
         }
-        reader->enable();
+        r->rep_reader_listener = std::move(listener);
 
-        r->req_writer = writer;
-        r->rep_reader = reader;
-        /* See wdndds_replier_s for rationale. */
-        r->req_writer_listener = writer_listener;
-        r->rep_reader_listener = reader_listener;
         return reinterpret_cast<wdndds_requester_t *>(r);
     }
     catch (const std::exception &e)
@@ -784,15 +812,19 @@ void wdndds_requester_destroy(wdndds_requester_t *r)
 {
     if (!r) return;
     auto *internal = reinterpret_cast<wdndds_internal::wdndds_requester_s *>(r);
-    if (internal->part)
+    /* Reset the listener before deleting the requester so FastDDS
+     * stops calling back into us while the atomic counter is being
+     * torn down. */
+    if (internal->requester)
+    {
+        auto *raw_reader = internal->requester->get_requester_reader();
+        if (raw_reader) raw_reader->set_listener(nullptr);
+    }
+    internal->rep_reader_listener.reset();
+    if (internal->requester && internal->part)
     {
         auto *pin = reinterpret_cast<wdndds_internal::wdndds_participant_s *>(internal->part);
-        if (internal->req_writer && pin->publisher) {
-            pin->publisher->delete_datawriter(internal->req_writer);
-        }
-        if (internal->rep_reader && pin->subscriber) {
-            pin->subscriber->delete_datareader(internal->rep_reader);
-        }
+        pin->impl->delete_service_requester(internal->service_name, internal->requester);
     }
     delete internal;
 }
@@ -902,10 +934,15 @@ find_str("action", action);
         req.every_n(every_n);
         req.prompt(prompt);
 
-        auto rc = internal->req_writer->write(&req);
+        /* Real DDS-RPC send. ``RequestInfo`` is populated by
+         * ``send_request`` with our outgoing write's SampleIdentity
+         * (writer GUID + sequence_number); we keep it to match the
+         * reply later by ``related_sample_identity``. */
+        eprosima::fastdds::dds::rpc::RequestInfo sent_info;
+        auto rc = internal->requester->send_request(&req, sent_info);
         if (rc != eprosima::fastdds::dds::RETCODE_OK)
         {
-            std::string err = "{\"ok\":false,\"error\":\"write rc=" +
+            std::string err = "{\"ok\":false,\"error\":\"send_request rc=" +
                 std::to_string((int)rc) + "\"}";
             *out_reply = wdndds_internal::copy_str(err);
             *out_reply_len = (uint32_t)err.size();
@@ -913,12 +950,13 @@ find_str("action", action);
         }
 
         /* Discovery wait: a fresh requester hasn't finished its SEDP
-         * handshake yet, so ``take_next_sample`` would block until the
-         * absolute deadline. Wait briefly for the rep_reader to discover
-         * at least one matching rep_writer before starting the polling
-         * loop; if matching doesn't happen in the grace period, fail
-         * fast with "discovery_pending" so the caller can recreate +
-         * retry instead of waiting 5 minutes. */
+         * handshake yet, so ``take_reply`` would block until the
+         * absolute deadline. Wait briefly for the reply reader to
+         * discover at least one matching replier writer before
+         * starting the polling loop; if matching doesn't happen in
+         * the grace period, fail fast with "discovery_pending" so the
+         * caller can recreate + retry instead of waiting the full
+         * timeout. */
         {
             const int discovery_grace_ms = std::min(timeout_ms > 0 ? timeout_ms : 10000, 5000);
             const auto disc_deadline = std::chrono::steady_clock::now() +
@@ -943,53 +981,59 @@ find_str("action", action);
         while (std::chrono::steady_clock::now() < deadline)
         {
             ComputeReply reply;
-            eprosima::fastdds::dds::SampleInfo info;
-            auto rc2 = internal->rep_reader->take_next_sample(&reply, &info);
+            eprosima::fastdds::dds::rpc::RequestInfo reply_info;
+            auto rc2 = internal->requester->take_reply(&reply, reply_info);
             if (rc2 == eprosima::fastdds::dds::RETCODE_OK)
             {
-                if (reply.request_id() == request_id)
+                /* Standard DDS-RPC correlation: match the reply's
+                 * ``related_sample_identity`` (the request's
+                 * SampleIdentity that the Replier stamped on
+                 * ``send_reply``) against our outgoing request. */
+                const auto& sent = sent_info.sample_identity;
+                const auto& got = reply_info.related_sample_identity;
+                bool match = (sent.writer_guid() == got.writer_guid() &&
+                              sent.sequence_number() == got.sequence_number());
+                if (!match) continue;
+
+                /* The user callback returns a Python dict which
+                 * ``Replier._on_request_c`` json.dumps to ``reply.text()``
+                 * — i.e. ``reply.text()`` is already a valid JSON object
+                 * string. Embed it as a raw JSON object under ``data``
+                 * so consumers can access fields directly
+                 * (``r["data"]["status"]``, etc.) without an extra
+                 * parse step. */
+                std::string json_reply = "{";
+                json_reply += std::string("\"ok\":") + (reply.ok() ? "true" : "false");
+                json_reply += ",\"request_id\":" + std::to_string(reply.request_id());
+                if (!reply.text().empty())
+                    json_reply += ",\"data\":" + reply.text();
+                if (!reply.error().empty())
                 {
-                    /* The user callback returns a Python dict which
-                     * ``Replier._on_request_c`` json.dumps to ``reply.text()``
-                     * — i.e. ``reply.text()`` is already a valid JSON object
-                     * string. Embed it as a raw JSON object under ``data``
-                     * so consumers can access fields directly
-                     * (``r["data"]["status"]``, etc.) without an extra
-                     * parse step. */
-                    std::string json_reply = "{";
-                    json_reply += std::string("\"ok\":") + (reply.ok() ? "true" : "false");
-                    json_reply += ",\"request_id\":" + std::to_string(reply.request_id());
-                    if (!reply.text().empty())
-                        json_reply += ",\"data\":" + reply.text();
-                    if (!reply.error().empty())
+                    /* Escape control chars + quotes for embedding as
+                     * a JSON string value. */
+                    std::string esc;
+                    esc.reserve(reply.error().size() + 8);
+                    for (char c : reply.error())
                     {
-                        /* Escape control chars + quotes for embedding as
-                         * a JSON string value. */
-                        std::string esc;
-                        esc.reserve(reply.error().size() + 8);
-                        for (char c : reply.error())
-                        {
-                            switch (c) {
-                                case '"':  esc += "\\\""; break;
-                                case '\\': esc += "\\\\"; break;
-                                case '\n': esc += "\\n";  break;
-                                case '\r': esc += "\\r";  break;
-                                case '\t': esc += "\\t";  break;
-                                default:
-                                    if (static_cast<unsigned char>(c) < 0x20)
-                                        esc += ' ';
-                                    else
-                                        esc += c;
-                            }
+                        switch (c) {
+                            case '"':  esc += "\\\""; break;
+                            case '\\': esc += "\\\\"; break;
+                            case '\n': esc += "\\n";  break;
+                            case '\r': esc += "\\r";  break;
+                            case '\t': esc += "\\t";  break;
+                            default:
+                                if (static_cast<unsigned char>(c) < 0x20)
+                                    esc += ' ';
+                                else
+                                    esc += c;
                         }
-                        json_reply += ",\"error\":\"" + esc + "\"";
                     }
-                    json_reply += "}";
-                    *out_reply = wdndds_internal::copy_str(json_reply);
-                    *out_reply_len = (uint32_t)json_reply.size();
-                    return 0;
+                    json_reply += ",\"error\":\"" + esc + "\"";
                 }
-                continue;
+                json_reply += "}";
+                *out_reply = wdndds_internal::copy_str(json_reply);
+                *out_reply_len = (uint32_t)json_reply.size();
+                return 0;
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(2));
         }
@@ -1344,6 +1388,4 @@ int32_t wdndds_participant_set_listener(
     }
     return 0;
 }
-
-/* DataWriter/DataReader listeners for matching events */
 

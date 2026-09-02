@@ -5,9 +5,11 @@
  * ComputeReply types.
  *
  * Wire: standard DDS Service (one request topic + one reply topic per
- * service). Transport: SHM (local) + UDPv4 (LAN) + TCPv4 (cross-subnet).
- * Local data goes through shared memory; cross-host data goes through
- * TCPv4 (the JPEG-encoded attachment payload).
+ * service, auto-named "<service_name>_Request" / "<service_name>_Reply"
+ * by FastDDS). Correlation is end-to-end via FastDDS SampleIdentity;
+ * the IDL `request_id` field is kept for application-level correlation
+ * / logging only. Transport: FastDDS built-ins (SHM local + UDPv4 LAN
+ * + TCPv4 cross-subnet).
  *
  * Threading:
  *   - Replier auto-starts a std::thread pump on creation. User callback
@@ -16,13 +18,13 @@
  *   - Requester is sync-only; one call → one blocking send/recv.
  *     Concurrent callers can block on different Requester instances.
  *
- * Discovery (v0.5):
- *   - Default (no discovery_servers_csv): SIMPLE discovery + multicast.
+ * Discovery:
+ *   - Default (no discovery_servers_csv): SIMPLE multicast + initialPeers
+ *     from the auto-installed default profile (incl. loopback peer).
  *   - With discovery_servers_csv + is_discovery_server=1: SERVER
- *     protocol on the daemon (used by wdndds_daemon).
- *   - With discovery_servers_csv + is_discovery_server=0: SUPER_CLIENT
- *     protocol pointing to the daemon (used by every wdnwebui
- *     process — main / compute_worker / im-bridge).
+ *     protocol on a FastDDS discovery daemon.
+ *   - With discovery_servers_csv + is_discovery_server=0: CLIENT
+ *     protocol pointing at the daemon.
  */
 #ifndef WDNDDS_CSHIM_H
 #define WDNDDS_CSHIM_H
@@ -48,7 +50,13 @@ typedef struct wdndds_topic_reader_s   wdndds_topic_reader_t;
  * (a ctypes-allocated c_char_p; the cshim copies the bytes into the
  * ComputeReply and does NOT free the ctypes buffer — Python's ctypes
  * owns it). Returns 0 on success, negative on error. Threading: called
- * sequentially on the cshim's pump thread. */
+ * sequentially on the cshim's pump thread.
+ *
+ * `correlation_id` carries the low 32 bits of the FastDDS
+ * SampleIdentity sequence_number assigned to the incoming request.
+ * The Python wrapper currently ignores this field; it's exposed so
+ * future callers can implement per-request tracing without a separate
+ * IDL field. */
 typedef int32_t (*wdndds_request_cb_t)(
     const char *service_name,
     const char *payload,
@@ -94,7 +102,7 @@ void wdndds_free(char *p);
  * FastDDS discovery servers. Pass NULL/empty for default SIMPLE
  * discovery. When non-empty, `is_discovery_server` controls whether
  * this participant IS the server (SERVER protocol, listens) or a
- * client (SUPER_CLIENT protocol, connects). */
+ * client (CLIENT protocol, connects). */
 wdndds_participant_t *wdndds_participant_create(
     int32_t     domain_id,
     const char *participant_name,
@@ -127,8 +135,11 @@ int32_t wdndds_participant_set_listener(
     void                     *user
 );
 
-/* Service (no rrpc — just caches topics for later use) -------------- */
+/* Service (FastDDS rrpc) ----------------------------------------------- */
 
+/* Creates a FastDDS rrpc Service on the participant. The service name
+ * becomes the prefix for the auto-generated request/reply topics
+ * ("<service_name>_Request" / "<service_name>_Reply"). */
 wdndds_service_t *wdndds_service_create(
     wdndds_participant_t *p,
     const char          *service_name
@@ -158,7 +169,9 @@ wdndds_requester_t *wdndds_requester_create(
 
 void wdndds_requester_destroy(wdndds_requester_t *r);
 
-/* Synchronous RPC. Returns 0 on success, 1 on timeout, -1 on send. */
+/* Synchronous RPC. Returns 0 on success, 1 on timeout, -1 on send.
+ * Correlation is by FastDDS SampleIdentity (writer GUID + sequence
+ * number) — the IDL `request_id` field is informational only. */
 int32_t wdndds_requester_call(
     wdndds_requester_t *r,
     const char         *payload,
