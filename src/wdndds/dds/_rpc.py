@@ -50,6 +50,21 @@ def _keepalive(cb):
         return cid
 
 
+def _release_keepalive(cid: int) -> bool:
+    """Release a keepalive handle previously obtained from :func:`_keepalive`.
+
+    Returns ``True`` if the entry was found and removed, ``False``
+    otherwise (already released or never registered). Pair every
+    ``_keepalive(cb)`` call with a matching ``_release_keepalive(cid)``
+    once the underlying cshim entity is destroyed — otherwise the
+    CFUNCTYPE stays pinned in :data:`_cb_refs` forever, leaking the
+    closure that captures the parent ``Requester`` / ``Replier`` and
+    transitively their ``Service`` + ``Hub``.
+    """
+    with _cb_refs_lock:
+        return _cb_refs.pop(cid, None) is not None
+
+
 class Hub:
     """One DomainParticipant per process.
 
@@ -153,6 +168,33 @@ class Hub:
         svc.create()
         self._services[service_name] = svc
         return svc
+
+    def destroy_service(self, service_name: str) -> bool:
+        """Tear down + drop a single service from this Hub.
+
+        Calls :meth:`Service.destroy` (which deletes the cshim
+        ``wdndds_service`` handle and clears all tracked
+        Repliers/Requesters) and removes the ``Service`` object from
+        ``_services``. Without this call, repeatedly creating services
+        with unique names (e.g. ``wdndds/rpc/<model>/worker-<pid>``
+        where ``pid`` changes each restart cycle) would accumulate
+        one ``Service`` per cycle — each holding its pool of
+        cshim-side DataReader/DataWriter payload pools, which are
+        tens of MB each.
+
+        Returns ``True`` if a service was found and removed,
+        ``False`` otherwise. Safe to call repeatedly.
+        """
+        with self._lock:
+            svc = self._services.pop(service_name, None)
+        if svc is None:
+            return False
+        try:
+            svc.destroy()
+        except Exception:
+            _LOG.warning("Hub.destroy_service: svc.destroy raised for %s",
+                         service_name)
+        return True
 
     def get_native(self) -> int:
         return int(self._participant or 0)
@@ -293,6 +335,25 @@ class Service:
         self._requesters.append(requester)
         return requester
 
+    def remove_requester(self, requester: "Requester") -> bool:
+        """Drop ``requester`` from this Service's tracking list.
+
+        Call this *after* ``requester.destroy()`` has already freed the
+        underlying cshim handle. We do NOT call ``destroy()`` here —
+        callers may want to remove a requester without destroying it
+        (uncommon; the normal pattern is destroy then remove, or pass
+        through :meth:`destroy` which clears both ``_repliers`` and
+        ``_requesters`` atomically).
+
+        Returns ``True`` if the requester was found and removed,
+        ``False`` otherwise. Removing twice is safe.
+        """
+        try:
+            self._requesters.remove(requester)
+            return True
+        except ValueError:
+            return False
+
     def destroy(self) -> None:
         for r in self._repliers:
             try:
@@ -333,6 +394,12 @@ class Replier:
             self._service._service,
             self._c_cb, None, None)
         if not self._native:
+            # Failed creation — release the keepalive slot we just took,
+            # otherwise the CFUNCTYPE wrapper stays pinned in _cb_refs
+            # even though the Replier never came up.
+            _release_keepalive(self._c_keepalive_id)
+            self._c_cb = None
+            self._c_keepalive_id = 0
             raise RuntimeError("wdndds: failed to create Replier")
 
     def _on_request_c(self, service_name, payload, payload_len,
@@ -365,6 +432,10 @@ class Replier:
         if self._native is not None:
             self._service._hub._lib.wdndds_replier_destroy(self._native)
             self._native = None
+        if getattr(self, "_c_keepalive_id", 0):
+            _release_keepalive(self._c_keepalive_id)
+            self._c_keepalive_id = 0
+            self._c_cb = None
 
 
 class Requester:
