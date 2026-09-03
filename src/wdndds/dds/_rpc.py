@@ -1,10 +1,8 @@
 """wdndds.dds._rpc — Python wrappers around libwdndds_cshim.
 
-Real FastDDS 3.6 rrpc: each Hub owns one DomainParticipant; each
-Service creates a pair of DDS-RPC topics ("<service_name>_Request" /
-"<service_name>_Reply") and hosts Repliers + accepts Requesters.
-Correlation is handled end-to-end via FastDDS SampleIdentity; the
-IDL `request_id` field is kept for application-level correlation only.
+v0.5: uses FastDDS 3.6's rrpc Service / Replier / Requester API
+(transparently wire-encoded via the IDL-generated ComputeRequest /
+ComputeReply types).
 
 Public API:
   Hub(participant_name)         — DomainParticipant (1 per process)
