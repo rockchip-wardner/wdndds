@@ -193,6 +193,39 @@ eprosima::fastdds::dds::Topic* get_or_create_topic(
     return topic;
 }
 
+/**
+ * Bound the per-entity payload pool to a sane ceiling.
+ *
+ * FastDDS ``DataWriter`` / ``DataReader`` keep an internal payload pool
+ * sized at ``payload_max_size × allocated_samples`` (default 100) per
+ * ``TopicPayloadPoolRegistry``-keyed pool, with no upper bound on growth
+ * beyond ``max_samples`` (``LENGTH_UNLIMITED`` by default). For our RPC
+ * paths that means each entity permanently reserves ~63 MB of RSS
+ * (1 MB payload × ~60 chunks, see wdndds_cshim.cpp:max_serialized_type_size).
+ *
+ * After ~18 enable→disable cycles that's ~1 GB of leaked RSS — see
+ * ``topic_data_types(1MB) × chunks_per_writer(~60) × entity_count``
+ * = 1.08 GB. Each destroyed writer/reader leaves its pool behind in the
+ * Participant's ``Publisher``/``Subscriber`` because the topics themselves
+ * are referenced from ``req_topics``/``rep_topics``/``chunk_topics``
+ * maps and only freed on ``wdndds_participant_destroy``.
+ *
+ * Apply ``history.depth`` * 2 to both ``allocated_samples`` (avoid first-
+ * sample reallocation churn) and ``max_samples`` (hard ceiling). For our
+ * reliable + KEEP_LAST depth=16 case, 32 samples × 1 MB = 32 MB per
+ * entity, capped at 8× for the BEST_EFFORT audio path. Each entity's
+ * pool now stays at ~16-32 MB instead of growing to 63 MB+.
+ */
+template <typename QosT>
+inline void apply_bounded_resource_limits(QosT& qos, int32_t allocated, int32_t max_total)
+{
+    qos.resource_limits().allocated_samples = allocated;
+    qos.resource_limits().max_samples = max_total;
+    qos.resource_limits().max_samples_per_instance = max_total;
+    qos.resource_limits().max_instances = 1;
+    qos.resource_limits().extra_samples = 1;
+}
+
 }  /* namespace wdndds_internal */
 
 class _WriterMatchListener : public eprosima::fastdds::dds::DataWriterListener
@@ -560,6 +593,7 @@ wdndds_replier_t *wdndds_replier_create(
         reader_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
         reader_qos.history().kind = eprosima::fastdds::dds::KEEP_LAST_HISTORY_QOS;
         reader_qos.history().depth = 16;
+        wdndds_internal::apply_bounded_resource_limits(reader_qos, 8, 16);
 
         auto reader_listener = std::make_shared<_ReaderMatchListener>(svc + "/req");
         auto *reader = pin->subscriber->create_datareader(
@@ -573,6 +607,7 @@ wdndds_replier_t *wdndds_replier_create(
         writer_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
         writer_qos.history().kind = eprosima::fastdds::dds::KEEP_LAST_HISTORY_QOS;
         writer_qos.history().depth = 16;
+        wdndds_internal::apply_bounded_resource_limits(writer_qos, 8, 16);
 
         auto writer_listener = std::make_shared<_WriterMatchListener>(svc + "/rep");
         auto *writer = pin->publisher->create_datawriter(
@@ -749,6 +784,7 @@ wdndds_requester_t *wdndds_requester_create(
         writer_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
         writer_qos.history().kind = eprosima::fastdds::dds::KEEP_LAST_HISTORY_QOS;
         writer_qos.history().depth = 16;
+        wdndds_internal::apply_bounded_resource_limits(writer_qos, 8, 16);
 
         auto writer_listener = std::make_shared<_WriterMatchListener>(svc + "/req");
         auto *writer = pin->publisher->create_datawriter(
@@ -760,6 +796,7 @@ wdndds_requester_t *wdndds_requester_create(
         reader_qos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
         reader_qos.history().kind = eprosima::fastdds::dds::KEEP_LAST_HISTORY_QOS;
         reader_qos.history().depth = 16;
+        wdndds_internal::apply_bounded_resource_limits(reader_qos, 8, 16);
 
         auto *r = new wdndds_internal::wdndds_requester_s();
         r->part = p;
@@ -1084,11 +1121,13 @@ wdndds_topic_writer_t *wdndds_topic_writer_create(
         {
             wqos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
             wqos.history().depth = 16;
+            wdndds_internal::apply_bounded_resource_limits(wqos, 8, 16);
         }
         else
         {
             wqos.reliability().kind = eprosima::fastdds::dds::BEST_EFFORT_RELIABILITY_QOS;
             wqos.history().depth = 4;
+            wdndds_internal::apply_bounded_resource_limits(wqos, 4, 8);
         }
         wqos.durability().kind = eprosima::fastdds::dds::VOLATILE_DURABILITY_QOS;
 
@@ -1199,11 +1238,13 @@ wdndds_topic_reader_t *wdndds_topic_reader_create(
         {
             rqos.reliability().kind = eprosima::fastdds::dds::RELIABLE_RELIABILITY_QOS;
             rqos.history().depth = 16;
+            wdndds_internal::apply_bounded_resource_limits(rqos, 8, 16);
         }
         else
         {
             rqos.reliability().kind = eprosima::fastdds::dds::BEST_EFFORT_RELIABILITY_QOS;
             rqos.history().depth = 4;
+            wdndds_internal::apply_bounded_resource_limits(rqos, 4, 8);
         }
         rqos.durability().kind = eprosima::fastdds::dds::VOLATILE_DURABILITY_QOS;
 
