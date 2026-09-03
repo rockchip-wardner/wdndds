@@ -71,6 +71,13 @@ struct wdndds_participant_s
     eprosima::fastdds::dds::DomainParticipant* impl = nullptr;
     eprosima::fastdds::dds::Publisher*          publisher = nullptr;
     eprosima::fastdds::dds::Subscriber*         subscriber = nullptr;
+    /* TypeSupports are owned by the participant and registered exactly
+     * once (in wdndds_participant_create). Sharing them across all
+     * services / chunk topics on the same participant avoids the
+     * "Type X already registered locally" FastDDS warning that fires
+     * when each service_create() did its own register_type(). */
+    eprosima::fastdds::dds::TypeSupport        req_type;
+    eprosima::fastdds::dds::TypeSupport        rep_type;
     std::unordered_map<std::string, eprosima::fastdds::dds::Topic*> req_topics;
     std::unordered_map<std::string, eprosima::fastdds::dds::Topic*> rep_topics;
     std::unordered_map<std::string, eprosima::fastdds::dds::Topic*> chunk_topics;
@@ -378,6 +385,17 @@ wdndds_participant_t *wdndds_participant_create(
         internal->subscriber = p->create_subscriber(
             eprosima::fastdds::dds::SUBSCRIBER_QOS_DEFAULT);
 
+        /* Single-shot type registration. ComputeRequest / ComputeReply
+         * must be registered exactly once per DomainParticipant;
+         * subsequent service_create() / chunk_writer_create() share
+         * these TypeSupport instances (no new + register_type). */
+        internal->req_type.reset(new ComputeRequestPubSubType());
+        internal->rep_type.reset(new ComputeReplyPubSubType());
+        internal->req_type->max_serialized_type_size = 1048576;
+        internal->rep_type->max_serialized_type_size = 1048576;
+        internal->req_type.register_type(p, "ComputeRequest");
+        internal->rep_type.register_type(p, "ComputeReply");
+
         if (p->enable() != eprosima::fastdds::dds::RETCODE_OK)
         {
             fprintf(stderr, "[wdndds_cshim] participant enable() failed\n");
@@ -482,27 +500,19 @@ wdndds_service_t *wdndds_service_create(
 
     try
     {
-        eprosima::fastdds::dds::TypeSupport req_type(
-            new ComputeRequestPubSubType());
-        eprosima::fastdds::dds::TypeSupport rep_type(
-            new ComputeReplyPubSubType());
-        /* Bumped to 1 MiB (1048576) to also fit raw-bytes chunks
-         * carried via the same ComputeRequest envelope (see
-         * wdndds_topic_writer/reader below). First register_type()
-         * wins for the "ComputeRequest" type name; both RPC and chunk
-         * paths share this single cap. */
-        req_type->max_serialized_type_size = 1048576;
-        rep_type->max_serialized_type_size = 1048576;
-
+        /* Reuse the participant-owned TypeSupports — already registered
+         * once in wdndds_participant_create(); calling register_type()
+         * again here would trip FastDDS' "already registered locally"
+         * warning (and waste a topic-creation path). */
         std::string svc(service_name);
         auto *req_topic = wdndds_internal::get_or_create_topic(
             pin->impl, pin->req_topics,
             wdndds_internal::req_topic_name(svc),
-            "ComputeRequest", req_type);
+            "ComputeRequest", pin->req_type);
         auto *rep_topic = wdndds_internal::get_or_create_topic(
             pin->impl, pin->rep_topics,
             wdndds_internal::rep_topic_name(svc),
-            "ComputeReply", rep_type);
+            "ComputeReply", pin->rep_type);
         if (!req_topic || !rep_topic)
         {
             fprintf(stderr, "[wdndds_cshim] failed to create topics for %s\n", svc.c_str());
@@ -1023,7 +1033,13 @@ namespace wdndds_internal {
  * "ComputeRequest" TypeSupport. Cached on the participant so multiple
  * writers/readers on the same topic name share one Topic instance
  * (required for endpoint matching). Topic is deleted with the
- * participant — chunk_*_destroy() does NOT delete it. */
+ * participant — chunk_*_destroy() does NOT delete it.
+ *
+ * Note: does NOT call register_type() — the participant's
+ * `req_type` was registered once in wdndds_participant_create(); the
+ * ts parameter is just the type-name handle FastDDS uses to find the
+ * pre-registered support.
+ */
 static eprosima::fastdds::dds::Topic* get_or_create_chunk_topic(
     wdndds_internal::wdndds_participant_s* pin,
     const std::string& topic_name,
@@ -1031,10 +1047,7 @@ static eprosima::fastdds::dds::Topic* get_or_create_chunk_topic(
 {
     auto it = pin->chunk_topics.find(topic_name);
     if (it != pin->chunk_topics.end()) return it->second;
-    if (!ts.empty())
-    {
-        ts.register_type(pin->impl, "ComputeRequest");
-    }
+    (void)ts;
     auto* topic = pin->impl->create_topic(
         topic_name, "ComputeRequest",
         eprosima::fastdds::dds::TOPIC_QOS_DEFAULT);
@@ -1054,11 +1067,12 @@ wdndds_topic_writer_t *wdndds_topic_writer_create(
 
     try
     {
-        eprosima::fastdds::dds::TypeSupport req_type(
-            new ComputeRequestPubSubType());
-        req_type->max_serialized_type_size = 1048576;
+        /* Reuse the participant-owned req_type — registered once in
+         * wdndds_participant_create(); do NOT new a fresh one (would
+         * duplicate the TypeSupport and trip FastDDS' duplicate-name
+         * warning on register_type()). */
         std::string tn(topic_name);
-        auto* topic = wdndds_internal::get_or_create_chunk_topic(pin, tn, req_type);
+        auto* topic = wdndds_internal::get_or_create_chunk_topic(pin, tn, pin->req_type);
         if (!topic) {
             fprintf(stderr, "[wdndds_cshim] topic_writer_create: "
                     "failed to create topic '%s'\n", tn.c_str());
@@ -1171,11 +1185,9 @@ wdndds_topic_reader_t *wdndds_topic_reader_create(
 
     try
     {
-        eprosima::fastdds::dds::TypeSupport req_type(
-            new ComputeRequestPubSubType());
-        req_type->max_serialized_type_size = 1048576;
+        /* Reuse pin->req_type — see topic_writer_create for rationale. */
         std::string tn(topic_name);
-        auto* topic = wdndds_internal::get_or_create_chunk_topic(pin, tn, req_type);
+        auto* topic = wdndds_internal::get_or_create_chunk_topic(pin, tn, pin->req_type);
         if (!topic) {
             fprintf(stderr, "[wdndds_cshim] topic_reader_create: "
                     "failed to create topic '%s'\n", tn.c_str());
