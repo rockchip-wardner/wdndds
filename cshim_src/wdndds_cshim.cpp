@@ -670,8 +670,10 @@ if (rc == eprosima::fastdds::dds::RETCODE_OK) {
                      * data. */
                      std::string esc_prompt;
                     esc_prompt.reserve(req.prompt().size() + 16);
-                    for (char c : req.prompt())
+                    const auto& prompt_ref = req.prompt();
+                    for (size_t _i = 0; _i < prompt_ref.size(); ++_i)
                     {
+                        char c = prompt_ref.c_str()[_i];
                         switch (c) {
                             case '"':  esc_prompt += "\\\""; break;
                             case '\\': esc_prompt += "\\\\"; break;
@@ -1006,16 +1008,18 @@ find_str("action", action);
                     std::string json_reply = "{";
                     json_reply += std::string("\"ok\":") + (reply.ok() ? "true" : "false");
                     json_reply += ",\"request_id\":" + std::to_string(reply.request_id());
-                    if (!reply.text().empty())
-                        json_reply += ",\"data\":" + reply.text();
-                    if (!reply.error().empty())
+                    if (reply.text().size() > 0)
+                        json_reply += std::string(",\"data\":") + reply.text().c_str();
+                    if (reply.error().size() > 0)
                     {
                         /* Escape control chars + quotes for embedding as
                          * a JSON string value. */
                         std::string esc;
                         esc.reserve(reply.error().size() + 8);
-                        for (char c : reply.error())
+                        const auto& error_ref = reply.error();
+                        for (size_t _i = 0; _i < error_ref.size(); ++_i)
                         {
+                            char c = error_ref.c_str()[_i];
                             switch (c) {
                                 case '"':  esc += "\\\""; break;
                                 case '\\': esc += "\\\\"; break;

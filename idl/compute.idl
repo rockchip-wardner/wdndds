@@ -24,7 +24,7 @@ const long WDNDDS_IMAGE_ENCODING_PNG = 2;     // over the wire (lossless)
 // for IMAGE (RAW / JPEG / PNG). `bytes` carries the actual content.
 struct ComputeAttachment {
     long kind;
-    string mime_type;     // "image/jpeg" / "image/png" / "text/plain" / ...
+    string<65535> mime_type;     // "image/jpeg" / "image/png" / "text/plain" / ...
     long encoding;        // one of WDNDDS_IMAGE_ENCODING_*
     long width;           // for IMAGE: pixel width (0 if unknown)
     long height;          // for IMAGE: pixel height (0 if unknown)
@@ -38,8 +38,8 @@ struct ComputeRequest {
     long long request_id;            // matches request <-> reply
     long action;                     // WDNDDS_REQUEST_ACTION_*
     long long every_n;               // for INFER: sample-every-N frames
-    string prompt;                   // for INFER: LLM prompt
-    string model_id;                 // for INFO: reported by server
+    string<65535> prompt;                   // for INFER: LLM prompt
+    string<65535> model_id;                 // for INFO: reported by server
     long long npu_index;             // for INFO: reported by server
     sequence<ComputeAttachment> attachments;
 };
@@ -48,26 +48,26 @@ struct ComputeRequest {
 struct ComputeReply {
     long long request_id;            // echoes the request's id
     boolean ok;                      // true on success
-    string error;                    // when ok == false, the message
+    string<65535> error;                    // when ok == false, the message
 
     long status;                     // not_loaded / loading / running / error
-    string status_text;              // "running" / "error" / "shutting_down" / ...
+    string<65535> status_text;              // "running" / "error" / "shutting_down" / ...
 
     // INFER-only fields
-    string text;
-    string level;
-    string tool_call;
-    string bbox_json;                // [x1, y1, x2, y2] or empty
-    string crop_b64;                 // JPEG-cropped ROI from TargetDoc
+    string<65535> text;
+    string<65535> level;
+    string<65535> tool_call;
+    string<65535> bbox_json;                // [x1, y1, x2, y2] or empty
+    string<65535> crop_b64;                 // JPEG-cropped ROI from TargetDoc
 
     // LOAD-only fields
     double load_time_sec;
     long long loaded_at_unix;
 
     // INFO-only fields
-    string model;
-    string model_dir;
+    string<65535> model;
+    string<65535> model_dir;
     long long npu_index_info;
-    string init_error;
+    string<65535> init_error;
     boolean rkai_available;
 };

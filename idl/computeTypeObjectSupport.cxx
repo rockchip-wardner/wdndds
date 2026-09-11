@@ -93,19 +93,19 @@ void register_ComputeAttachment_type_identifier(
             ReturnCode_t return_code_mime_type {eprosima::fastdds::dds::RETCODE_OK};
             return_code_mime_type =
                 eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->type_object_registry().get_type_identifiers(
-                "anonymous_string_unbounded", type_ids_mime_type);
+                "anonymous_string_65535", type_ids_mime_type);
 
             if (eprosima::fastdds::dds::RETCODE_OK != return_code_mime_type)
             {
                 {
-                    SBound bound = 0;
-                    StringSTypeDefn string_sdefn = TypeObjectUtils::build_string_s_type_defn(bound);
+                    LBound bound = 65535;
+                    StringLTypeDefn string_ldefn = TypeObjectUtils::build_string_l_type_defn(bound);
                     if (eprosima::fastdds::dds::RETCODE_BAD_PARAMETER ==
-                            TypeObjectUtils::build_and_register_s_string_type_identifier(string_sdefn,
-                            "anonymous_string_unbounded", type_ids_mime_type))
+                            TypeObjectUtils::build_and_register_l_string_type_identifier(string_ldefn,
+                            "anonymous_string_65535", type_ids_mime_type))
                     {
                         EPROSIMA_LOG_ERROR(XTYPES_TYPE_REPRESENTATION,
-                            "anonymous_string_unbounded already registered in TypeObjectRegistry for a different type.");
+                            "anonymous_string_65535 already registered in TypeObjectRegistry for a different type.");
                     }
                 }
             }
@@ -461,19 +461,19 @@ void register_ComputeRequest_type_identifier(
             ReturnCode_t return_code_prompt {eprosima::fastdds::dds::RETCODE_OK};
             return_code_prompt =
                 eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->type_object_registry().get_type_identifiers(
-                "anonymous_string_unbounded", type_ids_prompt);
+                "anonymous_string_65535", type_ids_prompt);
 
             if (eprosima::fastdds::dds::RETCODE_OK != return_code_prompt)
             {
                 {
-                    SBound bound = 0;
-                    StringSTypeDefn string_sdefn = TypeObjectUtils::build_string_s_type_defn(bound);
+                    LBound bound = 65535;
+                    StringLTypeDefn string_ldefn = TypeObjectUtils::build_string_l_type_defn(bound);
                     if (eprosima::fastdds::dds::RETCODE_BAD_PARAMETER ==
-                            TypeObjectUtils::build_and_register_s_string_type_identifier(string_sdefn,
-                            "anonymous_string_unbounded", type_ids_prompt))
+                            TypeObjectUtils::build_and_register_l_string_type_identifier(string_ldefn,
+                            "anonymous_string_65535", type_ids_prompt))
                     {
                         EPROSIMA_LOG_ERROR(XTYPES_TYPE_REPRESENTATION,
-                            "anonymous_string_unbounded already registered in TypeObjectRegistry for a different type.");
+                            "anonymous_string_65535 already registered in TypeObjectRegistry for a different type.");
                     }
                 }
             }
@@ -499,19 +499,19 @@ void register_ComputeRequest_type_identifier(
             ReturnCode_t return_code_model_id {eprosima::fastdds::dds::RETCODE_OK};
             return_code_model_id =
                 eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->type_object_registry().get_type_identifiers(
-                "anonymous_string_unbounded", type_ids_model_id);
+                "anonymous_string_65535", type_ids_model_id);
 
             if (eprosima::fastdds::dds::RETCODE_OK != return_code_model_id)
             {
                 {
-                    SBound bound = 0;
-                    StringSTypeDefn string_sdefn = TypeObjectUtils::build_string_s_type_defn(bound);
+                    LBound bound = 65535;
+                    StringLTypeDefn string_ldefn = TypeObjectUtils::build_string_l_type_defn(bound);
                     if (eprosima::fastdds::dds::RETCODE_BAD_PARAMETER ==
-                            TypeObjectUtils::build_and_register_s_string_type_identifier(string_sdefn,
-                            "anonymous_string_unbounded", type_ids_model_id))
+                            TypeObjectUtils::build_and_register_l_string_type_identifier(string_ldefn,
+                            "anonymous_string_65535", type_ids_model_id))
                     {
                         EPROSIMA_LOG_ERROR(XTYPES_TYPE_REPRESENTATION,
-                            "anonymous_string_unbounded already registered in TypeObjectRegistry for a different type.");
+                            "anonymous_string_65535 already registered in TypeObjectRegistry for a different type.");
                     }
                 }
             }
@@ -715,19 +715,19 @@ void register_ComputeReply_type_identifier(
             ReturnCode_t return_code_error {eprosima::fastdds::dds::RETCODE_OK};
             return_code_error =
                 eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->type_object_registry().get_type_identifiers(
-                "anonymous_string_unbounded", type_ids_error);
+                "anonymous_string_65535", type_ids_error);
 
             if (eprosima::fastdds::dds::RETCODE_OK != return_code_error)
             {
                 {
-                    SBound bound = 0;
-                    StringSTypeDefn string_sdefn = TypeObjectUtils::build_string_s_type_defn(bound);
+                    LBound bound = 65535;
+                    StringLTypeDefn string_ldefn = TypeObjectUtils::build_string_l_type_defn(bound);
                     if (eprosima::fastdds::dds::RETCODE_BAD_PARAMETER ==
-                            TypeObjectUtils::build_and_register_s_string_type_identifier(string_sdefn,
-                            "anonymous_string_unbounded", type_ids_error))
+                            TypeObjectUtils::build_and_register_l_string_type_identifier(string_ldefn,
+                            "anonymous_string_65535", type_ids_error))
                     {
                         EPROSIMA_LOG_ERROR(XTYPES_TYPE_REPRESENTATION,
-                            "anonymous_string_unbounded already registered in TypeObjectRegistry for a different type.");
+                            "anonymous_string_65535 already registered in TypeObjectRegistry for a different type.");
                     }
                 }
             }
@@ -783,19 +783,19 @@ void register_ComputeReply_type_identifier(
             ReturnCode_t return_code_status_text {eprosima::fastdds::dds::RETCODE_OK};
             return_code_status_text =
                 eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->type_object_registry().get_type_identifiers(
-                "anonymous_string_unbounded", type_ids_status_text);
+                "anonymous_string_65535", type_ids_status_text);
 
             if (eprosima::fastdds::dds::RETCODE_OK != return_code_status_text)
             {
                 {
-                    SBound bound = 0;
-                    StringSTypeDefn string_sdefn = TypeObjectUtils::build_string_s_type_defn(bound);
+                    LBound bound = 65535;
+                    StringLTypeDefn string_ldefn = TypeObjectUtils::build_string_l_type_defn(bound);
                     if (eprosima::fastdds::dds::RETCODE_BAD_PARAMETER ==
-                            TypeObjectUtils::build_and_register_s_string_type_identifier(string_sdefn,
-                            "anonymous_string_unbounded", type_ids_status_text))
+                            TypeObjectUtils::build_and_register_l_string_type_identifier(string_ldefn,
+                            "anonymous_string_65535", type_ids_status_text))
                     {
                         EPROSIMA_LOG_ERROR(XTYPES_TYPE_REPRESENTATION,
-                            "anonymous_string_unbounded already registered in TypeObjectRegistry for a different type.");
+                            "anonymous_string_65535 already registered in TypeObjectRegistry for a different type.");
                     }
                 }
             }
@@ -821,19 +821,19 @@ void register_ComputeReply_type_identifier(
             ReturnCode_t return_code_text {eprosima::fastdds::dds::RETCODE_OK};
             return_code_text =
                 eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->type_object_registry().get_type_identifiers(
-                "anonymous_string_unbounded", type_ids_text);
+                "anonymous_string_65535", type_ids_text);
 
             if (eprosima::fastdds::dds::RETCODE_OK != return_code_text)
             {
                 {
-                    SBound bound = 0;
-                    StringSTypeDefn string_sdefn = TypeObjectUtils::build_string_s_type_defn(bound);
+                    LBound bound = 65535;
+                    StringLTypeDefn string_ldefn = TypeObjectUtils::build_string_l_type_defn(bound);
                     if (eprosima::fastdds::dds::RETCODE_BAD_PARAMETER ==
-                            TypeObjectUtils::build_and_register_s_string_type_identifier(string_sdefn,
-                            "anonymous_string_unbounded", type_ids_text))
+                            TypeObjectUtils::build_and_register_l_string_type_identifier(string_ldefn,
+                            "anonymous_string_65535", type_ids_text))
                     {
                         EPROSIMA_LOG_ERROR(XTYPES_TYPE_REPRESENTATION,
-                            "anonymous_string_unbounded already registered in TypeObjectRegistry for a different type.");
+                            "anonymous_string_65535 already registered in TypeObjectRegistry for a different type.");
                     }
                 }
             }
@@ -859,19 +859,19 @@ void register_ComputeReply_type_identifier(
             ReturnCode_t return_code_level {eprosima::fastdds::dds::RETCODE_OK};
             return_code_level =
                 eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->type_object_registry().get_type_identifiers(
-                "anonymous_string_unbounded", type_ids_level);
+                "anonymous_string_65535", type_ids_level);
 
             if (eprosima::fastdds::dds::RETCODE_OK != return_code_level)
             {
                 {
-                    SBound bound = 0;
-                    StringSTypeDefn string_sdefn = TypeObjectUtils::build_string_s_type_defn(bound);
+                    LBound bound = 65535;
+                    StringLTypeDefn string_ldefn = TypeObjectUtils::build_string_l_type_defn(bound);
                     if (eprosima::fastdds::dds::RETCODE_BAD_PARAMETER ==
-                            TypeObjectUtils::build_and_register_s_string_type_identifier(string_sdefn,
-                            "anonymous_string_unbounded", type_ids_level))
+                            TypeObjectUtils::build_and_register_l_string_type_identifier(string_ldefn,
+                            "anonymous_string_65535", type_ids_level))
                     {
                         EPROSIMA_LOG_ERROR(XTYPES_TYPE_REPRESENTATION,
-                            "anonymous_string_unbounded already registered in TypeObjectRegistry for a different type.");
+                            "anonymous_string_65535 already registered in TypeObjectRegistry for a different type.");
                     }
                 }
             }
@@ -897,19 +897,19 @@ void register_ComputeReply_type_identifier(
             ReturnCode_t return_code_tool_call {eprosima::fastdds::dds::RETCODE_OK};
             return_code_tool_call =
                 eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->type_object_registry().get_type_identifiers(
-                "anonymous_string_unbounded", type_ids_tool_call);
+                "anonymous_string_65535", type_ids_tool_call);
 
             if (eprosima::fastdds::dds::RETCODE_OK != return_code_tool_call)
             {
                 {
-                    SBound bound = 0;
-                    StringSTypeDefn string_sdefn = TypeObjectUtils::build_string_s_type_defn(bound);
+                    LBound bound = 65535;
+                    StringLTypeDefn string_ldefn = TypeObjectUtils::build_string_l_type_defn(bound);
                     if (eprosima::fastdds::dds::RETCODE_BAD_PARAMETER ==
-                            TypeObjectUtils::build_and_register_s_string_type_identifier(string_sdefn,
-                            "anonymous_string_unbounded", type_ids_tool_call))
+                            TypeObjectUtils::build_and_register_l_string_type_identifier(string_ldefn,
+                            "anonymous_string_65535", type_ids_tool_call))
                     {
                         EPROSIMA_LOG_ERROR(XTYPES_TYPE_REPRESENTATION,
-                            "anonymous_string_unbounded already registered in TypeObjectRegistry for a different type.");
+                            "anonymous_string_65535 already registered in TypeObjectRegistry for a different type.");
                     }
                 }
             }
@@ -935,19 +935,19 @@ void register_ComputeReply_type_identifier(
             ReturnCode_t return_code_bbox_json {eprosima::fastdds::dds::RETCODE_OK};
             return_code_bbox_json =
                 eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->type_object_registry().get_type_identifiers(
-                "anonymous_string_unbounded", type_ids_bbox_json);
+                "anonymous_string_65535", type_ids_bbox_json);
 
             if (eprosima::fastdds::dds::RETCODE_OK != return_code_bbox_json)
             {
                 {
-                    SBound bound = 0;
-                    StringSTypeDefn string_sdefn = TypeObjectUtils::build_string_s_type_defn(bound);
+                    LBound bound = 65535;
+                    StringLTypeDefn string_ldefn = TypeObjectUtils::build_string_l_type_defn(bound);
                     if (eprosima::fastdds::dds::RETCODE_BAD_PARAMETER ==
-                            TypeObjectUtils::build_and_register_s_string_type_identifier(string_sdefn,
-                            "anonymous_string_unbounded", type_ids_bbox_json))
+                            TypeObjectUtils::build_and_register_l_string_type_identifier(string_ldefn,
+                            "anonymous_string_65535", type_ids_bbox_json))
                     {
                         EPROSIMA_LOG_ERROR(XTYPES_TYPE_REPRESENTATION,
-                            "anonymous_string_unbounded already registered in TypeObjectRegistry for a different type.");
+                            "anonymous_string_65535 already registered in TypeObjectRegistry for a different type.");
                     }
                 }
             }
@@ -973,19 +973,19 @@ void register_ComputeReply_type_identifier(
             ReturnCode_t return_code_crop_b64 {eprosima::fastdds::dds::RETCODE_OK};
             return_code_crop_b64 =
                 eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->type_object_registry().get_type_identifiers(
-                "anonymous_string_unbounded", type_ids_crop_b64);
+                "anonymous_string_65535", type_ids_crop_b64);
 
             if (eprosima::fastdds::dds::RETCODE_OK != return_code_crop_b64)
             {
                 {
-                    SBound bound = 0;
-                    StringSTypeDefn string_sdefn = TypeObjectUtils::build_string_s_type_defn(bound);
+                    LBound bound = 65535;
+                    StringLTypeDefn string_ldefn = TypeObjectUtils::build_string_l_type_defn(bound);
                     if (eprosima::fastdds::dds::RETCODE_BAD_PARAMETER ==
-                            TypeObjectUtils::build_and_register_s_string_type_identifier(string_sdefn,
-                            "anonymous_string_unbounded", type_ids_crop_b64))
+                            TypeObjectUtils::build_and_register_l_string_type_identifier(string_ldefn,
+                            "anonymous_string_65535", type_ids_crop_b64))
                     {
                         EPROSIMA_LOG_ERROR(XTYPES_TYPE_REPRESENTATION,
-                            "anonymous_string_unbounded already registered in TypeObjectRegistry for a different type.");
+                            "anonymous_string_65535 already registered in TypeObjectRegistry for a different type.");
                     }
                 }
             }
@@ -1071,19 +1071,19 @@ void register_ComputeReply_type_identifier(
             ReturnCode_t return_code_model {eprosima::fastdds::dds::RETCODE_OK};
             return_code_model =
                 eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->type_object_registry().get_type_identifiers(
-                "anonymous_string_unbounded", type_ids_model);
+                "anonymous_string_65535", type_ids_model);
 
             if (eprosima::fastdds::dds::RETCODE_OK != return_code_model)
             {
                 {
-                    SBound bound = 0;
-                    StringSTypeDefn string_sdefn = TypeObjectUtils::build_string_s_type_defn(bound);
+                    LBound bound = 65535;
+                    StringLTypeDefn string_ldefn = TypeObjectUtils::build_string_l_type_defn(bound);
                     if (eprosima::fastdds::dds::RETCODE_BAD_PARAMETER ==
-                            TypeObjectUtils::build_and_register_s_string_type_identifier(string_sdefn,
-                            "anonymous_string_unbounded", type_ids_model))
+                            TypeObjectUtils::build_and_register_l_string_type_identifier(string_ldefn,
+                            "anonymous_string_65535", type_ids_model))
                     {
                         EPROSIMA_LOG_ERROR(XTYPES_TYPE_REPRESENTATION,
-                            "anonymous_string_unbounded already registered in TypeObjectRegistry for a different type.");
+                            "anonymous_string_65535 already registered in TypeObjectRegistry for a different type.");
                     }
                 }
             }
@@ -1109,19 +1109,19 @@ void register_ComputeReply_type_identifier(
             ReturnCode_t return_code_model_dir {eprosima::fastdds::dds::RETCODE_OK};
             return_code_model_dir =
                 eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->type_object_registry().get_type_identifiers(
-                "anonymous_string_unbounded", type_ids_model_dir);
+                "anonymous_string_65535", type_ids_model_dir);
 
             if (eprosima::fastdds::dds::RETCODE_OK != return_code_model_dir)
             {
                 {
-                    SBound bound = 0;
-                    StringSTypeDefn string_sdefn = TypeObjectUtils::build_string_s_type_defn(bound);
+                    LBound bound = 65535;
+                    StringLTypeDefn string_ldefn = TypeObjectUtils::build_string_l_type_defn(bound);
                     if (eprosima::fastdds::dds::RETCODE_BAD_PARAMETER ==
-                            TypeObjectUtils::build_and_register_s_string_type_identifier(string_sdefn,
-                            "anonymous_string_unbounded", type_ids_model_dir))
+                            TypeObjectUtils::build_and_register_l_string_type_identifier(string_ldefn,
+                            "anonymous_string_65535", type_ids_model_dir))
                     {
                         EPROSIMA_LOG_ERROR(XTYPES_TYPE_REPRESENTATION,
-                            "anonymous_string_unbounded already registered in TypeObjectRegistry for a different type.");
+                            "anonymous_string_65535 already registered in TypeObjectRegistry for a different type.");
                     }
                 }
             }
@@ -1177,19 +1177,19 @@ void register_ComputeReply_type_identifier(
             ReturnCode_t return_code_init_error {eprosima::fastdds::dds::RETCODE_OK};
             return_code_init_error =
                 eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->type_object_registry().get_type_identifiers(
-                "anonymous_string_unbounded", type_ids_init_error);
+                "anonymous_string_65535", type_ids_init_error);
 
             if (eprosima::fastdds::dds::RETCODE_OK != return_code_init_error)
             {
                 {
-                    SBound bound = 0;
-                    StringSTypeDefn string_sdefn = TypeObjectUtils::build_string_s_type_defn(bound);
+                    LBound bound = 65535;
+                    StringLTypeDefn string_ldefn = TypeObjectUtils::build_string_l_type_defn(bound);
                     if (eprosima::fastdds::dds::RETCODE_BAD_PARAMETER ==
-                            TypeObjectUtils::build_and_register_s_string_type_identifier(string_sdefn,
-                            "anonymous_string_unbounded", type_ids_init_error))
+                            TypeObjectUtils::build_and_register_l_string_type_identifier(string_ldefn,
+                            "anonymous_string_65535", type_ids_init_error))
                     {
                         EPROSIMA_LOG_ERROR(XTYPES_TYPE_REPRESENTATION,
-                            "anonymous_string_unbounded already registered in TypeObjectRegistry for a different type.");
+                            "anonymous_string_65535 already registered in TypeObjectRegistry for a different type.");
                     }
                 }
             }

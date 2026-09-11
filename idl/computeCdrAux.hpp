@@ -24,13 +24,13 @@
 
 #include "compute.hpp"
 
-constexpr uint32_t ComputeReply_max_cdr_typesize {2653UL};
+constexpr uint32_t ComputeReply_max_cdr_typesize {655453UL};
 constexpr uint32_t ComputeReply_max_key_cdr_typesize {0UL};
 
-constexpr uint32_t ComputeRequest_max_cdr_typesize {568UL};
+constexpr uint32_t ComputeRequest_max_cdr_typesize {131128UL};
 constexpr uint32_t ComputeRequest_max_key_cdr_typesize {0UL};
 
-constexpr uint32_t ComputeAttachment_max_cdr_typesize {292UL};
+constexpr uint32_t ComputeAttachment_max_cdr_typesize {65572UL};
 constexpr uint32_t ComputeAttachment_max_key_cdr_typesize {0UL};
 
 
