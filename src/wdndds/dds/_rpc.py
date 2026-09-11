@@ -475,11 +475,17 @@ class Requester:
         ptr = ctypes.cast(out_reply, ctypes.c_void_p).value
         try:
             if rc == 0 and ptr:
-                raw = bytes(ctypes.string_at(ptr, out_len.value)).decode(
-                    "utf-8", errors="replace")
+                raw_bytes = bytes(ctypes.string_at(ptr, out_len.value))
+                raw = raw_bytes.decode("utf-8", errors="replace")
                 try:
                     return json.loads(raw)
-                except Exception:
+                except Exception as _exc:
+                    _LOG.error(
+                        "[WIRE-DEBUG-PROXY] rc=%d PARSE_FAIL out_len=%d "
+                        "raw_chars=%d raw_utf8_bytes=%d err=%s "
+                        "FULL_RAW=%r",
+                        rc, out_len.value, len(raw), len(raw_bytes),
+                        _exc, raw)
                     return {"ok": False,
                             "error": f"malformed reply: {raw[:200]!r}"}
             elif rc == 1:
