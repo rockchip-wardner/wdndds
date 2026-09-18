@@ -1009,7 +1009,18 @@ find_str("action", action);
                     json_reply += std::string("\"ok\":") + (reply.ok() ? "true" : "false");
                     json_reply += ",\"request_id\":" + std::to_string(reply.request_id());
                     if (reply.text().size() > 0)
-                        json_reply += std::string(",\"data\":") + reply.text().c_str();
+                    {
+                        // FastCDR 已知 bug: reply.text() 末尾会带下个字段的对齐
+                        // 字节 garbage, 拼入 JSON 后破坏解析。cast 成 std::string
+                        // 拷贝, 用最后一个 '}' 截断。
+                        std::string reply_text(reply.text());
+                        auto last_brace = reply_text.rfind('}');
+                        if (last_brace != std::string::npos)
+                            json_reply += std::string(",\"data\":") +
+                                         reply_text.substr(0, last_brace + 1);
+                        else
+                            json_reply += ",\"data\":{}";
+                    }
                     if (reply.error().size() > 0)
                     {
                         /* Escape control chars + quotes for embedding as
