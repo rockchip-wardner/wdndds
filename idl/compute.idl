@@ -2,6 +2,15 @@
 //
 // One service per model. Worker registers the service; main process sends
 // requests. The 5 actions are: info, load, infer, reset, shutdown.
+//
+// v0.7 string→sequence<octet> migration (方案B): all 11 string fields
+// become sequence<octet> so heavy payloads (audio PCM, image bytes via
+// base64, structured result JSON, etc.) aren't silently truncated by
+// FastCDR's fixed_string<MAX>::assign cap (was 65535 for request.prompt,
+// 255 default for reply-side 5 fields per AGENTS.md TODO). Bytes flow
+// unchanged on the wire — sequence<octet> uses the same
+// u32 LE length + payload CDR encoding as string<MAX> — so the only
+// side effect is C++ API ergonomics in wdndds_cshim.cpp.
 
 const string WDNDDS_SERVICE_TYPE_NAME = "wdndds::rpc::ComputeService";
 
@@ -24,7 +33,7 @@ const long WDNDDS_IMAGE_ENCODING_PNG = 2;     // over the wire (lossless)
 // for IMAGE (RAW / JPEG / PNG). `bytes` carries the actual content.
 struct ComputeAttachment {
     long kind;
-    string<65535> mime_type;     // "image/jpeg" / "image/png" / "text/plain" / ...
+    sequence<octet> mime_type;     // "image/jpeg" / "image/png" / "text/plain" / ...
     long encoding;        // one of WDNDDS_IMAGE_ENCODING_*
     long width;           // for IMAGE: pixel width (0 if unknown)
     long height;          // for IMAGE: pixel height (0 if unknown)
@@ -38,8 +47,8 @@ struct ComputeRequest {
     long long request_id;            // matches request <-> reply
     long action;                     // WDNDDS_REQUEST_ACTION_*
     long long every_n;               // for INFER: sample-every-N frames
-    string<65535> prompt;                   // for INFER: LLM prompt
-    string<65535> model_id;                 // for INFO: reported by server
+    sequence<octet> prompt;          // for INFER: LLM prompt (JSON envelope)
+    sequence<octet> model_id;        // for INFO: reported by server
     long long npu_index;             // for INFO: reported by server
     sequence<ComputeAttachment> attachments;
 };
@@ -48,26 +57,26 @@ struct ComputeRequest {
 struct ComputeReply {
     long long request_id;            // echoes the request's id
     boolean ok;                      // true on success
-    string<65535> error;                    // when ok == false, the message
+    sequence<octet> error;            // when ok == false, the message
 
     long status;                     // not_loaded / loading / running / error
-    string<65535> status_text;              // "running" / "error" / "shutting_down" / ...
+    sequence<octet> status_text;      // "running" / "error" / "shutting_down" / ...
 
     // INFER-only fields
-    string<65535> text;
-    string<65535> level;
-    string<65535> tool_call;
-    string<65535> bbox_json;                // [x1, y1, x2, y2] or empty
-    string<65535> crop_b64;                 // JPEG-cropped ROI from TargetDoc
+    sequence<octet> text;
+    sequence<octet> level;
+    sequence<octet> tool_call;
+    sequence<octet> bbox_json;        // [x1, y1, x2, y2] or empty
+    sequence<octet> crop_b64;         // JPEG-cropped ROI from TargetDoc
 
     // LOAD-only fields
     double load_time_sec;
     long long loaded_at_unix;
 
     // INFO-only fields
-    string<65535> model;
-    string<65535> model_dir;
+    sequence<octet> model;
+    sequence<octet> model_dir;
     long long npu_index_info;
-    string<65535> init_error;
+    sequence<octet> init_error;
     boolean rkai_available;
 };

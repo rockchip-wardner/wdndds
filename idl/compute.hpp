@@ -236,7 +236,7 @@ public:
      * @param _mime_type New value to be copied in member mime_type
      */
     eProsima_user_DllExport void mime_type(
-            const eprosima::fastcdr::fixed_string<65535>& _mime_type)
+            const std::vector<uint8_t>& _mime_type)
     {
         m_mime_type = _mime_type;
     }
@@ -246,7 +246,7 @@ public:
      * @param _mime_type New value to be moved in member mime_type
      */
     eProsima_user_DllExport void mime_type(
-            eprosima::fastcdr::fixed_string<65535>&& _mime_type)
+            std::vector<uint8_t>&& _mime_type)
     {
         m_mime_type = std::move(_mime_type);
     }
@@ -255,7 +255,7 @@ public:
      * @brief This function returns a constant reference to member mime_type
      * @return Constant reference to member mime_type
      */
-    eProsima_user_DllExport const eprosima::fastcdr::fixed_string<65535>& mime_type() const
+    eProsima_user_DllExport const std::vector<uint8_t>& mime_type() const
     {
         return m_mime_type;
     }
@@ -264,7 +264,7 @@ public:
      * @brief This function returns a reference to member mime_type
      * @return Reference to member mime_type
      */
-    eProsima_user_DllExport eprosima::fastcdr::fixed_string<65535>& mime_type()
+    eProsima_user_DllExport std::vector<uint8_t>& mime_type()
     {
         return m_mime_type;
     }
@@ -458,7 +458,7 @@ public:
 private:
 
     int32_t m_kind{0};
-    eprosima::fastcdr::fixed_string<65535> m_mime_type;
+    std::vector<uint8_t> m_mime_type;
     int32_t m_encoding{0};
     int32_t m_width{0};
     int32_t m_height{0};
@@ -689,7 +689,7 @@ public:
      * @param _prompt New value to be copied in member prompt
      */
     eProsima_user_DllExport void prompt(
-            const eprosima::fastcdr::fixed_string<65535>& _prompt)
+            const std::vector<uint8_t>& _prompt)
     {
         m_prompt = _prompt;
     }
@@ -699,7 +699,7 @@ public:
      * @param _prompt New value to be moved in member prompt
      */
     eProsima_user_DllExport void prompt(
-            eprosima::fastcdr::fixed_string<65535>&& _prompt)
+            std::vector<uint8_t>&& _prompt)
     {
         m_prompt = std::move(_prompt);
     }
@@ -708,7 +708,7 @@ public:
      * @brief This function returns a constant reference to member prompt
      * @return Constant reference to member prompt
      */
-    eProsima_user_DllExport const eprosima::fastcdr::fixed_string<65535>& prompt() const
+    eProsima_user_DllExport const std::vector<uint8_t>& prompt() const
     {
         return m_prompt;
     }
@@ -717,7 +717,7 @@ public:
      * @brief This function returns a reference to member prompt
      * @return Reference to member prompt
      */
-    eProsima_user_DllExport eprosima::fastcdr::fixed_string<65535>& prompt()
+    eProsima_user_DllExport std::vector<uint8_t>& prompt()
     {
         return m_prompt;
     }
@@ -728,7 +728,7 @@ public:
      * @param _model_id New value to be copied in member model_id
      */
     eProsima_user_DllExport void model_id(
-            const eprosima::fastcdr::fixed_string<65535>& _model_id)
+            const std::vector<uint8_t>& _model_id)
     {
         m_model_id = _model_id;
     }
@@ -738,7 +738,7 @@ public:
      * @param _model_id New value to be moved in member model_id
      */
     eProsima_user_DllExport void model_id(
-            eprosima::fastcdr::fixed_string<65535>&& _model_id)
+            std::vector<uint8_t>&& _model_id)
     {
         m_model_id = std::move(_model_id);
     }
@@ -747,7 +747,7 @@ public:
      * @brief This function returns a constant reference to member model_id
      * @return Constant reference to member model_id
      */
-    eProsima_user_DllExport const eprosima::fastcdr::fixed_string<65535>& model_id() const
+    eProsima_user_DllExport const std::vector<uint8_t>& model_id() const
     {
         return m_model_id;
     }
@@ -756,7 +756,7 @@ public:
      * @brief This function returns a reference to member model_id
      * @return Reference to member model_id
      */
-    eProsima_user_DllExport eprosima::fastcdr::fixed_string<65535>& model_id()
+    eProsima_user_DllExport std::vector<uint8_t>& model_id()
     {
         return m_model_id;
     }
@@ -836,8 +836,8 @@ private:
     int64_t m_request_id{0};
     int32_t m_action{0};
     int64_t m_every_n{0};
-    eprosima::fastcdr::fixed_string<65535> m_prompt;
-    eprosima::fastcdr::fixed_string<65535> m_model_id;
+    std::vector<uint8_t> m_prompt;
+    std::vector<uint8_t> m_model_id;
     int64_t m_npu_index{0};
     std::vector<ComputeAttachment> m_attachments;
 
@@ -1105,7 +1105,7 @@ public:
      * @param _error New value to be copied in member error
      */
     eProsima_user_DllExport void error(
-            const eprosima::fastcdr::fixed_string<65535>& _error)
+            const std::vector<uint8_t>& _error)
     {
         m_error = _error;
     }
@@ -1115,7 +1115,7 @@ public:
      * @param _error New value to be moved in member error
      */
     eProsima_user_DllExport void error(
-            eprosima::fastcdr::fixed_string<65535>&& _error)
+            std::vector<uint8_t>&& _error)
     {
         m_error = std::move(_error);
     }
@@ -1124,7 +1124,7 @@ public:
      * @brief This function returns a constant reference to member error
      * @return Constant reference to member error
      */
-    eProsima_user_DllExport const eprosima::fastcdr::fixed_string<65535>& error() const
+    eProsima_user_DllExport const std::vector<uint8_t>& error() const
     {
         return m_error;
     }
@@ -1133,7 +1133,7 @@ public:
      * @brief This function returns a reference to member error
      * @return Reference to member error
      */
-    eProsima_user_DllExport eprosima::fastcdr::fixed_string<65535>& error()
+    eProsima_user_DllExport std::vector<uint8_t>& error()
     {
         return m_error;
     }
@@ -1173,7 +1173,7 @@ public:
      * @param _status_text New value to be copied in member status_text
      */
     eProsima_user_DllExport void status_text(
-            const eprosima::fastcdr::fixed_string<65535>& _status_text)
+            const std::vector<uint8_t>& _status_text)
     {
         m_status_text = _status_text;
     }
@@ -1183,7 +1183,7 @@ public:
      * @param _status_text New value to be moved in member status_text
      */
     eProsima_user_DllExport void status_text(
-            eprosima::fastcdr::fixed_string<65535>&& _status_text)
+            std::vector<uint8_t>&& _status_text)
     {
         m_status_text = std::move(_status_text);
     }
@@ -1192,7 +1192,7 @@ public:
      * @brief This function returns a constant reference to member status_text
      * @return Constant reference to member status_text
      */
-    eProsima_user_DllExport const eprosima::fastcdr::fixed_string<65535>& status_text() const
+    eProsima_user_DllExport const std::vector<uint8_t>& status_text() const
     {
         return m_status_text;
     }
@@ -1201,7 +1201,7 @@ public:
      * @brief This function returns a reference to member status_text
      * @return Reference to member status_text
      */
-    eProsima_user_DllExport eprosima::fastcdr::fixed_string<65535>& status_text()
+    eProsima_user_DllExport std::vector<uint8_t>& status_text()
     {
         return m_status_text;
     }
@@ -1212,7 +1212,7 @@ public:
      * @param _text New value to be copied in member text
      */
     eProsima_user_DllExport void text(
-            const eprosima::fastcdr::fixed_string<65535>& _text)
+            const std::vector<uint8_t>& _text)
     {
         m_text = _text;
     }
@@ -1222,7 +1222,7 @@ public:
      * @param _text New value to be moved in member text
      */
     eProsima_user_DllExport void text(
-            eprosima::fastcdr::fixed_string<65535>&& _text)
+            std::vector<uint8_t>&& _text)
     {
         m_text = std::move(_text);
     }
@@ -1231,7 +1231,7 @@ public:
      * @brief This function returns a constant reference to member text
      * @return Constant reference to member text
      */
-    eProsima_user_DllExport const eprosima::fastcdr::fixed_string<65535>& text() const
+    eProsima_user_DllExport const std::vector<uint8_t>& text() const
     {
         return m_text;
     }
@@ -1240,7 +1240,7 @@ public:
      * @brief This function returns a reference to member text
      * @return Reference to member text
      */
-    eProsima_user_DllExport eprosima::fastcdr::fixed_string<65535>& text()
+    eProsima_user_DllExport std::vector<uint8_t>& text()
     {
         return m_text;
     }
@@ -1251,7 +1251,7 @@ public:
      * @param _level New value to be copied in member level
      */
     eProsima_user_DllExport void level(
-            const eprosima::fastcdr::fixed_string<65535>& _level)
+            const std::vector<uint8_t>& _level)
     {
         m_level = _level;
     }
@@ -1261,7 +1261,7 @@ public:
      * @param _level New value to be moved in member level
      */
     eProsima_user_DllExport void level(
-            eprosima::fastcdr::fixed_string<65535>&& _level)
+            std::vector<uint8_t>&& _level)
     {
         m_level = std::move(_level);
     }
@@ -1270,7 +1270,7 @@ public:
      * @brief This function returns a constant reference to member level
      * @return Constant reference to member level
      */
-    eProsima_user_DllExport const eprosima::fastcdr::fixed_string<65535>& level() const
+    eProsima_user_DllExport const std::vector<uint8_t>& level() const
     {
         return m_level;
     }
@@ -1279,7 +1279,7 @@ public:
      * @brief This function returns a reference to member level
      * @return Reference to member level
      */
-    eProsima_user_DllExport eprosima::fastcdr::fixed_string<65535>& level()
+    eProsima_user_DllExport std::vector<uint8_t>& level()
     {
         return m_level;
     }
@@ -1290,7 +1290,7 @@ public:
      * @param _tool_call New value to be copied in member tool_call
      */
     eProsima_user_DllExport void tool_call(
-            const eprosima::fastcdr::fixed_string<65535>& _tool_call)
+            const std::vector<uint8_t>& _tool_call)
     {
         m_tool_call = _tool_call;
     }
@@ -1300,7 +1300,7 @@ public:
      * @param _tool_call New value to be moved in member tool_call
      */
     eProsima_user_DllExport void tool_call(
-            eprosima::fastcdr::fixed_string<65535>&& _tool_call)
+            std::vector<uint8_t>&& _tool_call)
     {
         m_tool_call = std::move(_tool_call);
     }
@@ -1309,7 +1309,7 @@ public:
      * @brief This function returns a constant reference to member tool_call
      * @return Constant reference to member tool_call
      */
-    eProsima_user_DllExport const eprosima::fastcdr::fixed_string<65535>& tool_call() const
+    eProsima_user_DllExport const std::vector<uint8_t>& tool_call() const
     {
         return m_tool_call;
     }
@@ -1318,7 +1318,7 @@ public:
      * @brief This function returns a reference to member tool_call
      * @return Reference to member tool_call
      */
-    eProsima_user_DllExport eprosima::fastcdr::fixed_string<65535>& tool_call()
+    eProsima_user_DllExport std::vector<uint8_t>& tool_call()
     {
         return m_tool_call;
     }
@@ -1329,7 +1329,7 @@ public:
      * @param _bbox_json New value to be copied in member bbox_json
      */
     eProsima_user_DllExport void bbox_json(
-            const eprosima::fastcdr::fixed_string<65535>& _bbox_json)
+            const std::vector<uint8_t>& _bbox_json)
     {
         m_bbox_json = _bbox_json;
     }
@@ -1339,7 +1339,7 @@ public:
      * @param _bbox_json New value to be moved in member bbox_json
      */
     eProsima_user_DllExport void bbox_json(
-            eprosima::fastcdr::fixed_string<65535>&& _bbox_json)
+            std::vector<uint8_t>&& _bbox_json)
     {
         m_bbox_json = std::move(_bbox_json);
     }
@@ -1348,7 +1348,7 @@ public:
      * @brief This function returns a constant reference to member bbox_json
      * @return Constant reference to member bbox_json
      */
-    eProsima_user_DllExport const eprosima::fastcdr::fixed_string<65535>& bbox_json() const
+    eProsima_user_DllExport const std::vector<uint8_t>& bbox_json() const
     {
         return m_bbox_json;
     }
@@ -1357,7 +1357,7 @@ public:
      * @brief This function returns a reference to member bbox_json
      * @return Reference to member bbox_json
      */
-    eProsima_user_DllExport eprosima::fastcdr::fixed_string<65535>& bbox_json()
+    eProsima_user_DllExport std::vector<uint8_t>& bbox_json()
     {
         return m_bbox_json;
     }
@@ -1368,7 +1368,7 @@ public:
      * @param _crop_b64 New value to be copied in member crop_b64
      */
     eProsima_user_DllExport void crop_b64(
-            const eprosima::fastcdr::fixed_string<65535>& _crop_b64)
+            const std::vector<uint8_t>& _crop_b64)
     {
         m_crop_b64 = _crop_b64;
     }
@@ -1378,7 +1378,7 @@ public:
      * @param _crop_b64 New value to be moved in member crop_b64
      */
     eProsima_user_DllExport void crop_b64(
-            eprosima::fastcdr::fixed_string<65535>&& _crop_b64)
+            std::vector<uint8_t>&& _crop_b64)
     {
         m_crop_b64 = std::move(_crop_b64);
     }
@@ -1387,7 +1387,7 @@ public:
      * @brief This function returns a constant reference to member crop_b64
      * @return Constant reference to member crop_b64
      */
-    eProsima_user_DllExport const eprosima::fastcdr::fixed_string<65535>& crop_b64() const
+    eProsima_user_DllExport const std::vector<uint8_t>& crop_b64() const
     {
         return m_crop_b64;
     }
@@ -1396,7 +1396,7 @@ public:
      * @brief This function returns a reference to member crop_b64
      * @return Reference to member crop_b64
      */
-    eProsima_user_DllExport eprosima::fastcdr::fixed_string<65535>& crop_b64()
+    eProsima_user_DllExport std::vector<uint8_t>& crop_b64()
     {
         return m_crop_b64;
     }
@@ -1465,7 +1465,7 @@ public:
      * @param _model New value to be copied in member model
      */
     eProsima_user_DllExport void model(
-            const eprosima::fastcdr::fixed_string<65535>& _model)
+            const std::vector<uint8_t>& _model)
     {
         m_model = _model;
     }
@@ -1475,7 +1475,7 @@ public:
      * @param _model New value to be moved in member model
      */
     eProsima_user_DllExport void model(
-            eprosima::fastcdr::fixed_string<65535>&& _model)
+            std::vector<uint8_t>&& _model)
     {
         m_model = std::move(_model);
     }
@@ -1484,7 +1484,7 @@ public:
      * @brief This function returns a constant reference to member model
      * @return Constant reference to member model
      */
-    eProsima_user_DllExport const eprosima::fastcdr::fixed_string<65535>& model() const
+    eProsima_user_DllExport const std::vector<uint8_t>& model() const
     {
         return m_model;
     }
@@ -1493,7 +1493,7 @@ public:
      * @brief This function returns a reference to member model
      * @return Reference to member model
      */
-    eProsima_user_DllExport eprosima::fastcdr::fixed_string<65535>& model()
+    eProsima_user_DllExport std::vector<uint8_t>& model()
     {
         return m_model;
     }
@@ -1504,7 +1504,7 @@ public:
      * @param _model_dir New value to be copied in member model_dir
      */
     eProsima_user_DllExport void model_dir(
-            const eprosima::fastcdr::fixed_string<65535>& _model_dir)
+            const std::vector<uint8_t>& _model_dir)
     {
         m_model_dir = _model_dir;
     }
@@ -1514,7 +1514,7 @@ public:
      * @param _model_dir New value to be moved in member model_dir
      */
     eProsima_user_DllExport void model_dir(
-            eprosima::fastcdr::fixed_string<65535>&& _model_dir)
+            std::vector<uint8_t>&& _model_dir)
     {
         m_model_dir = std::move(_model_dir);
     }
@@ -1523,7 +1523,7 @@ public:
      * @brief This function returns a constant reference to member model_dir
      * @return Constant reference to member model_dir
      */
-    eProsima_user_DllExport const eprosima::fastcdr::fixed_string<65535>& model_dir() const
+    eProsima_user_DllExport const std::vector<uint8_t>& model_dir() const
     {
         return m_model_dir;
     }
@@ -1532,7 +1532,7 @@ public:
      * @brief This function returns a reference to member model_dir
      * @return Reference to member model_dir
      */
-    eProsima_user_DllExport eprosima::fastcdr::fixed_string<65535>& model_dir()
+    eProsima_user_DllExport std::vector<uint8_t>& model_dir()
     {
         return m_model_dir;
     }
@@ -1572,7 +1572,7 @@ public:
      * @param _init_error New value to be copied in member init_error
      */
     eProsima_user_DllExport void init_error(
-            const eprosima::fastcdr::fixed_string<65535>& _init_error)
+            const std::vector<uint8_t>& _init_error)
     {
         m_init_error = _init_error;
     }
@@ -1582,7 +1582,7 @@ public:
      * @param _init_error New value to be moved in member init_error
      */
     eProsima_user_DllExport void init_error(
-            eprosima::fastcdr::fixed_string<65535>&& _init_error)
+            std::vector<uint8_t>&& _init_error)
     {
         m_init_error = std::move(_init_error);
     }
@@ -1591,7 +1591,7 @@ public:
      * @brief This function returns a constant reference to member init_error
      * @return Constant reference to member init_error
      */
-    eProsima_user_DllExport const eprosima::fastcdr::fixed_string<65535>& init_error() const
+    eProsima_user_DllExport const std::vector<uint8_t>& init_error() const
     {
         return m_init_error;
     }
@@ -1600,7 +1600,7 @@ public:
      * @brief This function returns a reference to member init_error
      * @return Reference to member init_error
      */
-    eProsima_user_DllExport eprosima::fastcdr::fixed_string<65535>& init_error()
+    eProsima_user_DllExport std::vector<uint8_t>& init_error()
     {
         return m_init_error;
     }
@@ -1640,20 +1640,20 @@ private:
 
     int64_t m_request_id{0};
     bool m_ok{false};
-    eprosima::fastcdr::fixed_string<65535> m_error;
+    std::vector<uint8_t> m_error;
     int32_t m_status{0};
-    eprosima::fastcdr::fixed_string<65535> m_status_text;
-    eprosima::fastcdr::fixed_string<65535> m_text;
-    eprosima::fastcdr::fixed_string<65535> m_level;
-    eprosima::fastcdr::fixed_string<65535> m_tool_call;
-    eprosima::fastcdr::fixed_string<65535> m_bbox_json;
-    eprosima::fastcdr::fixed_string<65535> m_crop_b64;
+    std::vector<uint8_t> m_status_text;
+    std::vector<uint8_t> m_text;
+    std::vector<uint8_t> m_level;
+    std::vector<uint8_t> m_tool_call;
+    std::vector<uint8_t> m_bbox_json;
+    std::vector<uint8_t> m_crop_b64;
     double m_load_time_sec{0.0};
     int64_t m_loaded_at_unix{0};
-    eprosima::fastcdr::fixed_string<65535> m_model;
-    eprosima::fastcdr::fixed_string<65535> m_model_dir;
+    std::vector<uint8_t> m_model;
+    std::vector<uint8_t> m_model_dir;
     int64_t m_npu_index_info{0};
-    eprosima::fastcdr::fixed_string<65535> m_init_error;
+    std::vector<uint8_t> m_init_error;
     bool m_rkai_available{false};
 
 };

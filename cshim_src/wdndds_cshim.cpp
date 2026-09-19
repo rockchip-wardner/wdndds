@@ -673,7 +673,9 @@ if (rc == eprosima::fastdds::dds::RETCODE_OK) {
                     const auto& prompt_ref = req.prompt();
                     for (size_t _i = 0; _i < prompt_ref.size(); ++_i)
                     {
-                        char c = prompt_ref.c_str()[_i];
+                        // v0.7: prompt is sequence<octet> (std::vector<uint8_t>).
+                        unsigned char b = prompt_ref[_i];
+                        char c = static_cast<char>(b);
                         switch (c) {
                             case '"':  esc_prompt += "\\\""; break;
                             case '\\': esc_prompt += "\\\\"; break;
@@ -681,7 +683,7 @@ if (rc == eprosima::fastdds::dds::RETCODE_OK) {
                             case '\r': esc_prompt += "\\r";  break;
                             case '\t': esc_prompt += "\\t";  break;
                             default:
-                                if (static_cast<unsigned char>(c) < 0x20)
+                                if (b < 0x20)
                                     esc_prompt += ' ';
                                 else
                                     esc_prompt += c;
@@ -709,13 +711,20 @@ if (rc == eprosima::fastdds::dds::RETCODE_OK) {
                     reply.request_id(req.request_id());
                     if (cb_rc == 0 && out_reply && out_len > 0)
                     {
-                        reply.text() = std::string(out_reply, out_len);
+                        // v0.7: text/error are sequence<octet> (was string<65535>).
+                        reply.text().assign(
+                            reinterpret_cast<const uint8_t*>(out_reply),
+                            reinterpret_cast<const uint8_t*>(out_reply) + out_len);
                         reply.ok(true);
                     }
                     else
                     {
                         reply.ok(false);
-                        reply.error(out_reply ? std::string(out_reply, out_len) : "callback failed");
+                        const char* e = out_reply ? out_reply : "callback failed";
+                        const size_t e_len = std::strlen(e);
+                        reply.error().assign(
+                            reinterpret_cast<const uint8_t*>(e),
+                            reinterpret_cast<const uint8_t*>(e) + e_len);
                     }
                     /* Do NOT free(out_reply) — when the cb is a Python
                      * CFUNCTYPE, out_reply is a ctypes-managed c_char_p
@@ -934,10 +943,12 @@ find_str("action", action);
 
         /* Pass the entire client JSON through the typed ``prompt``
          * slot. The IDL only carries action / every_n / request_id
-         * + a ``prompt`` string; everything else (``attachment``,
+         * + a ``prompt`` byte buffer (v0.7: sequence<octet>, was
+         * string<65535>); everything else (``attachment``,
          * ``generating``, ``tools``, ``options``, ...) would be
-         * silently dropped. IDL strings are unbounded in FastDDS so
-         * the whole JSON (including base64 image data) fits.
+         * silently dropped. sequence<octet> is unbounded in FastDDS
+         * so the whole JSON (including base64 image / audio PCM data)
+         * fits without truncation.
          *
          * The worker cshim rebuilds payload_json by re-quoting
          * ``req.prompt()`` with proper JSON-escape; the worker's
@@ -949,7 +960,7 @@ find_str("action", action);
         req.request_id(request_id);
         req.action(action_id);
         req.every_n(every_n);
-        req.prompt(prompt);
+        req.prompt(std::vector<uint8_t>(prompt.begin(), prompt.end()));
 
         auto rc = internal->req_writer->write(&req);
         if (rc != eprosima::fastdds::dds::RETCODE_OK)
@@ -1010,10 +1021,10 @@ find_str("action", action);
                     json_reply += ",\"request_id\":" + std::to_string(reply.request_id());
                     if (reply.text().size() > 0)
                     {
-                        // FastCDR 已知 bug: reply.text() 末尾会带下个字段的对齐
-                        // 字节 garbage, 拼入 JSON 后破坏解析。cast 成 std::string
-                        // 拷贝, 用最后一个 '}' 截断。
-                        std::string reply_text(reply.text());
+                        // v0.7: reply.text() is sequence<octet>. Cast to
+                        // std::string from raw bytes (FastCDR's garbage-byte
+                        // workaround from the string<65535> era still applies).
+                        std::string reply_text(reply.text().begin(), reply.text().end());
                         auto last_brace = reply_text.rfind('}');
                         if (last_brace != std::string::npos)
                             json_reply += std::string(",\"data\":") +
@@ -1030,7 +1041,8 @@ find_str("action", action);
                         const auto& error_ref = reply.error();
                         for (size_t _i = 0; _i < error_ref.size(); ++_i)
                         {
-                            char c = error_ref.c_str()[_i];
+                            unsigned char b = error_ref[_i];
+                            char c = static_cast<char>(b);
                             switch (c) {
                                 case '"':  esc += "\\\""; break;
                                 case '\\': esc += "\\\\"; break;
@@ -1038,7 +1050,7 @@ find_str("action", action);
                                 case '\r': esc += "\\r";  break;
                                 case '\t': esc += "\\t";  break;
                                 default:
-                                    if (static_cast<unsigned char>(c) < 0x20)
+                                    if (b < 0x20)
                                         esc += ' ';
                                     else
                                         esc += c;
@@ -1187,13 +1199,15 @@ int32_t wdndds_topic_writer_write(
     req.request_id(static_cast<int64_t>(counter.fetch_add(1, std::memory_order_relaxed)));
     req.action(WDNDDS_REQUEST_ACTION_INFO);
     req.every_n(0);
-    req.prompt("");
-    req.model_id("");
+    // v0.7: prompt/model_id are std::vector<uint8_t>; clear() replaces the old
+    // string="" setter which no longer compiles.
+    req.prompt().clear();
+    req.model_id().clear();
     req.npu_index(0);
 
     ComputeAttachment att;
     att.kind(WDNDDS_ATTACHMENT_KIND_NDARRAY);
-    att.mime_type("application/octet-stream");
+    att.mime_type(std::vector<uint8_t>{'a','p','p','l','i','c','a','t','i','o','n','/','o','c','t','e','t','-','s','t','r','e','a','m'});
     att.encoding(WDNDDS_IMAGE_ENCODING_RAW);
     att.width(0); att.height(0); att.channels(0); att.row_stride(0);
     att.bytes().assign(
