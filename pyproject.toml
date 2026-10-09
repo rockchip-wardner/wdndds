@@ -4,13 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wdndds"
-version = "0.8.0"
+version = "0.9.0"
 description = "RPC-DDS cshim + Python wrappers for per-model compute isolation on Rockchip RK3588."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.9"
 authors = [{ name = "wdndds contributors" }]
+# wdnai is required by ``wdndds.ai_session`` (LLMRPCSession subclasses
+# wdnai.LLMSession) but NOT by the rest of the package — discovery,
+# registry and the audio/topic helpers work without it. It is imported
+# lazily via ``__getattr__`` in __init__.py so a bare ``import wdndds``
+# keeps working on hosts that only use DDS pub/sub.
 dependencies = [
+    "wdnai>=0.6",
 ]
 keywords = ["fastdds", "dds", "iot", "ros2", "wdndds", "rpc"]
 classifiers = [

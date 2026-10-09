@@ -383,6 +383,8 @@ class Replier:
         self._service = service
         self._callback = callback
         self._native = None
+        # Pins the most recent serialized reply; see _on_request_c.
+        self._reply_keepalive: Optional[bytes] = None
 
     def create(self) -> None:
         if self._native is not None:
@@ -415,6 +417,18 @@ class Replier:
                 service_name.decode("utf-8") if service_name else "",
                 payload_obj)
             reply_bytes = json.dumps(reply_obj, ensure_ascii=False).encode("utf-8")
+            # The cshim copies ``out_reply`` *after* this callback returns:
+            # it does ``reply.text().assign(out_reply, out_reply+out_len)``
+            # once control is back in C++. The ctypes out-param is the only
+            # thing keeping ``reply_bytes`` alive, and ctypes drops it as
+            # soon as this frame unwinds — so anything that allocates
+            # between here and the copy (an asyncio run, a model
+            # inference) will have recycled the buffer, and the caller
+            # receives a reply whose leading bytes are garbage while the
+            # tail survives. Pin the buffer on the instance; the next
+            # request overwrites it, so this holds exactly one buffer per
+            # Replier.
+            self._reply_keepalive = reply_bytes
             out_reply[0] = reply_bytes
             out_reply_len[0] = len(reply_bytes)
             return 0
@@ -422,6 +436,7 @@ class Replier:
             try:
                 err = json.dumps({"ok": False, "error": f"{type(e).__name__}: {e}"}
                                  ).encode("utf-8")
+                self._reply_keepalive = err
                 out_reply[0] = err
                 out_reply_len[0] = len(err)
             except Exception:
@@ -432,6 +447,7 @@ class Replier:
         if self._native is not None:
             self._service._hub._lib.wdndds_replier_destroy(self._native)
             self._native = None
+        self._reply_keepalive = None
         if getattr(self, "_c_keepalive_id", 0):
             _release_keepalive(self._c_keepalive_id)
             self._c_keepalive_id = 0
