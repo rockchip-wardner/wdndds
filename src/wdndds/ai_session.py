@@ -92,6 +92,11 @@ _INLINE_TEXT_LIMIT = 512
 _DEFAULT_TIMEOUT_MS = 5_000
 _INFER_TIMEOUT_MS = 15_000
 
+# A brand-new DataWriter isn't matched with the worker's reader yet, so a
+# single write can be dropped; re-publish over ~1s to make stop reliable.
+_STOP_PUBLISH_RETRIES = 5
+_STOP_PUBLISH_INTERVAL_S = 0.25
+
 _SOFT_RETRIES = 2      # plain retries, no channel churn
 _HARD_RETRIES = 1      # destroy + recreate the requester, then retry
 
@@ -755,16 +760,25 @@ class LLMRPCSession(LLMSession):
     def stop(self) -> None:
         """Ask the worker to abandon the current generation.
 
-        Published to a side topic, never through the replier — which is
-        busy running the inference we are trying to stop. Returns
-        immediately; the worker observes the flag once ``session_run``
-        returns and reports ``stopped``.
+        Published to a side topic, never through the replier — which is busy
+        running the inference we are trying to stop. Returns as soon as the
+        topic has been written a few times (see ``_STOP_PUBLISH_RETRIES``);
+        the worker aborts mid-run and reports ``stopped``.
+
+        The payload carries the active ``stream_id`` because those retries
+        outlive their turn: a stop naming a different turn is dropped
+        instead of aborting whatever is running by then (which surfaced as
+        "generation stopped" on the *next* question).
         """
+        target = self._active.stream_id if self._active is not None else ""
+        payload = f"stop:{target}".encode("utf-8")
         try:
             writer = create_topic_writer(
                 self._side_hub, self._stop_topic, qos_kind="reliable")
             try:
-                writer.write(b"stop")
+                for _ in range(_STOP_PUBLISH_RETRIES):
+                    writer.write(payload)
+                    time.sleep(_STOP_PUBLISH_INTERVAL_S)
             finally:
                 writer.close()
         except Exception as exc:  # noqa: BLE001
@@ -908,12 +922,42 @@ class ServedSession:
         self._stop_requested = False
         self._stop_lock = threading.Lock()
         self._stop_reader: Optional[TopicReader] = None
+        # stream_id of the turn currently holding the session ("" = none).
+        self._current_stream_id: Optional[str] = None
         self._extra_ops: Dict[str, Callable[[Dict[str, Any]], Dict[str, Any]]] = {}
 
     # -- cancellation ---------------------------------------------------- #
-    def request_stop(self) -> None:
+    def request_stop(self, raw: bytes = b"") -> None:
+        """Record the request **and** push it into the running inference.
+
+        Forwarding to the session's ``stop()`` is what makes the abort take
+        effect mid-generation; the flag alone is only read by
+        :meth:`consume_stop`, after the turn already finished.
+
+        ``raw`` is the wire payload ``b"stop:<stream_id>"``. A stop naming a
+        different turn than the one running is **dropped** — the publisher
+        retries for ~1s, so samples can outlive their turn, and honouring a
+        stale one aborts the *next* question.
+
+        Best-effort: a session without ``stop()``, or one that raises, still
+        gets the flag and keeps the old end-of-run semantics.
+        """
+        target = self._decode_stop_target(raw)
+        current = self._current_stream_id
+        if target and current and target != current:
+            _LOG.debug("serve[%s]: ignoring stale stop for %s (running %s)",
+                       self.service_name, target, current)
+            return
         with self._stop_lock:
             self._stop_requested = True
+        session = getattr(self, "session", None)
+        stop = getattr(session, "stop", None)
+        if stop is not None:
+            try:
+                stop()
+            except Exception as exc:  # noqa: BLE001 — soft stop is best-effort
+                _LOG.warning("serve[%s]: session.stop() failed: %s",
+                             self.service_name, exc)
 
     def consume_stop(self) -> bool:
         """Read-and-clear the stop flag."""
@@ -921,6 +965,21 @@ class ServedSession:
             was = self._stop_requested
             self._stop_requested = False
             return was
+
+    def session_was_stopped(self) -> bool:
+        """True when the session itself reports the run was cut short."""
+        session = getattr(self, "session", None)
+        return bool(getattr(session, "was_stopped", lambda: False)())
+
+    @staticmethod
+    def _decode_stop_target(raw: bytes) -> str:
+        """``b"stop:<stream_id>"`` → ``<stream_id>``; anything else → ``""``.
+
+        Empty means "unscoped" — honoured as before, so a caller publishing a
+        bare ``b"stop"`` keeps working.
+        """
+        text = raw.decode("utf-8", errors="replace")
+        return text.split(":", 1)[1].strip() if ":" in text else ""
 
     # -- lifecycle ------------------------------------------------------- #
     def close(self) -> None:
@@ -1025,7 +1084,7 @@ def serve_local_session(
     # pump thread is blocked inside session_run and could not consume it.
     served._stop_reader = create_topic_reader(
         side_hub, f"{service_name}/stop",
-        lambda _raw: served.request_stop(),
+        lambda raw: served.request_stop(raw),
         qos_kind="reliable",
     )
 
@@ -1113,6 +1172,12 @@ def _handle_request(served: ServedSession, raw_payload: Any) -> Dict[str, Any]:
     attachments = decode_attachments(payload.get("attachments"))
     options = payload.get("options") or {}
 
+    # This turn owns the session: publish its id so a stop sample can tell
+    # "meant for this turn" from "left over from the previous one", and drop
+    # any flag that landed before this turn started.
+    served._current_stream_id = stream_id
+    served.consume_stop()
+
     bridge: Optional[Callable[[str], None]] = None
     if stream_id and served._delta_writer is not None:
         writer = served._delta_writer
@@ -1144,7 +1209,7 @@ def _handle_request(served: ServedSession, raw_payload: Any) -> Dict[str, Any]:
     if stream_id:
         _publish_stream_end(served, stream_id)
 
-    stopped = served.consume_stop()
+    stopped = served.consume_stop() or served.session_was_stopped()
     reply: Dict[str, Any] = {"status": "ok", "text": text}
     att_out_enc = encode_attachments_out(att_out)
     if att_out_enc:
