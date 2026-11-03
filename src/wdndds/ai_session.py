@@ -340,18 +340,32 @@ def decode_attachments(entries: Any) -> List[Attachment]:
 
 
 def encode_attachments_out(att_out: Any) -> List[Dict[str, Any]]:
-    """Encode ``attachments_out`` (TTS audio etc.) for the reply.
+    """Encode ``attachments_out`` (TTS audio, generated images …) for the reply.
 
     Uses ``data_path`` unconditionally: the writer is the worker, the
     reader is the caller, and ``/dev/shm`` is shared on the local host. The
     LAN-peer reply path is out of scope for now — a remote reply that
     carries audio will come back as a descriptor with an unreadable path
     and degrade to ``None`` rather than raising.
+
+    **图像**（文生图 worker 的产物）走同一个 ``/dev/shm`` 通道：
+    ``ImageAttachment.images`` 是一组 BGR ``uint8`` ndarray，用
+    :func:`_bgr_to_path` 原样落盘（**不重新编码** ⇒ 逐字节一致），
+    回程按 ``shape`` 还原成 ndarray。
+
+    ⚠️ 这里曾经只认 ``item.data``（音频专有属性），于是文生图 worker
+    生成的图片**被静默丢掉**：reply 里 ``attachments_out`` 是空的，
+    调用方只拿到一句 prompt 回显，看不出"图丢了"。任何"产物型"
+    attachment 都必须在这里显式列出，否则就是静默降级。
     """
     if not att_out:
         return []
     out: List[Dict[str, Any]] = []
     for item in att_out:
+        if isinstance(item, ImageAttachment):
+            for img in item.images:
+                out.append(_bgr_to_path(img))
+            continue
         data = getattr(item, "data", None)
         if data is None:
             continue
@@ -366,13 +380,39 @@ def decode_attachments_out(entries: Any) -> List[Attachment]:
         return []
     out: List[Attachment] = []
     for entry in entries if isinstance(entries, list) else [entries]:
-        if not isinstance(entry, dict) or not entry.get("data_path"):
+        if not isinstance(entry, dict):
             continue
-        raw = _read_shm_bytes(entry["data_path"])
-        if raw is None:
+        if entry.get("data_path"):
+            raw = _read_shm_bytes(entry["data_path"])
+            if raw is None:
+                continue
+            shape = entry.get("shape")
+            if shape:
+                # 图像：按 shape 还原成 BGR uint8 ndarray
+                try:
+                    dims = tuple(int(x) for x in shape)
+                    arr = np.frombuffer(raw, dtype=np.uint8).reshape(dims)
+                except (TypeError, ValueError) as exc:
+                    _LOG.warning("bad image shape %r: %s", shape, exc)
+                    continue
+                out.append(ImageAttachment(arr))
+                continue
+            out.append(AudioAttachment(
+                raw, mime_type=entry.get("mime_type", "audio/wav") or "audio/wav"))
             continue
-        out.append(AudioAttachment(
-            raw, mime_type=entry.get("mime_type", "audio/wav") or "audio/wav"))
+        if entry.get("data_b64"):
+            # JPEG + base64 —— 非 uint8 HxWx3 帧 / LAN peer 的降级路径
+            try:
+                blob = base64.b64decode(entry["data_b64"])
+                import cv2  # lazy: 只有降级路径需要
+                arr = cv2.imdecode(np.frombuffer(blob, dtype=np.uint8),
+                                   cv2.IMREAD_COLOR)
+            except Exception as exc:  # noqa: BLE001
+                _LOG.warning("decode image b64 failed: %s", exc)
+                continue
+            if arr is None:
+                continue
+            out.append(ImageAttachment(arr))
     return out
 
 

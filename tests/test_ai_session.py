@@ -40,7 +40,8 @@ from wdnai import (
 from wdnai.model import ModelSpec
 
 from wdndds.ai_session import (
-    LLMRPCSession, decode_attachments, encode_attachments, serve_local_session,
+    LLMRPCSession, decode_attachments, decode_attachments_out, encode_attachments,
+    encode_attachments_out, serve_local_session,
 )
 
 
@@ -346,6 +347,45 @@ def test_missing_side_file_degrades_to_none():
     from wdndds.ai_session import _read_shm_text
 
     assert _read_shm_text("/dev/shm/wdndds_ai_reply_does_not_exist.bin") is None
+
+
+# --------------------------------------------------------------------------- #
+# 6b. 出图产物（ImageAttachment）要能从 worker 回到调用方
+# --------------------------------------------------------------------------- #
+def test_image_attachment_survives_the_reply_path():
+    """文生图 worker 的产物是**图像**，回程必须带得回来。
+
+    ⚠️ 这条曾经是**静默降级**：``encode_attachments_out`` 只认
+    ``item.data``（音频专有属性），于是 ImageAttachment 被整条丢掉 ——
+    reply 里的 ``attachments_out`` 是空的，调用方只拿到一句 prompt
+    回显，看不出"图没了"。
+    """
+    img = np.random.randint(0, 255, (24, 32, 3), dtype=np.uint8)
+    before = _shm_snapshot()
+    encoded = encode_attachments_out([ImageAttachment(img)])
+    assert encoded, "图像附件被整个丢掉了"
+    assert "shape" in encoded[0], encoded[0]
+    decoded = decode_attachments_out(encoded)
+    assert len(decoded) == 1 and isinstance(decoded[0], ImageAttachment)
+    # 逐字节一致（走 /dev/shm 原样搬运，不重新编码）
+    assert np.array_equal(decoded[0].images[0], img)
+    assert _shm_snapshot() == before
+
+
+def test_audio_attachment_still_round_trips_alongside_images():
+    """加了图片分支**不能**把音频分支挤掉。"""
+    audio = b"\x00\x01\x02" * 100
+    img = np.zeros((4, 4, 3), dtype=np.uint8)
+    before = _shm_snapshot()
+    encoded = encode_attachments_out([
+        ImageAttachment(img),
+        AudioAttachment(audio, mime_type="audio/wav"),
+    ])
+    decoded = decode_attachments_out(encoded)
+    kinds = [type(d).__name__ for d in decoded]
+    assert kinds == ["ImageAttachment", "AudioAttachment"], kinds
+    assert decoded[1].data == audio
+    assert _shm_snapshot() == before
 
 
 # --------------------------------------------------------------------------- #
