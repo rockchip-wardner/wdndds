@@ -1,3 +1,4 @@
+[English](README.md) | [简体中文](README_CN.md)
 # wdndds - wardner.iot
 
 Pythonic wrapper around [eProsima Fast DDS](https://www.eprosima.com/en/products/all-products/fast-dds)
@@ -343,6 +344,19 @@ samples/
 └── register_and_find.py   # provider / caller two-role end-to-end sample
 ```
 
+## Third-party components and licenses
+
+This repository redistributes prebuilt third-party artifacts under `native/`:
+
+| Component | Version | License | Location |
+|---|---|---|---|
+| Fast DDS / Fast CDR (eProsima) | 3.6.2 / 2.3.6 | Apache-2.0 | `native/include/fastdds/`, `native/include/fastcdr/`, `native/lib/libfastdds.so.3.6.2.0`, `native/lib/libfastcdr.so.2.3.6` — upstream license shipped verbatim at [`native/LICENSE`](native/LICENSE) |
+| foonathan-memory | 0.7.4 | Boost Software License 1.0 | `native/include/foonathan/`, `native/lib/libfoonathan_memory-0.7.4.a` — license shipped at `native/share/foonathan_memory/LICENSE` |
+
+Both are permissive and compatible with Apache-2.0. Fast DDS upstream ships **no
+NOTICE file**, so there is no attribution notice to carry over
+(Apache-2.0 §4(d) only applies when the upstream work has one).
+
 ## License
 
-MIT. See `LICENSE`.
+Apache-2.0. See [LICENSE](LICENSE).

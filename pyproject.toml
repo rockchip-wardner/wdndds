@@ -7,7 +7,7 @@ name = "wdndds"
 version = "0.9.0"
 description = "RPC-DDS cshim + Python wrappers for per-model compute isolation on Rockchip RK3588."
 readme = "README.md"
-license = { text = "MIT" }
+license = { text = "Apache-2.0" }
 requires-python = ">=3.9"
 authors = [{ name = "wdndds contributors" }]
 # wdnai is required by ``wdndds.ai_session`` (LLMRPCSession subclasses
@@ -22,7 +22,7 @@ keywords = ["fastdds", "dds", "iot", "ros2", "wdndds", "rpc"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: POSIX :: Linux",
     "Operating System :: POSIX :: Linux :: AArch64",
     "Programming Language :: Python :: 3",
