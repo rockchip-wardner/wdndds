@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wdndds"
-version = "0.9.0"
+version = "0.9.1"
 description = "RPC-DDS cshim + Python wrappers for per-model compute isolation on Rockchip RK3588."
 readme = "README.md"
 license = { text = "Apache-2.0" }
