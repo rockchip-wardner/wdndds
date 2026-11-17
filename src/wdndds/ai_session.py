@@ -536,6 +536,18 @@ class LLMRPCSession(LLMSession):
         self._is_remote = bool(is_remote)
         self._closed = False
         self._client_lock = threading.Lock()
+        #: **最近一次推理的性能表**（worker 送来的 ``reply["perf"]``）。
+        #:
+        #: ⚠️ perf sink（``session._backend.sink.perf``）住在**worker 进程**里，
+        #: 这边是 RPC 代理，够不着 ⇒ worker 必须显式把数字带过来。
+        #: worker 侧见 ``_handle_request`` 的 respond 分支。
+        #:
+        #: 字段（SDK backend 写进 sink.perf 的那几个）：
+        #: ``n_decode_tokens`` / ``n_prefill_tokens`` / ``prefill_ms`` / ``decode_ms``
+        #:
+        #: ⚠️ **读-改-写不是原子的** —— 同一个 session 同时只能有一个推理在飞
+        #: （``_executor`` 是 ``max_workers=1``），所以这里不会串味。
+        self.last_perf: Dict[str, Any] = {}
         self._executor = ThreadPoolExecutor(
             max_workers=1,
             thread_name_prefix=f"wdnai-rpc-{service_name.rsplit('/', 1)[-1]}",
@@ -612,6 +624,15 @@ class LLMRPCSession(LLMSession):
         }
         try:
             loop = asyncio.get_running_loop()
+            # ⚠️ **先把上一轮的性能表清掉**（2026-11-17 加）。
+            #
+            # 这一轮推理要是**失败**（worker 报错 / 超时），reply 里就不会有
+            # perf ⇒ ``_decode_reply`` 不会被调用 ⇒ ``last_perf`` 会**留着
+            # 上一轮的数字**。调用方拿它算 tokens/s 就会算出「上一轮」的数，
+            # 还以为是这一轮的 ⇒ 数字对不上但又看不出错 ⇒ 比没有还糟。
+            #
+            # 所以**发请求之前**就清空：要么这一轮有 perf，要么就是空的。
+            self.last_perf = {}
             reply = await loop.run_in_executor(
                 self._executor,
                 lambda: self._call_resilient(payload, self._infer_timeout_ms),
@@ -671,6 +692,17 @@ class LLMRPCSession(LLMSession):
             text = _read_shm_text(data["text_path"])
         if text is None:
             text = ""
+        # ⚠️ **性能表**（2026-11-17 加）—— worker 把 token 数 / decode 耗时
+        # 显式放进 reply 了（见 ``_handle_request``）。收在这儿，调用方
+        # （比如板端翻译 provider）就能算 tokens/s。
+        #
+        # ⚠️ 只留**数字**：worker 侧已经过滤过一次，这里再兜一层 —— 别的
+        # 实现（老版本 worker、别的 provider）可能塞了别的东西进来。
+        perf = data.get("perf")
+        self.last_perf = {
+            str(k): v for k, v in perf.items()
+            if isinstance(v, (int, float)) and not isinstance(v, bool)
+        } if isinstance(perf, dict) else {}
         return text, decode_attachments_out(data.get("attachments_out")), bool(
             data.get("stopped"))
 
@@ -1172,6 +1204,47 @@ def _unwrap_payload(payload: Any) -> Dict[str, Any]:
     return payload
 
 
+def _read_perf(session: Any) -> Dict[str, Any]:
+    """读 worker 侧 session 的性能表（token 数 / prefill / decode 耗时 + 派生量）。
+
+    ⚠️ **数据从哪来**（2026-11-17 查过）：
+    * **token 数**来自 **C 侧** —— ``rknn3_session_query_state`` 读
+      librknn3 的 ``RKLLMRunState``（见 ``wdnai/_librknn.py``）；
+    * **时间戳**来自 **Python 侧** 的 ``time.perf_counter()``（C 的流式
+      回调本来就要跨 ctypes 进 Python，时钟在那儿取最准）；
+    * **派生量**（tokens/s、每 token 耗时、LLM 延迟）是 **Python 侧**算的
+      —— SDK 的 :func:`wdnai.perf_table`，跟它打印的那张 perf 表
+      **同一份公式**。
+
+    ⚠️ **只留数字** —— sink 里可能有别的类型（比如对象），JSON 编不过去，
+    会让整条 reply 序列化失败 ⇒ **推理成功但调用方收到传输错误**。
+
+    ⚠️ **出 wire 前先按 JSON 校验一次**（``json.dumps``）：编不过去的
+    整块丢掉，宁可界面少几个数，也不能让一次成功的推理变成传输错误。
+
+    ⚠️ 这是 **worker 进程内**的读法；调用方（另一个进程）够不着这个 sink ⇒
+    必须由 worker 显式放进 reply（见 ``_handle_request`` 的 respond 分支）。
+    """
+    sink = getattr(getattr(session, "_backend", None), "sink", None)
+    perf = getattr(sink, "perf", None)
+    if not isinstance(perf, dict):
+        return {}
+    out = {
+        str(k): v for k, v in perf.items()
+        if isinstance(v, (int, float)) and not isinstance(v, bool)
+    }
+    if not out:
+        return {}
+    # ⚠️ **JSON 可序列化校验** —— 宁可少这几个数，也不能让整条 reply 挂掉。
+    try:
+        json.dumps(out, allow_nan=False)
+    except (TypeError, ValueError) as exc:
+        _LOG.warning("serve: perf 表编不成 JSON，丢弃（%s）: %s",
+                     type(exc).__name__, exc)
+        return {}
+    return out
+
+
 def _handle_request(served: ServedSession, raw_payload: Any) -> Dict[str, Any]:
     payload = _unwrap_payload(raw_payload)
     op = payload.get("op") or "respond"
@@ -1274,6 +1347,19 @@ def _handle_request(served: ServedSession, raw_payload: Any) -> Dict[str, Any]:
         reply["attachments_out"] = att_out_enc
     if stopped:
         reply["stopped"] = True
+    # ⚠️ **性能表过 wire**（2026-11-17 加）。
+    #
+    # perf sink 住在**worker 进程**里（``session._backend.sink.perf``），调用方
+    # （Web UI 进程）拿到的是 RPC 代理，**够不着那个 sink** ⇒ 不显式带过去，
+    # 调用方就永远看不到 token 数 / decode 耗时 ⇒ 算不出 tokens/s。
+    #
+    # 带的字段（SDK 的 backend 写进 sink.perf 的那几个）：
+    #   n_decode_tokens / n_prefill_tokens / prefill_ms / decode_ms
+    #
+    # ⚠️ 只带**数字**：sink 里可能有别的类型，JSON 编不过去。
+    perf = _read_perf(served.session)
+    if perf:
+        reply["perf"] = perf
     # Keep the reply small; the 1 MiB ceiling is not reachable from Python
     # so a long completion has to travel as a pointer.
     if len(text) > _INLINE_TEXT_LIMIT:
