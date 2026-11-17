@@ -1227,12 +1227,21 @@ def _read_perf(session: Any) -> Dict[str, Any]:
     """
     sink = getattr(getattr(session, "_backend", None), "sink", None)
     perf = getattr(sink, "perf", None)
-    if not isinstance(perf, dict):
-        return {}
-    out = {
-        str(k): v for k, v in perf.items()
-        if isinstance(v, (int, float)) and not isinstance(v, bool)
-    }
+    out: Dict[str, Any] = {}
+    if isinstance(perf, dict):
+        out.update({
+            str(k): v for k, v in perf.items()
+            if isinstance(v, (int, float)) and not isinstance(v, bool)
+        })
+    # ⚠️ **有些 backend 没有 ``sink``**（它用的是自己的 sink）—— 比如
+    # Intern-Decision（决策模型）用的是 ``_DecisionOutputSink``，只收
+    # logits ⇒ 标准那条路走不通。它改用 ``backend.perf`` ⇒ 这里也读。
+    direct = getattr(getattr(session, "_backend", None), "perf", None)
+    if isinstance(direct, dict):
+        out.update({
+            str(k): v for k, v in direct.items()
+            if isinstance(v, (int, float)) and not isinstance(v, bool)
+        })
     if not out:
         return {}
     # ⚠️ **JSON 可序列化校验** —— 宁可少这几个数，也不能让整条 reply 挂掉。
