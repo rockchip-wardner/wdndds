@@ -366,6 +366,20 @@ def encode_attachments_out(att_out: Any) -> List[Dict[str, Any]]:
             for img in item.images:
                 out.append(_bgr_to_path(img))
             continue
+        if isinstance(item, TextAttachment):
+            # ⚠️ **文本附件必须显式带上**（2026-11-17 修）。
+            #
+            # 决策模型（Intern-Decision）的**完整概率 / logits 就在
+            # TextAttachment 里** —— 它的 ``run()`` 返回
+            # ``(text, [TextAttachment(detail)])``。下面那行
+            # ``getattr(item, "data", None)`` 对 TextAttachment 是 **None**
+            # ⇒ 直接 ``continue`` ⇒ 附件被**静默丢掉** ⇒ 调用方只拿到
+            # 答案 JSON，看不到任何概率（症状：判定对，但概率全是 0）。
+            #
+            # 这与本函数注释里记的「文生图的图片被丢掉」是**同一个坑**：
+            # 任何「产物型」附件都必须在这里显式列出。
+            out.append({"text": item.text or ""})
+            continue
         data = getattr(item, "data", None)
         if data is None:
             continue
@@ -381,6 +395,10 @@ def decode_attachments_out(entries: Any) -> List[Attachment]:
     out: List[Attachment] = []
     for entry in entries if isinstance(entries, list) else [entries]:
         if not isinstance(entry, dict):
+            continue
+        if entry.get("text") is not None:
+            # 文本附件（决策模型的概率明细）—— encode 侧的对称分支
+            out.append(TextAttachment(entry["text"]))
             continue
         if entry.get("data_path"):
             raw = _read_shm_bytes(entry["data_path"])

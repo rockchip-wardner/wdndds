@@ -59,3 +59,22 @@ subscriber can be spun up in a few lines. Distribution / import name
 - `idl/` — the DDS IDL definitions.
 - `native/` — the prebuilt FastDDS native libraries (`libfastdds.so` / `libfastcdr.so`); `build_native.sh` rebuilds them.
 - `include/`, `docs/`, `samples/`, `tests/`.
+
+## Output attachments must be listed explicitly (2026-11-17)
+
+`encode_attachments_out()` only carries the attachment kinds it knows about:
+`ImageAttachment` (through `data_path`) and anything with a `.data` payload
+(audio). **Anything else is dropped silently** — the caller gets a correct
+`text` reply and no attachment, and nothing is logged.
+
+That already bit the image-generation path (the produced image vanished) and
+it bit the decision path a second time: `Intern-Decision` returns the full
+per-field probabilities and logits in a `TextAttachment`, so every field came
+back with probability `0.0` while the yes/no verdict itself was right — which
+looks like a model problem instead of a transport problem.
+
+⇒ When a backend starts producing a new kind of output attachment, add it to
+`encode_attachments_out()` **and** to the inverse `decode_attachments_out()`
+in the same change, and cover the round trip with a test. Unknown keys stay
+ignored on the decode side, so an older caller against a newer worker keeps
+working.
